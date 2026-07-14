@@ -34,7 +34,6 @@ import app.olauncher.databinding.FragmentHomeBinding
 import app.olauncher.helper.appUsagePermissionGranted
 import app.olauncher.helper.dpToPx
 import app.olauncher.helper.expandNotificationDrawer
-import app.olauncher.helper.getChangedAppTheme
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.openAlarmApp
@@ -42,7 +41,6 @@ import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
-import app.olauncher.helper.setPlainWallpaperByTheme
 import app.olauncher.helper.showToast
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
@@ -186,10 +184,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
             if (it != true) {
-                if (prefs.dailyWallpaper && prefs.appTheme == AppCompatDelegate.MODE_NIGHT_YES) {
-                    prefs.dailyWallpaper = false
-                    viewModel.cancelWallpaperWorker()
-                }
                 prefs.homeBottomAlignment = false
                 setHomeAlignment()
             }
@@ -579,17 +573,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_FULLSCREEN
             }
         }
-    }
-
-    private fun changeAppTheme() {
-        if (prefs.dailyWallpaper.not()) return
-        val changedAppTheme = getChangedAppTheme(requireContext(), prefs.appTheme)
-        prefs.appTheme = changedAppTheme
-        if (prefs.dailyWallpaper) {
-            setPlainWallpaperByTheme(requireContext(), changedAppTheme)
-            viewModel.setWallpaperWorker()
-        }
-        requireActivity().recreate()
     }
 
     private fun openScreenTimeDigitalWellbeing() {

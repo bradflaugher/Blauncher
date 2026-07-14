@@ -1,5 +1,6 @@
 package app.olauncher.helper
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.SearchManager
@@ -51,6 +52,7 @@ fun Activity.showLauncherSelector(requestCode: Int) {
         resetDefaultLauncher()
 }
 
+@SuppressLint("UnsafeImplicitIntentLaunch")
 fun Context.resetDefaultLauncher() {
     try {
         val componentName = ComponentName(this, FakeHomeActivity::class.java)

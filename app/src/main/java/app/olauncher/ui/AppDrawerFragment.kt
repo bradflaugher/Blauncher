@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView.Recycler
 import app.olauncher.MainViewModel
 import app.olauncher.R
 import app.olauncher.data.AppModel
+import app.olauncher.data.AppCategory
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentAppDrawerBinding
@@ -84,6 +85,7 @@ class AppDrawerFragment : Fragment() {
             binding.search.queryHint = getString(R.string.hidden_apps)
         else if (flag in Constants.FLAG_SET_HOME_APP_1..Constants.FLAG_SET_CALENDAR_APP)
             binding.search.queryHint = "Please select an app"
+        binding.recategorize.visibility = if (flag == Constants.FLAG_LAUNCH_APP) View.VISIBLE else View.GONE
         try {
             searchTextView = binding.search.findViewById(R.id.search_src_text)
             searchTextView?.gravity = prefs.appLabelAlignment
@@ -167,6 +169,7 @@ class AppDrawerFragment : Fragment() {
             },
             appDeleteListener = { appModel ->
                 when (appModel) {
+                    is AppModel.CategoryHeader -> {}
                     is AppModel.PrivateSpaceHeader -> {}
                     is AppModel.PinnedShortcut ->
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -190,15 +193,11 @@ class AppDrawerFragment : Fragment() {
                 }
                 viewModel.getAppList()
             },
-            appHideListener = { appModel, position ->
+            appHideListener = { appModel, _ ->
                 if (appModel is AppModel.PinnedShortcut) {
                     requireContext().showToast("Hiding pinned shortcuts is not supported")
                     return@AppDrawerAdapter
                 }
-                adapter.appFilteredList.removeAt(position)
-                adapter.notifyItemRemoved(position)
-                adapter.appsList.remove(appModel)
-
                 val newSet = mutableSetOf<String>()
                 newSet.addAll(prefs.hiddenApps)
                 if (flag == Constants.FLAG_HIDDEN_APPS)
@@ -292,12 +291,34 @@ class AppDrawerFragment : Fragment() {
 
     private fun updateCombinedAppList() {
         val apps = currentAppList ?: return
-        val combined = apps.toMutableList()
+        if (flag != Constants.FLAG_LAUNCH_APP) {
+            adapter.setAppList(apps.toMutableList())
+            adapter.filter.filter(binding.search.query)
+            return
+        }
+        val combined = mutableListOf<AppModel>()
+        var currentCategory: AppCategory? = null
+        apps.forEach { app ->
+            val category = app.category ?: AppCategory.OTHER
+            if (category != currentCategory) {
+                combined.add(AppModel.CategoryHeader(category))
+                currentCategory = category
+            }
+            combined.add(app)
+        }
 
         if (flag == Constants.FLAG_LAUNCH_APP && currentPrivateSpaceAvailable) {
             combined.add(AppModel.PrivateSpaceHeader(isLocked = currentPrivateSpaceLocked))
             if (!currentPrivateSpaceLocked) {
-                currentPrivateSpaceApps?.let { combined.addAll(it) }
+                var privateCategory: AppCategory? = null
+                currentPrivateSpaceApps?.forEach { app ->
+                    val category = app.category ?: AppCategory.OTHER
+                    if (category != privateCategory) {
+                        combined.add(AppModel.CategoryHeader(category, app.user))
+                        privateCategory = category
+                    }
+                    combined.add(app)
+                }
             }
         }
 
@@ -306,6 +327,11 @@ class AppDrawerFragment : Fragment() {
     }
 
     private fun initClickListeners() {
+        binding.recategorize.setOnClickListener {
+            prefs.clearAppCategories()
+            viewModel.getAppList()
+            requireContext().showToast(R.string.categories_refreshed)
+        }
         binding.appRename.setOnClickListener {
             val name = binding.search.query.toString().trim()
             if (name.isEmpty()) {

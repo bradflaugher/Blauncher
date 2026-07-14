@@ -11,12 +11,6 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.Point
 import android.net.Uri
 import android.os.Build
 import android.os.UserHandle
@@ -37,7 +31,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.graphics.createBitmap
-import androidx.core.net.toUri
 import app.olauncher.BuildConfig
 import app.olauncher.R
 import app.olauncher.data.AppModel
@@ -45,15 +38,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.Collator
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.Scanner
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -95,7 +80,14 @@ suspend fun getAppsList(
                         appPackage = app.applicationInfo.packageName,
                         activityClassName = app.componentName.className,
                         isNew = (System.currentTimeMillis() - app.firstInstallTime) < Constants.ONE_HOUR_IN_MILLIS,
-                        user = profile
+                        user = profile,
+                        category = AppCategorizer.categorize(
+                            context,
+                            prefs,
+                            app.applicationInfo.packageName,
+                            app.label.toString(),
+                            app.applicationInfo.category,
+                        ),
                     )
 
                     // if the current app is not OLauncher
@@ -125,7 +117,7 @@ suspend fun getAppsList(
                 appList.addAll(pinned)
             }
 
-            appList.sortWith(compareBy(collator) { it.appLabel })
+            AppCategorizer.sortForNow(context, appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -162,7 +154,13 @@ private suspend fun getPinnedShortcuts(
                                     appPackage = shortcut.`package`,
                                     shortcutId = shortcut.id,
                                     isNew = false,
-                                    user = profile
+                                    user = profile,
+                                    category = AppCategorizer.categorize(
+                                        context,
+                                        prefs,
+                                        shortcut.`package`,
+                                        label,
+                                    ),
                                 )
                             )
                         }
@@ -245,11 +243,18 @@ suspend fun getPrivateSpaceApps(
                         appPackage = app.applicationInfo.packageName,
                         activityClassName = app.componentName.className,
                         isNew = false,
-                        user = privateSpaceHandle
+                        user = privateSpaceHandle,
+                        category = AppCategorizer.categorize(
+                            context,
+                            prefs,
+                            app.applicationInfo.packageName,
+                            app.label.toString(),
+                            app.applicationInfo.category,
+                        ),
                     )
                 )
             }
-            appList.sortWith(compareBy(collator) { it.appLabel })
+            AppCategorizer.sortByCategory(appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -332,131 +337,6 @@ fun openAppInfo(context: Context, userHandle: UserHandle, packageName: String) {
         context.showToast(context.getString(R.string.unable_to_open_app_info))
 }
 
-suspend fun getBitmapFromURL(src: String?): Bitmap? {
-    return withContext(Dispatchers.IO) {
-        var bitmap: Bitmap? = null
-        try {
-            val url = URL(src)
-            val connection: HttpURLConnection = url
-                .openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-            val input: InputStream = connection.inputStream
-            bitmap = BitmapFactory.decodeStream(input)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        bitmap
-    }
-}
-
-suspend fun getWallpaperBitmap(originalImage: Bitmap, width: Int, height: Int): Bitmap {
-    return withContext(Dispatchers.IO) {
-
-        val background = createBitmap(width, height)
-
-        val originalWidth: Float = originalImage.width.toFloat()
-        val originalHeight: Float = originalImage.height.toFloat()
-
-        val canvas = Canvas(background)
-        val heightScale: Float = height / originalHeight
-        val widthScale: Float = width / originalWidth
-        val scale = maxOf(heightScale, widthScale)
-
-        val (xTranslation, yTranslation) = if (heightScale > widthScale)
-            Pair((width - originalWidth * heightScale) / 2.0f, 0f)
-        else
-            Pair(0f, (height - originalHeight * widthScale) / 2.0f)
-
-        val transformation = Matrix()
-        transformation.postTranslate(xTranslation, yTranslation)
-        transformation.preScale(scale, scale)
-
-        val paint = Paint()
-        paint.isFilterBitmap = true
-        canvas.drawBitmap(originalImage, transformation, paint)
-
-        background
-    }
-}
-
-suspend fun setWallpaper(appContext: Context, url: String): Boolean {
-    return withContext(Dispatchers.IO) {
-        val originalImageBitmap = getBitmapFromURL(url) ?: return@withContext false
-        if (appContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && isTablet(appContext).not())
-            return@withContext false
-
-        val wallpaperManager = WallpaperManager.getInstance(appContext)
-        val (width, height) = getScreenDimensions(appContext)
-        val scaledBitmap = getWallpaperBitmap(originalImageBitmap, width, height)
-
-        try {
-            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_SYSTEM)
-            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_LOCK)
-        } catch (e: Exception) {
-            return@withContext false
-        }
-
-        try {
-            originalImageBitmap.recycle()
-            scaledBitmap.recycle()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        true
-    }
-}
-
-fun getScreenDimensions(context: Context): Pair<Int, Int> {
-    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    val point = Point()
-    windowManager.defaultDisplay.getRealSize(point)
-    return Pair(point.x, point.y)
-}
-
-suspend fun getTodaysWallpaper(wallType: String, firstOpenTime: Long): String {
-    return withContext(Dispatchers.IO) {
-        var wallpaperUrl: String
-        try {
-            val key = if (firstOpenTime.isDaySince() < 10)
-                String.format("0_%s", firstOpenTime.isDaySince().toString())
-            else {
-                val month = SimpleDateFormat("M", Locale.ENGLISH).format(Date()) ?: "0"
-                val day = SimpleDateFormat("d", Locale.ENGLISH).format(Date()) ?: "0"
-                String.format("%s_%s", month, day)
-            }
-
-            val url = URL(Constants.URL_WALLPAPERS)
-            val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-
-            val inputStream = connection.inputStream
-            val scanner = Scanner(inputStream)
-            val stringBuffer = StringBuffer()
-            while (scanner.hasNext()) {
-                stringBuffer.append(scanner.nextLine())
-            }
-
-            val json = JSONObject(stringBuffer.toString())
-            val wallpapers = json.getString(key)
-            val wallpapersJson = JSONObject(wallpapers)
-            wallpaperUrl = wallpapersJson.getString(wallType)
-            wallpaperUrl
-
-        } catch (e: Exception) {
-            wallpaperUrl = getBackupWallpaper(wallType)
-            wallpaperUrl
-        }
-    }
-}
-
-fun getBackupWallpaper(wallType: String): String {
-    return if (wallType == Constants.WALL_TYPE_LIGHT)
-        Constants.URL_DEFAULT_LIGHT_WALLPAPER
-    else Constants.URL_DEFAULT_DARK_WALLPAPER
-}
-
 fun openSearch(context: Context) {
     val intent = Intent(Intent.ACTION_WEB_SEARCH)
     intent.putExtra(SearchManager.QUERY, "")
@@ -503,6 +383,7 @@ fun openAlarmApp(context: Context) {
     }
 }
 
+@SuppressLint("UnsafeImplicitIntentLaunch")
 fun openCalendar(context: Context) {
     try {
         val calendarUri = CalendarContract.CONTENT_URI
@@ -608,30 +489,6 @@ fun View.animateAlpha(alpha: Float = 1.0f) {
         alpha(alpha)
         start()
     }
-}
-
-fun Context.shareApp() {
-    val message = getString(R.string.are_you_using_your_phone_or_is_your_phone_using_you) +
-            "\n" + Constants.URL_OLAUNCHER_PLAY_STORE
-    val sendIntent: Intent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, message)
-        type = "text/plain"
-    }
-
-    val shareIntent = Intent.createChooser(sendIntent, null)
-    startActivity(shareIntent)
-}
-
-fun Context.rateApp() {
-    val intent = Intent(
-        Intent.ACTION_VIEW,
-        Constants.URL_OLAUNCHER_PLAY_STORE.toUri()
-    )
-    var flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-    flags = flags or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-    intent.addFlags(flags)
-    startActivity(intent)
 }
 
 @RequiresApi(Build.VERSION_CODES.N_MR1)

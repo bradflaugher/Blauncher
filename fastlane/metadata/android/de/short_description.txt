@@ -1,1 +1,1 @@
-Minimalistischer Launcher zur Reduzierung Ihrer Bildschirmzeit
+Blauncher: persoenlicher minimalistischer Android-Launcher-Fork ohne Werbung

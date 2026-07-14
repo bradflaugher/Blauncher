@@ -38,6 +38,16 @@
             app:theme="@style/AppSearchText" />
 
         <TextView
+            android:id="@+id/recategorize"
+            style="@style/TextSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="10dp"
+            android:text="@string/recategorize"
+            android:textAllCaps="true" />
+
+        <TextView
             android:id="@+id/appRename"
             style="@style/TextSmall"
             android:layout_width="wrap_content"

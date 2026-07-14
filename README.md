@@ -1,34 +1,75 @@
-![Olauncher](https://repository-images.githubusercontent.com/278638069/db0acb80-661b-11eb-803e-926cae5dccb4)
+# Blauncher
 
+Blauncher is a personal hard fork of Olauncher. It is maintained for a focused,
+private Android launcher setup rather than as an official Olauncher release.
 
-# Olauncher | Minimal AF Launcher
-AF stands for Ad-Free
+## Focus
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/app.olauncher)
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-    alt="Get it on Play Store"
-    height="80">](https://play.google.com/store/apps/details?id=app.olauncher)
+- Local, private app categorization.
+- Time-based app ranking calculated from usage information on the device.
+- A minimal launcher experience without a remote account or synchronization.
+- Android 16 only: the minimum, target, and compile SDK are all API 36.
 
-### Install using [F-Droid](https://f-droid.org/packages/app.olauncher), [Play Store](https://play.google.com/store/apps/details?id=app.olauncher) or the [latest APK](https://github.com/tanujnotes/Olauncher/releases/).
+Usage access is required for time-based ranking. Categorization and ranking data
+stay on the device.
 
-- To maintain the simplicity of the launcher, a few niche features are available but hidden.
+The application ID is `com.bradflaugher.blauncher`. The inherited source and
+namespace remain under `app.olauncher`.
 
-- Please check out the **[About](https://tanujnotes.substack.com/p/olauncher-minimal-af-launcher?utm_source=github)** page in the Olauncher settings for a complete list of features and **FAQs**.
+## Build
 
-##
+Install JDK 17 and Android SDK Platform 36, then run:
 
-License: [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+```sh
+./gradlew lint test assembleDebug
+```
 
-Dev: [X/twitter](https://x.com/tanujnotes) • [Bluesky](https://bsky.app/profile/tanujnotes.bsky.social)
+An unsigned release build can be produced with:
 
-##
+```sh
+./gradlew assembleRelease
+```
 
-### My other apps:
+Local builds default to version code `1` and version name `1.0`. Override them
+for automated builds with `BLAUNCHER_VERSION_CODE` and
+`BLAUNCHER_VERSION_NAME`:
 
-- [Pro Launcher](https://play.google.com/store/apps/details?id=app.prolauncher) - Pro version of Olauncher with extra features like widgets, weather, folders, etc.
+```sh
+BLAUNCHER_VERSION_CODE=42 BLAUNCHER_VERSION_NAME=1.0.42 ./gradlew assembleRelease
+```
 
-- [Note to Self](https://play.google.com/store/apps/details?id=com.makenotetoself) - Free and [open source](https://github.com/jeerovan/ntsapp) notes app with chat like interface and end-to-end encryption.
+## Signed Releases
 
-- [Pentastic](https://play.google.com/store/apps/details?id=app.pentastic) - Minimal todo lists. Free and [open source](https://github.com/tanujnotes/Pentastic).
+Set all four signing variables before building a signed release:
+
+```sh
+export BLAUNCHER_KEYSTORE_PATH=/absolute/path/to/blauncher.jks
+export BLAUNCHER_STORE_PASSWORD=store-password
+export BLAUNCHER_KEY_ALIAS=key-alias
+export BLAUNCHER_KEY_PASSWORD=key-password
+./gradlew assembleRelease
+```
+
+Signing is all-or-nothing: a release is unsigned when none of these variables
+are set, and configuration fails when only some are set.
+
+Every push to `main` runs lint, tests, and a signed release build in GitHub
+Actions. It publishes a GitHub release tagged `build-<run_number>`. Configure
+these repository secrets:
+
+- `BLAUNCHER_KEYSTORE_BASE64`: the keystore encoded with base64.
+- `BLAUNCHER_STORE_PASSWORD`
+- `BLAUNCHER_KEY_ALIAS`
+- `BLAUNCHER_KEY_PASSWORD`
+
+Pull requests run the same checks and produce an unsigned release APK without
+publishing a GitHub release.
+
+## License And Attribution
+
+Blauncher is licensed under the GNU General Public License v3.0; see `LICENSE`.
+It is derived from Olauncher by Tanuj Notes:
+https://github.com/tanujnotes/Olauncher
+
+Modifications in this repository are part of the Blauncher hard fork and are
+not endorsed by the upstream project.

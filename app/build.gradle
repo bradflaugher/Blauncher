@@ -1,8 +1,26 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+def versionCodeFromEnvironment = System.getenv('BLAUNCHER_VERSION_CODE') ?: '1'
+if (!(versionCodeFromEnvironment ==~ /[1-9]\d*/)) {
+    throw new GradleException('BLAUNCHER_VERSION_CODE must be a positive integer')
+}
+
+def signingEnvironmentVariables = [
+        'BLAUNCHER_KEYSTORE_PATH',
+        'BLAUNCHER_STORE_PASSWORD',
+        'BLAUNCHER_KEY_ALIAS',
+        'BLAUNCHER_KEY_PASSWORD'
+]
+def configuredSigningVariables = signingEnvironmentVariables.findAll { System.getenv(it) }
+if (!configuredSigningVariables.isEmpty() && configuredSigningVariables.size() != signingEnvironmentVariables.size()) {
+    def missingSigningVariables = signingEnvironmentVariables - configuredSigningVariables
+    throw new GradleException("Release signing is partially configured. Missing: ${missingSigningVariables.join(', ')}")
+}
+def releaseSigningEnabled = configuredSigningVariables.size() == signingEnvironmentVariables.size()
+
 android {
-    compileSdk 35
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -14,20 +32,35 @@ android {
     }
 
     defaultConfig {
-        applicationId "app.olauncher"
-        minSdkVersion 24
-        targetSdkVersion 35
-        versionCode 109
-        versionName "v6.7.1"
+        applicationId "com.bradflaugher.blauncher"
+        minSdkVersion 36
+        targetSdkVersion 36
+        versionCode versionCodeFromEnvironment.toInteger()
+        versionName System.getenv('BLAUNCHER_VERSION_NAME') ?: "1.0"
+        resValue "string", "app_name", "Blauncher"
 
-        resourceConfigurations += ["en", "ar", "de", "es-rES", "es-rUS", "fr", "he", "hr", "hu", "in", "it", "ja", "nl", "pl", "pt-rBR", "ru-rRU", "sv", "tr", "uk", "zh"]
+        resourceConfigurations += ["en"]
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (releaseSigningEnabled) {
+            release {
+                storeFile file(System.getenv('BLAUNCHER_KEYSTORE_PATH'))
+                storePassword System.getenv('BLAUNCHER_STORE_PASSWORD')
+                keyAlias System.getenv('BLAUNCHER_KEY_ALIAS')
+                keyPassword System.getenv('BLAUNCHER_KEY_PASSWORD')
+            }
+        }
     }
 
     buildTypes {
         release {
             debuggable false
             minifyEnabled true
+            if (releaseSigningEnabled) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -57,9 +90,6 @@ dependencies {
 
     // Navigation
     implementation libs.navigation.fragment.ktx
-
-    // Work Manager
-    implementation libs.work.runtime.ktx
 
     //Material dependency
     implementation libs.material

@@ -18,8 +18,6 @@ class Prefs(context: Context) {
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val KEYBOARD_MESSAGE = "KEYBOARD_MESSAGE"
-    private val DAILY_WALLPAPER = "DAILY_WALLPAPER"
-    private val DAILY_WALLPAPER_URL = "DAILY_WALLPAPER_URL"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
@@ -42,6 +40,7 @@ class Prefs(context: Context) {
     private val SCREEN_TIME_LAST_UPDATED = "SCREEN_TIME_LAST_UPDATED"
     private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
     private val SHOWN_ON_DAY_OF_YEAR = "SHOWN_ON_DAY_OF_YEAR"
+    private val APP_CATEGORY_PREFIX = "APP_CATEGORY_"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -151,14 +150,6 @@ class Prefs(context: Context) {
     var keyboardMessageShown: Boolean
         get() = prefs.getBoolean(KEYBOARD_MESSAGE, false)
         set(value) = prefs.edit { putBoolean(KEYBOARD_MESSAGE, value).apply() }
-
-    var dailyWallpaper: Boolean
-        get() = prefs.getBoolean(DAILY_WALLPAPER, false)
-        set(value) = prefs.edit { putBoolean(DAILY_WALLPAPER, value).apply() }
-
-    var dailyWallpaperUrl: String
-        get() = prefs.getString(DAILY_WALLPAPER_URL, "").toString()
-        set(value) = prefs.edit { putString(DAILY_WALLPAPER_URL, value).apply() }
 
     var homeAppsNum: Int
         get() = prefs.getInt(HOME_APPS_NUM, 4)
@@ -644,4 +635,16 @@ class Prefs(context: Context) {
     fun getAppRenameLabel(appPackage: String): String = prefs.getString(appPackage, "").toString()
 
     fun setAppRenameLabel(appPackage: String, renameLabel: String) = prefs.edit { putString(appPackage, renameLabel) }
+
+    fun getAppCategory(appPackage: String): AppCategory? =
+        prefs.getString(APP_CATEGORY_PREFIX + appPackage, null)?.let {
+            runCatching { AppCategory.valueOf(it) }.getOrNull()
+        }
+
+    fun setAppCategory(appPackage: String, category: AppCategory) =
+        prefs.edit { putString(APP_CATEGORY_PREFIX + appPackage, category.name) }
+
+    fun clearAppCategories() = prefs.edit {
+        prefs.all.keys.filter { it.startsWith(APP_CATEGORY_PREFIX) }.forEach(::remove)
+    }
 }

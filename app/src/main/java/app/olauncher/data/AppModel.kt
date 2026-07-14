@@ -9,6 +9,7 @@ sealed class AppModel : Comparable<AppModel> {
     abstract val appPackage: String
     abstract val user: UserHandle
     abstract val isNew: Boolean
+    abstract val category: AppCategory?
 
     data class App(
         override val appLabel: String,
@@ -17,6 +18,7 @@ sealed class AppModel : Comparable<AppModel> {
         val activityClassName: String?,
         override val isNew: Boolean = false,
         override val user: UserHandle,
+        override val category: AppCategory = AppCategory.OTHER,
     ) : AppModel()
 
     data class PinnedShortcut(
@@ -26,7 +28,18 @@ sealed class AppModel : Comparable<AppModel> {
         val shortcutId: String,
         override val isNew: Boolean = false,
         override val user: UserHandle,
+        override val category: AppCategory = AppCategory.OTHER,
     ) : AppModel()
+
+    data class CategoryHeader(
+        override val category: AppCategory,
+        override val user: UserHandle = android.os.Process.myUserHandle(),
+    ) : AppModel() {
+        override val appLabel: String = category.displayName
+        override val key: CollationKey? = null
+        override val appPackage: String = ""
+        override val isNew: Boolean = false
+    }
 
     data class PrivateSpaceHeader(
         val isLocked: Boolean = true,
@@ -36,6 +49,7 @@ sealed class AppModel : Comparable<AppModel> {
         override val key: CollationKey? = null
         override val appPackage: String = ""
         override val isNew: Boolean = false
+        override val category: AppCategory? = null
     }
 
     override fun compareTo(other: AppModel): Int = when {
