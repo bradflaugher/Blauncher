@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_rect_shade_color"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="16dp">
+
+    <TextView
+        style="@style/TextLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/daily_routine"
+        android:textColor="?attr/primaryColor" />
+
+    <TextView
+        style="@style/TextSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:alpha="0.65"
+        android:text="@string/daily_routine_summary" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_reading" />
+        <TextView android:id="@+id/readingTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_commute" />
+        <TextView android:id="@+id/commuteTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_work" />
+        <TextView android:id="@+id/workTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_fitness" />
+        <TextView android:id="@+id/fitnessTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_family" />
+        <TextView android:id="@+id/familyTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_evening" />
+        <TextView android:id="@+id/eveningTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+</LinearLayout>

@@ -2,9 +2,7 @@ package app.olauncher.ui
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.LauncherApps
-import android.content.res.Configuration
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
@@ -13,14 +11,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -31,8 +25,6 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
-import app.olauncher.helper.appUsagePermissionGranted
-import app.olauncher.helper.dpToPx
 import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.isPackageInstalled
@@ -93,8 +85,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             R.id.clock -> openClockApp()
             R.id.date -> openCalendarApp()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
-            R.id.tvScreenTime -> openScreenTimeDigitalWellbeing()
-
             else -> {
                 try { // Launch app
                     val appLocation = view.tag.toString().toInt()
@@ -154,13 +144,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 prefs.calendarAppUser = ""
             }
 
-            R.id.tvScreenTime -> {
-                showAppList(Constants.FLAG_SET_SCREEN_TIME_APP)
-                prefs.screenTimeAppPackage = ""
-                prefs.screenTimeAppClassName = ""
-                prefs.screenTimeAppUser = ""
-            }
-
             R.id.setDefaultLauncher -> {
                 prefs.hideSetDefaultLauncher = true
                 binding.setDefaultLauncher.visibility = View.GONE
@@ -196,9 +179,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         viewModel.toggleDateTime.observe(viewLifecycleOwner) {
             populateDateTime()
         }
-        viewModel.screenTimeValue.observe(viewLifecycleOwner) {
-            it?.let { binding.tvScreenTime.text = it }
-        }
         // Home button for recents feature disabled
         // viewModel.showRecentApps.observe(viewLifecycleOwner) {
         //     binding.recents.performClick()
@@ -228,8 +208,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.date.setOnLongClickListener(this)
         binding.setDefaultLauncher.setOnClickListener(this)
         binding.setDefaultLauncher.setOnLongClickListener(this)
-        binding.tvScreenTime.setOnClickListener(this)
-        binding.tvScreenTime.setOnLongClickListener(this)
     }
 
     private fun setHomeAlignment(horizontalGravity: Int = prefs.homeAlignment) {
@@ -264,39 +242,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.date.text = dateText.replace(".,", ",")
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun populateScreenTime() {
-        if (requireContext().appUsagePermissionGranted().not()) return
-
-        viewModel.getTodaysScreenTime()
-        binding.tvScreenTime.visibility = View.VISIBLE
-
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val horizontalMargin = if (isLandscape) 64.dpToPx() else 10.dpToPx()
-        val marginTop = if (isLandscape) {
-            if (prefs.dateTimeVisibility == Constants.DateTime.DATE_ONLY) 36.dpToPx() else 56.dpToPx()
-        } else {
-            if (prefs.dateTimeVisibility == Constants.DateTime.DATE_ONLY) 45.dpToPx() else 72.dpToPx()
-        }
-        val params = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            topMargin = marginTop
-            marginStart = horizontalMargin
-            marginEnd = horizontalMargin
-            gravity = if (prefs.homeAlignment == Gravity.END) Gravity.START else Gravity.END
-        }
-        binding.tvScreenTime.layoutParams = params
-        binding.tvScreenTime.setPadding(10.dpToPx())
-    }
-
     private fun populateHomeScreen(appCountUpdated: Boolean) {
         if (appCountUpdated) hideHomeApps()
         populateDateTime()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            populateScreenTime()
 
         val homeAppsNum = prefs.homeAppsNum
         if (homeAppsNum == 0) return
@@ -571,37 +519,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             @Suppress("DEPRECATION")
             requireActivity().window.decorView.apply {
                 systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_FULLSCREEN
-            }
-        }
-    }
-
-    private fun openScreenTimeDigitalWellbeing() {
-        if (prefs.screenTimeAppPackage.isNotBlank()) {
-            launchApp(
-                "Screen Time",
-                prefs.screenTimeAppPackage,
-                prefs.screenTimeAppClassName,
-                prefs.screenTimeAppUser
-            )
-            return
-        }
-        val intent = Intent()
-        try {
-            intent.setClassName(
-                Constants.DIGITAL_WELLBEING_PACKAGE_NAME,
-                Constants.DIGITAL_WELLBEING_ACTIVITY
-            )
-            startActivity(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            try {
-                intent.setClassName(
-                    Constants.DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME,
-                    Constants.DIGITAL_WELLBEING_SAMSUNG_ACTIVITY
-                )
-                startActivity(intent)
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
     }

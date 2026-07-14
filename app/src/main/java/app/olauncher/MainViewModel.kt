@@ -15,18 +15,14 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.helper.SingleLiveEvent
-import app.olauncher.helper.formattedTimeSpent
 import app.olauncher.helper.getAppsList
 import app.olauncher.helper.getPrivateSpaceApps
 import app.olauncher.helper.getPrivateSpaceUserHandle
-import app.olauncher.helper.hasBeenMinutes
 import app.olauncher.helper.isOlauncherDefault
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.isPrivateSpaceLocked
 import app.olauncher.helper.showToast
-import app.olauncher.helper.usageStats.EventLogWrapper
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -42,8 +38,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isOlauncherDefault = MutableLiveData<Boolean>()
     val launcherResetFailed = MutableLiveData<Boolean>()
     val homeAppAlignment = MutableLiveData<Int>()
-    val screenTimeValue = MutableLiveData<String>()
-
     val privateSpaceApps = MutableLiveData<List<AppModel>?>()
     val privateSpaceLocked = MutableLiveData<Boolean>()
     val privateSpaceAvailable = MutableLiveData<Boolean>()
@@ -89,7 +83,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             Constants.FLAG_SET_SWIPE_RIGHT_APP -> saveSwipeApp(appModel, isLeft = false)
             Constants.FLAG_SET_CLOCK_APP -> saveClockApp(appModel)
             Constants.FLAG_SET_CALENDAR_APP -> saveCalendarApp(appModel)
-            Constants.FLAG_SET_SCREEN_TIME_APP -> saveScreenTimeApp(appModel)
         }
     }
 
@@ -322,14 +315,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun saveScreenTimeApp(appModel: AppModel) {
-        if (appModel is AppModel.App) {
-            prefs.screenTimeAppPackage = appModel.appPackage
-            prefs.screenTimeAppUser = appModel.user.toString()
-            prefs.screenTimeAppClassName = appModel.activityClassName
-        }
-    }
-
     fun firstOpen(value: Boolean) {
         firstOpen.postValue(value)
     }
@@ -402,32 +387,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateHomeAlignment(gravity: Int) {
         prefs.homeAlignment = gravity
         homeAppAlignment.value = prefs.homeAlignment
-    }
-
-    fun getTodaysScreenTime() {
-        if (prefs.screenTimeLastUpdated.hasBeenMinutes(1).not()) return
-
-        val eventLogWrapper = EventLogWrapper(
-            appContext
-        )
-        // Start of today in millis
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val startTime = calendar.timeInMillis
-        val endTime = System.currentTimeMillis()
-
-        val timeSpent = eventLogWrapper.aggregateSimpleUsageStats(
-            eventLogWrapper.aggregateForegroundStats(
-                eventLogWrapper.getForegroundStatsByTimestamps(startTime, endTime)
-            )
-        )
-        val viewTimeSpent = appContext.formattedTimeSpent(timeSpent)
-        screenTimeValue.postValue(viewTimeSpent)
-        prefs.screenTimeLastUpdated = endTime
     }
 
     fun getPrivateSpaceAppList() {

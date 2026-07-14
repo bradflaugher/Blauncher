@@ -15,22 +15,17 @@
     <string name="tag_6" translatable="false">6</string>
     <string name="tag_7" translatable="false">7</string>
     <string name="tag_8" translatable="false">8</string>
-    <string name="time_spent_min" translatable="false"><b>%1$sm</b></string>
-    <string name="time_spent_hour" translatable="false">%1$sh %2$sm</string>
 
     <string name="app">App</string>
     <string name="set_as_default_launcher">Set as default launcher</string>
     <string name="set_as_default_launcher_u"><u>Set as default launcher</u></string>
     <string name="set_as_default_launcher_first">Set Blauncher default first</string>
-    <string name="app_text_color">Text color</string>
     <string name="double_tap_to_lock_screen">Double tap to lock</string>
     <string name="home_button_show_recents">Home button for recents</string>
     <string name="admin_permission_message">Blauncher uses the accessibility permission only for the requested gesture. Blauncher does not collect or share any data.</string>
     <string name="about">About</string>
     <string name="off">Off</string>
     <string name="on">On</string>
-    <string name="black">Black</string>
-    <string name="white">White</string>
     <string name="change_default_launcher">Change default launcher</string>
     <string name="privacy">Privacy</string>
     <string name="share">Share</string>
@@ -75,9 +70,6 @@
     <string name="rate_us_message">Blauncher</string>
     <string name="keyboard_message">Hi, keyboard is the fastest way to find and launch apps in Blauncher. Can we request you to keep this On for a few more days and then decide?
         \n\nThe choice is always yours.</string>
-    <string name="digital_wellbeing_message">If you want to set time limits for certain apps, Digital Wellbeing feature of Android can help you do it.           Please search for Digital Wellbeing in your phone settings and enable it.</string>
-    <string name="app_usage_message">To show/hide your screen time on the home screen, please allow or disallow the app usage permission.
-        \n\nNote: No app usage data is collected. Everything is processed on your device.</string>
     <string name="accessibility_service_description">The accessibility permission is required to enable double tap to lock. Any data acquired by Blauncher via this service will not leave your device.</string>
     <string name="open">Open link</string>
     <string name="copy">Copy</string>
@@ -98,7 +90,6 @@
     <string name="accessibility_disclosure">Please turn on Blauncher\'s accessibility service in your device\'s settings to enable the double tap to lock gesture.
     \n\nPlease note that this service is only used for this particular feature. Our accessibility service does not collect or share any data.</string>
     <string name="accept">Accept</string>
-    <string name="permission">Permission</string>
     <string name="double_tap_lock">Double tap to lock</string>
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
@@ -127,10 +118,6 @@
     <string name="hidden_apps">Hidden apps</string>
     <string name="adapter_show">Show</string>
     <string name="adapter_hide">Hide</string>
-    <string name="are_you_using_your_phone_or_is_your_phone_using_you">Are you using your phone, or is your phone using you?</string>
-    <string name="screen_time">Screen time</string>
-    <string name="learn_more">Learn more</string>
-    <string name="did_you_know">Did you know?</string>
     <string name="alignment_changed">Alignment changed ✅</string>
     <string name="home_screen">Home screen</string>
     <string name="hey">Hey</string>
@@ -141,4 +128,15 @@
     <string name="private_space">Private space</string>
     <string name="recategorize">Refresh</string>
     <string name="categories_refreshed">App categories refreshed</string>
+    <string name="daily_routine">Daily routine</string>
+    <string name="daily_routine_summary">Tap a time to tune contextual app ordering. Fitness lasts two hours, then Work resumes.</string>
+    <string name="routine_reading">Early reading</string>
+    <string name="routine_commute">Morning commute</string>
+    <string name="routine_work">Work</string>
+    <string name="routine_fitness">Tennis &amp; fitness</string>
+    <string name="routine_family">Family time</string>
+    <string name="routine_evening">Books &amp; audiobooks</string>
+    <string name="automatic">Automatic</string>
+    <string name="category">Group</string>
+    <string name="choose_category">Choose group</string>
 </resources>

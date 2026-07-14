@@ -13,6 +13,10 @@ import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -27,6 +31,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentAppDrawerBinding
 import app.olauncher.helper.deletePinnedShortcut
+import app.olauncher.helper.AppCategorizer
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isSystemApp
@@ -81,11 +86,20 @@ class AppDrawerFragment : Fragment() {
     }
 
     private fun initViews() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
+            val safe = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            root.setPadding(safe.left, safe.top, safe.right, maxOf(safe.bottom, ime.bottom))
+            insets
+        }
         if (flag == Constants.FLAG_HIDDEN_APPS)
             binding.search.queryHint = getString(R.string.hidden_apps)
         else if (flag in Constants.FLAG_SET_HOME_APP_1..Constants.FLAG_SET_CALENDAR_APP)
             binding.search.queryHint = "Please select an app"
         binding.recategorize.visibility = if (flag == Constants.FLAG_LAUNCH_APP) View.VISIBLE else View.GONE
+        updateRoutineLabel()
         try {
             searchTextView = binding.search.findViewById(R.id.search_src_text)
             searchTextView?.gravity = prefs.appLabelAlignment
@@ -112,6 +126,7 @@ class AppDrawerFragment : Fragment() {
                     adapter.filter.filter(newText)
                     binding.appRename.visibility =
                         if (canRename && newText.isNotBlank()) View.VISIBLE else View.GONE
+                    binding.routineLabel.isVisible = flag == Constants.FLAG_LAUNCH_APP && newText.isBlank()
                     return true
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -226,6 +241,7 @@ class AppDrawerFragment : Fragment() {
                 prefs.setAppRenameLabel(identifier, renameLabel)
                 viewModel.getAppList()
             },
+            appCategoryListener = { appModel -> showCategoryChooser(appModel) },
             privateSpaceToggleListener = {
                 viewModel.togglePrivateSpaceLock()
             },
@@ -328,7 +344,6 @@ class AppDrawerFragment : Fragment() {
 
     private fun initClickListeners() {
         binding.recategorize.setOnClickListener {
-            prefs.clearAppCategories()
             viewModel.getAppList()
             requireContext().showToast(R.string.categories_refreshed)
         }
@@ -352,6 +367,27 @@ class AppDrawerFragment : Fragment() {
             }
             findNavController().popBackStack()
         }
+    }
+
+    private fun showCategoryChooser(appModel: AppModel) {
+        binding.search.hideKeyboard()
+        val categories = AppCategory.entries
+        val labels = listOf(getString(R.string.automatic)) + categories.map { it.displayName }
+        val selected = prefs.getAppCategoryOverride(appModel.appPackage)?.ordinal?.plus(1) ?: 0
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.choose_category)
+            .setSingleChoiceItems(labels.toTypedArray(), selected) { dialog, which ->
+                if (which == 0) prefs.clearAppCategoryOverride(appModel.appPackage)
+                else prefs.setAppCategoryOverride(appModel.appPackage, categories[which - 1])
+                dialog.dismiss()
+                viewModel.getAppList()
+            }
+            .setNegativeButton(R.string.close, null)
+            .create()
+        dialog.setOnDismissListener {
+            _binding?.search?.showKeyboard(prefs.autoShowKeyboard)
+        }
+        dialog.show()
     }
 
     private fun getRecyclerViewOnScrollListener(): RecyclerView.OnScrollListener {
@@ -390,7 +426,14 @@ class AppDrawerFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         cachedIsCjkKeyboard = null
+        updateRoutineLabel()
+        if (flag == Constants.FLAG_LAUNCH_APP) viewModel.getAppList()
         binding.search.showKeyboard(prefs.autoShowKeyboard)
+    }
+
+    private fun updateRoutineLabel() {
+        binding.routineLabel.isVisible = flag == Constants.FLAG_LAUNCH_APP && binding.search.query.isBlank()
+        binding.routineLabel.text = AppCategorizer.currentRoutine(prefs).displayName
     }
 
     override fun onStop() {

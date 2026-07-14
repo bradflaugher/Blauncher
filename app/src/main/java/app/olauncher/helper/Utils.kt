@@ -2,7 +2,6 @@ package app.olauncher.helper
 
 import android.annotation.SuppressLint
 import android.app.SearchManager
-import android.app.WallpaperManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -30,7 +29,6 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.graphics.createBitmap
 import app.olauncher.BuildConfig
 import app.olauncher.R
 import app.olauncher.data.AppModel
@@ -117,7 +115,7 @@ suspend fun getAppsList(
                 appList.addAll(pinned)
             }
 
-            AppCategorizer.sortForNow(appList)
+            AppCategorizer.sortForNow(prefs, appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -254,7 +252,7 @@ suspend fun getPrivateSpaceApps(
                     )
                 )
             }
-            AppCategorizer.sortByCategory(appList)
+            AppCategorizer.sortByCategory(prefs, appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -286,34 +284,6 @@ fun getDefaultLauncherPackage(context: Context): String {
     return if (result?.activityInfo != null) {
         result.activityInfo.packageName
     } else "android"
-}
-
-fun setPlainWallpaperByTheme(context: Context, appTheme: Int) {
-    when (appTheme) {
-        AppCompatDelegate.MODE_NIGHT_YES -> setPlainWallpaper(context, android.R.color.black)
-        AppCompatDelegate.MODE_NIGHT_NO -> setPlainWallpaper(context, android.R.color.white)
-        else -> {
-            if (context.isDarkThemeOn())
-                setPlainWallpaper(context, android.R.color.black)
-            else setPlainWallpaper(context, android.R.color.white)
-        }
-    }
-}
-
-fun setPlainWallpaper(context: Context, color: Int) {
-    try {
-        val bitmap = createBitmap(1000, 2000)
-        bitmap.eraseColor(context.getColor(color))
-        val manager = WallpaperManager.getInstance(context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            manager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_SYSTEM)
-            manager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
-        } else
-            manager.setBitmap(bitmap)
-        bitmap.recycle()
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
 }
 
 fun getChangedAppTheme(context: Context, currentAppTheme: Int): Int {

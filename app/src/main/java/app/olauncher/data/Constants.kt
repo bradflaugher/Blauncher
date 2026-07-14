@@ -11,7 +11,6 @@ object Constants {
         const val ABOUT = "ABOUT"
         const val HIDDEN = "HIDDEN"
         const val KEYBOARD = "KEYBOARD"
-        const val DIGITAL_WELLBEING = "DIGITAL_WELLBEING"
     }
 
     object UserState {
@@ -49,9 +48,6 @@ object Constants {
         "com.miui.clock", //Xiaomi Clock
     )
 
-    const val WALL_TYPE_LIGHT = "light"
-    const val WALL_TYPE_DARK = "dark"
-
 //    const val THEME_MODE_DARK = 0
 //    const val THEME_MODE_LIGHT = 1
 //    const val THEME_MODE_SYSTEM = 2
@@ -72,23 +68,16 @@ object Constants {
     const val FLAG_SET_SWIPE_RIGHT_APP = 12
     const val FLAG_SET_CLOCK_APP = 13
     const val FLAG_SET_CALENDAR_APP = 14
-    const val FLAG_SET_SCREEN_TIME_APP = 15
 
     const val REQUEST_CODE_ENABLE_ADMIN = 666
     const val REQUEST_CODE_LAUNCHER_SELECTOR = 678
 
     const val LONG_PRESS_DELAY_MS = 500L
-    const val ONE_DAY_IN_MILLIS = 86400000L
     const val ONE_HOUR_IN_MILLIS = 3600000L
-    const val ONE_MINUTE_IN_MILLIS = 60000L
 
     const val MIN_ANIM_REFRESH_RATE = 30f
 
     const val URL_OLAUNCHER_GITHUB = "https://github.com/bradflaugher/Blauncher"
     const val URL_DUCK_SEARCH = "https://duck.co/?q="
 
-    const val DIGITAL_WELLBEING_PACKAGE_NAME = "com.google.android.apps.wellbeing"
-    const val DIGITAL_WELLBEING_ACTIVITY = "com.google.android.apps.wellbeing.settings.TopLevelSettingsActivity"
-    const val DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME = "com.samsung.android.forest"
-    const val DIGITAL_WELLBEING_SAMSUNG_ACTIVITY = "com.samsung.android.forest.launcher.LauncherActivity"
 }

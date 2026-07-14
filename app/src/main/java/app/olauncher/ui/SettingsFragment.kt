@@ -1,6 +1,7 @@
 package app.olauncher.ui
 
 import android.app.admin.DevicePolicyManager
+import android.app.TimePickerDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -8,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
+import android.text.format.DateFormat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +19,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -27,7 +31,6 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.animateAlpha
-import app.olauncher.helper.appUsagePermissionGranted
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isAccessServiceEnabled
 import app.olauncher.helper.isTablet
@@ -35,6 +38,7 @@ import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.showToast
 import app.olauncher.listener.DeviceAdmin
+import java.util.Calendar
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -53,6 +57,13 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         prefs = Prefs(requireContext())
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
+            val safe = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            root.setPadding(safe.left, safe.top, safe.right, safe.bottom)
+            insets
+        }
         viewModel = activity?.run {
             ViewModelProvider(this)[MainViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
@@ -64,7 +75,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
         binding.homeAppsNum.text = prefs.homeAppsNum.toString()
         populateKeyboardText()
-        populateScreenTimeOnOff()
         populateLockSettings()
         // Home button for recents feature disabled
         // populateHomeButtonRecents()
@@ -73,6 +83,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAlignment()
         populateStatusBar()
         populateDateTime()
+        populateRoutineTimes()
         populateSwipeApps()
         populateSwipeDownAction()
         initClickListeners()
@@ -95,7 +106,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
         when (view.id) {
             R.id.olauncherHiddenApps -> showHiddenApps()
-            R.id.screenTimeOnOff -> viewModel.showDialog.postValue(Constants.Dialog.DIGITAL_WELLBEING)
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
             R.id.toggleLock -> toggleLockMode()
@@ -175,7 +185,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
         binding.homeAppsNum.setOnClickListener(this)
-        binding.screenTimeOnOff.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
         binding.alignmentCenter.setOnClickListener(this)
@@ -199,6 +208,25 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.actionAccessibility.setOnClickListener(this)
         binding.closeAccessibility.setOnClickListener(this)
         binding.github.setOnClickListener(this)
+
+        binding.routineSettings.readingTime.setOnClickListener {
+            pickRoutineTime(prefs.routineReadingStart) { prefs.routineReadingStart = it }
+        }
+        binding.routineSettings.commuteTime.setOnClickListener {
+            pickRoutineTime(prefs.routineCommuteStart) { prefs.routineCommuteStart = it }
+        }
+        binding.routineSettings.workTime.setOnClickListener {
+            pickRoutineTime(prefs.routineWorkStart) { prefs.routineWorkStart = it }
+        }
+        binding.routineSettings.fitnessTime.setOnClickListener {
+            pickRoutineTime(prefs.routineFitnessStart) { prefs.routineFitnessStart = it }
+        }
+        binding.routineSettings.familyTime.setOnClickListener {
+            pickRoutineTime(prefs.routineFamilyStart) { prefs.routineFamilyStart = it }
+        }
+        binding.routineSettings.eveningTime.setOnClickListener {
+            pickRoutineTime(prefs.routineEveningStart) { prefs.routineEveningStart = it }
+        }
 
         binding.maxApps0.setOnClickListener(this)
         binding.maxApps1.setOnClickListener(this)
@@ -447,11 +475,35 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.textSizeCurrent.text = formatted
     }
 
-    private fun populateScreenTimeOnOff() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (requireContext().appUsagePermissionGranted()) binding.screenTimeOnOff.text = getString(R.string.on)
-            else binding.screenTimeOnOff.text = getString(R.string.off)
-        } else binding.screenTimeLayout.visibility = View.GONE
+    private fun pickRoutineTime(current: Int, save: (Int) -> Unit) {
+        TimePickerDialog(
+            requireContext(),
+            { _, hour, minute ->
+                save(hour * 60 + minute)
+                populateRoutineTimes()
+                viewModel.getAppList()
+            },
+            current / 60,
+            current % 60,
+            DateFormat.is24HourFormat(requireContext()),
+        ).show()
+    }
+
+    private fun populateRoutineTimes() = with(binding.routineSettings) {
+        readingTime.text = formatRoutineTime(prefs.routineReadingStart)
+        commuteTime.text = formatRoutineTime(prefs.routineCommuteStart)
+        workTime.text = formatRoutineTime(prefs.routineWorkStart)
+        fitnessTime.text = formatRoutineTime(prefs.routineFitnessStart)
+        familyTime.text = formatRoutineTime(prefs.routineFamilyStart)
+        eveningTime.text = formatRoutineTime(prefs.routineEveningStart)
+    }
+
+    private fun formatRoutineTime(minutes: Int): String {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, minutes / 60)
+            set(Calendar.MINUTE, minutes % 60)
+        }
+        return DateFormat.getTimeFormat(requireContext()).format(calendar.time)
     }
 
     private fun populateKeyboardText() {
@@ -532,12 +584,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         if (!prefs.swipeRightEnabled)
             binding.swipeRightApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
     }
-
-//    private fun populateDigitalWellbeing() {
-//        binding.digitalWellbeing.isVisible = requireContext().isPackageInstalled(Constants.DIGITAL_WELLBEING_PACKAGE_NAME).not()
-//                && requireContext().isPackageInstalled(Constants.DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME).not()
-//                && prefs.hideDigitalWellbeing.not()
-//    }
 
     private fun showAppListIfEnabled(flag: Int) {
         if ((flag == Constants.FLAG_SET_SWIPE_LEFT_APP) and !prefs.swipeLeftEnabled) {

@@ -12,12 +12,14 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
-import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import app.olauncher.data.Constants
@@ -63,6 +65,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val messagePadding = listOf(
+            binding.messageLayout.paddingLeft,
+            binding.messageLayout.paddingTop,
+            binding.messageLayout.paddingRight,
+            binding.messageLayout.paddingBottom,
+        )
+        ViewCompat.setOnApplyWindowInsetsListener(binding.messageLayout) { view, insets ->
+            val safe = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            view.setPadding(
+                messagePadding[0] + safe.left,
+                messagePadding[1] + safe.top,
+                messagePadding[2] + safe.right,
+                messagePadding[3] + safe.bottom,
+            )
+            insets
+        }
 
         navController = this.findNavController(R.id.nav_host_fragment)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
@@ -95,8 +116,6 @@ class MainActivity : AppCompatActivity() {
         initObservers(viewModel)
         viewModel.getAppList()
         setupOrientation()
-
-        window.addFlags(FLAG_LAYOUT_NO_LIMITS)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             profileReceiver = object : BroadcastReceiver() {
@@ -183,12 +202,6 @@ class MainActivity : AppCompatActivity() {
 
                 Constants.Dialog.KEYBOARD -> {
                     showMessageDialog(R.string.app_name, R.string.keyboard_message, R.string.okay) {
-                    }
-                }
-
-                Constants.Dialog.DIGITAL_WELLBEING -> {
-                    showMessageDialog(R.string.screen_time, R.string.app_usage_message, R.string.permission) {
-                        startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                     }
                 }
 
