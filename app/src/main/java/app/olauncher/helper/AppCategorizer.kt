@@ -1,19 +1,13 @@
 package app.olauncher.helper
 
-import android.app.usage.UsageEvents
-import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import app.olauncher.data.AppCategory
 import app.olauncher.data.AppModel
 import app.olauncher.data.Prefs
 import java.util.Calendar
-import kotlin.math.ln
 
 object AppCategorizer {
-    private const val HISTORY_DAYS = 21L
-    private const val TIME_BUCKET_HOURS = 4
-
     private val keywordCategories = linkedMapOf(
         AppCategory.COMMUNICATION to setOf(
             "chat", "discord", "email", "gmail", "mail", "meet", "message", "phone",
@@ -75,13 +69,12 @@ object AppCategorizer {
         return category
     }
 
-    fun sortForNow(context: Context, apps: MutableList<AppModel>) {
+    fun sortForNow(apps: MutableList<AppModel>) {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val categoryOrder = categoryOrder(hour).withIndex().associate { it.value to it.index }
-        val launches = launchesInCurrentTimeBucket(context, hour)
         apps.sortWith(
             compareBy<AppModel> { categoryOrder[it.category] ?: Int.MAX_VALUE }
-                .thenByDescending { contextualScore(it, hour, launches) }
+                .thenByDescending { routineScore(it, hour) }
                 .thenBy(String.CASE_INSENSITIVE_ORDER) { it.appLabel }
         )
     }
@@ -96,20 +89,28 @@ object AppCategorizer {
     }
 
     fun categoryOrder(hour: Int): List<AppCategory> = (when (hour) {
-        in 5..8 -> listOf(
-            AppCategory.HEALTH, AppCategory.PRODUCTIVITY, AppCategory.TRAVEL,
-            AppCategory.COMMUNICATION, AppCategory.MEDIA
+        in 5..6 -> listOf(
+            AppCategory.MEDIA, AppCategory.PRODUCTIVITY, AppCategory.HEALTH,
+            AppCategory.COMMUNICATION, AppCategory.TOOLS
         )
-        in 9..16 -> listOf(
+        in 7..8 -> listOf(
+            AppCategory.TRAVEL, AppCategory.MEDIA, AppCategory.COMMUNICATION,
+            AppCategory.PRODUCTIVITY, AppCategory.TOOLS
+        )
+        in 9..11, in 14..16 -> listOf(
             AppCategory.PRODUCTIVITY, AppCategory.COMMUNICATION, AppCategory.FINANCE,
             AppCategory.TOOLS, AppCategory.TRAVEL
         )
-        in 17..21 -> listOf(
+        in 12..13 -> listOf(
+            AppCategory.HEALTH, AppCategory.TRAVEL, AppCategory.COMMUNICATION,
+            AppCategory.MEDIA, AppCategory.PRODUCTIVITY
+        )
+        in 17..19 -> listOf(
             AppCategory.COMMUNICATION, AppCategory.MEDIA, AppCategory.SHOPPING,
-            AppCategory.HEALTH, AppCategory.GAMES
+            AppCategory.TRAVEL, AppCategory.HEALTH
         )
         else -> listOf(
-            AppCategory.MEDIA, AppCategory.COMMUNICATION, AppCategory.GAMES,
+            AppCategory.MEDIA, AppCategory.COMMUNICATION, AppCategory.HEALTH,
             AppCategory.TOOLS, AppCategory.PRODUCTIVITY
         )
     } + AppCategory.entries).distinct()
@@ -121,36 +122,27 @@ object AppCategorizer {
         }?.key ?: AppCategory.OTHER
     }
 
-    private fun contextualScore(
-        app: AppModel,
-        hour: Int,
-        launches: Map<String, Int>,
-    ): Double {
-        val learnedScore = ln((launches[app.appPackage] ?: 0) + 1.0) * 20.0
-        return learnedScore
-    }
-
-    private fun launchesInCurrentTimeBucket(context: Context, currentHour: Int): Map<String, Int> {
-        if (!context.appUsagePermissionGranted()) return emptyMap()
-        return try {
-            val now = System.currentTimeMillis()
-            val events = context.getSystemService(UsageStatsManager::class.java)
-                .queryEvents(now - HISTORY_DAYS * 24 * 60 * 60 * 1000, now)
-            val event = UsageEvents.Event()
-            val counts = mutableMapOf<String, Int>()
-            val calendar = Calendar.getInstance()
-            val currentBucket = currentHour / TIME_BUCKET_HOURS
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event)
-                if (event.eventType != UsageEvents.Event.ACTIVITY_RESUMED) continue
-                calendar.timeInMillis = event.timeStamp
-                if (calendar.get(Calendar.HOUR_OF_DAY) / TIME_BUCKET_HOURS == currentBucket) {
-                    counts[event.packageName] = (counts[event.packageName] ?: 0) + 1
-                }
-            }
-            counts
-        } catch (_: Exception) {
-            emptyMap()
+    private fun routineScore(app: AppModel, hour: Int): Int {
+        val text = "${app.appPackage} ${app.appLabel}".lowercase()
+        val priorities = when (hour) {
+            in 5..6 -> listOf("kindle", "book", "read", "news", "reader", "pocket")
+            in 7..8 -> listOf(
+                "maps", "transit", "train", "uber", "audiobook", "audible", "podcast", "music"
+            )
+            in 9..11, in 14..16 -> listOf(
+                "calendar", "mail", "slack", "teams", "docs", "drive", "notes", "task", "work"
+            )
+            in 12..13 -> listOf(
+                "tennis", "court", "fitness", "fit", "workout", "health", "maps", "calendar"
+            )
+            in 17..19 -> listOf(
+                "family", "message", "phone", "camera", "photo", "calendar", "food", "delivery"
+            )
+            else -> listOf(
+                "audiobook", "audible", "kindle", "book", "read", "reader", "pocket", "podcast"
+            )
         }
+        val match = priorities.indexOfFirst { text.contains(it) }
+        return if (match == -1) 0 else priorities.size - match
     }
 }

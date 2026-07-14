@@ -6,12 +6,13 @@ private Android launcher setup rather than as an official Olauncher release.
 ## Focus
 
 - Local, private app categorization.
-- Time-based app ranking calculated from usage information on the device.
+- Time-aware app ranking based on a fixed daily routine and app-name hints.
 - A minimal launcher experience without a remote account or synchronization.
 - Android 16 only: the minimum, target, and compile SDK are all API 36.
 
-Usage access is required for time-based ranking. Categorization and ranking data
-stay on the device.
+Ranking never reads or stores launch history. It guesses likely activities from
+the current hour: early reading, morning commute, work blocks, noon fitness,
+family time, and evening books or audiobooks.
 
 The application ID is `com.bradflaugher.blauncher`. The inherited source and
 namespace remain under `app.olauncher`.

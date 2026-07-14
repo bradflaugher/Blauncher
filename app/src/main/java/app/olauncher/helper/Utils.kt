@@ -117,7 +117,7 @@ suspend fun getAppsList(
                 appList.addAll(pinned)
             }
 
-            AppCategorizer.sortForNow(context, appList)
+            AppCategorizer.sortForNow(appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
