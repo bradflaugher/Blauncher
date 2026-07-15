@@ -102,15 +102,20 @@ object AppCategorizer {
         declaredCategory: Int,
     ): AppCategory {
         val scores = mutableMapOf<AppCategory, Int>()
-        androidCategory(declaredCategory)?.let { scores[it] = 1 }
-        val normalized = normalizeText("$packageName $label")
+        val normalizedPackage = normalizeText(packageName)
+        val normalizedLabel = normalizeText(label)
         semanticTerms.forEach { (category, terms) ->
             val semanticScore = terms.sumOf { term ->
-                if (containsTerm(normalized, term)) 2 + term.count { it == ' ' } else 0
+                maxOf(
+                    if (containsTerm(normalizedLabel, term)) 3 + term.count { it == ' ' } else 0,
+                    if (containsTerm(normalizedPackage, term)) 2 + term.count { it == ' ' } else 0,
+                )
             }
             if (semanticScore > 0) scores[category] = scores.getOrDefault(category, 0) + semanticScore
         }
-        return scores.maxByOrNull { it.value }?.key ?: AppCategory.OTHER
+        return scores.maxByOrNull { it.value }?.key
+            ?: androidCategory(declaredCategory)
+            ?: AppCategory.OTHER
     }
 
     private fun androidCategory(declaredCategory: Int): AppCategory? =
