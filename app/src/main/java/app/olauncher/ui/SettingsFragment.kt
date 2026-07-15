@@ -16,31 +16,38 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
-import androidx.core.view.isVisible
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import app.olauncher.BuildConfig
 import app.olauncher.MainViewModel
 import app.olauncher.R
-import app.olauncher.data.Constants
 import app.olauncher.data.AppCategory
+import app.olauncher.data.AppModel
+import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
-import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.AppCategorizer
+import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.getColorFromAttr
+import app.olauncher.helper.getAppsList
 import app.olauncher.helper.isAccessServiceEnabled
 import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.showToast
 import app.olauncher.listener.DeviceAdmin
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.time.Instant
 import java.util.Calendar
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
@@ -236,6 +243,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             populateRoutineTimes()
             requireContext().showToast(R.string.categories_refreshed)
         }
+        binding.routineSettings.exportCategories.setOnClickListener { exportCategories() }
         binding.routineSettings.vacationMode.setOnClickListener {
             prefs.vacationMode = !prefs.vacationMode
             populateRoutineTimes()
@@ -362,6 +370,48 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.action_settingsFragment_to_appListFragment,
             bundleOf(Constants.Key.FLAG to Constants.FLAG_HIDDEN_APPS)
         )
+    }
+
+    private fun exportCategories() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val hiddenApps = prefs.hiddenApps
+            val apps = getAppsList(
+                requireContext(),
+                prefs,
+                includeRegularApps = true,
+                includeHiddenApps = true,
+            ).filterIsInstance<AppModel.App>()
+                .distinctBy { it.appPackage }
+
+            val exportedApps = JSONArray()
+            apps.forEach { app ->
+                val category = app.category
+                exportedApps.put(
+                    JSONObject()
+                        .put("name", app.appLabel)
+                        .put("package", app.appPackage)
+                        .put("category", category.name)
+                        .put("categoryLabel", category.displayName)
+                        .put("manual", prefs.getAppCategoryOverride(app.appPackage) != null)
+                        .put("hidden", hiddenApps.any { it.startsWith("${app.appPackage}|") })
+                )
+            }
+            val export = JSONObject()
+                .put("format", "Blauncher app categories")
+                .put("version", 1)
+                .put("exportedAt", Instant.now().toString())
+                .put("apps", exportedApps)
+                .toString(2)
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.category_export_subject))
+                putExtra(Intent.EXTRA_TEXT, export)
+            }
+            startActivity(
+                Intent.createChooser(shareIntent, getString(R.string.share_category_export))
+            )
+        }
     }
 
     private fun checkAdminPermission() {

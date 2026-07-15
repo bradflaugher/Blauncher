@@ -125,6 +125,10 @@
     <string name="choose_category">Choose group</string>
     <string name="current_focus">Current focus</string>
     <string name="app_groups">App groups</string>
+    <string name="category_export">Category data</string>
+    <string name="export">Export</string>
+    <string name="category_export_subject">Blauncher app categories</string>
+    <string name="share_category_export">Share category data</string>
     <string name="vacation_mode">Vacation mode</string>
     <string name="pinned_group">Pinned group</string>
     <string name="none">None</string>

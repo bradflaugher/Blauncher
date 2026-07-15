@@ -54,6 +54,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/category_export" />
+        <TextView android:id="@+id/exportCategories" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" android:text="@string/export" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
         <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/routine_reading" />
         <TextView android:id="@+id/readingTime" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
     </FrameLayout>
