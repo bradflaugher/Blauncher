@@ -46,7 +46,6 @@
                     android:layout_marginBottom="4dp">
 
                     <TextView
-                        android:id="@+id/olauncherHiddenApps"
                         style="@style/TextLarge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -63,13 +62,27 @@
                 </FrameLayout>
 
                 <TextView
+                    android:id="@+id/hiddenApps"
+                    style="@style/TextSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:drawableStart="@drawable/ic_hide"
+                    android:drawablePadding="10dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/hidden_apps" />
+
+                <TextView
                     android:id="@+id/setLauncher"
                     style="@style/TextSmall"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="18dp"
                     android:layout_marginBottom="8dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="8dp"
                     android:text="@string/set_as_default_launcher" />
 
             </LinearLayout>

@@ -11,7 +11,6 @@ class Prefs(context: Context) {
 
     private val FIRST_OPEN = "FIRST_OPEN"
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
-    private val FIRST_HIDE = "FIRST_HIDE"
     private val USER_STATE = "USER_STATE"
     private val LOCK_MODE = "LOCK_MODE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
@@ -129,6 +128,7 @@ class Prefs(context: Context) {
             "SHARE_SHOWN_TIME",
             "PRO_MESSAGE_SHOWN",
             "SHOWN_ON_DAY_OF_YEAR",
+            "FIRST_HIDE",
         )
         if (obsoleteKeys.any(prefs::contains)) {
             prefs.edit { obsoleteKeys.forEach(::remove) }
@@ -142,10 +142,6 @@ class Prefs(context: Context) {
     var firstSettingsOpen: Boolean
         get() = prefs.getBoolean(FIRST_SETTINGS_OPEN, true)
         set(value) = prefs.edit { putBoolean(FIRST_SETTINGS_OPEN, value).apply() }
-
-    var firstHide: Boolean
-        get() = prefs.getBoolean(FIRST_HIDE, true)
-        set(value) = prefs.edit { putBoolean(FIRST_HIDE, value).apply() }
 
     var userState: String
         get() = prefs.getString(USER_STATE, Constants.UserState.START).toString()

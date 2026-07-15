@@ -72,7 +72,6 @@
     <string name="bottom_off">Bottom: Off</string>
     <string name="please_set_olauncher_as_default_first">Please set Blauncher as default first</string>
     <string name="tip_start_typing_for_rename">Tip: Start typing for app RENAME option</string>
-    <string name="hidden_apps_message">Tap Blauncher at the top of Settings to find your hidden apps.</string>
     <string name="swipe_down_for">Swipe down for</string>
     <string name="search">Search</string>
     <string name="notifications">Notifications</string>

@@ -7,10 +7,6 @@ object Constants {
         const val RENAME = "rename"
     }
 
-    object Dialog {
-        const val HIDDEN = "HIDDEN"
-    }
-
     object UserState {
         const val START = "START"
     }

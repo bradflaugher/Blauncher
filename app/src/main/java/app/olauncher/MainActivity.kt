@@ -11,15 +11,12 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import app.olauncher.data.Constants
@@ -66,24 +63,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        val messagePadding = listOf(
-            binding.messageLayout.paddingLeft,
-            binding.messageLayout.paddingTop,
-            binding.messageLayout.paddingRight,
-            binding.messageLayout.paddingBottom,
-        )
-        ViewCompat.setOnApplyWindowInsetsListener(binding.messageLayout) { view, insets ->
-            val safe = insets.getInsets(
-                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
-            )
-            view.setPadding(
-                messagePadding[0] + safe.left,
-                messagePadding[1] + safe.top,
-                messagePadding[2] + safe.right,
-                messagePadding[3] + safe.bottom,
-            )
-            insets
-        }
 
         navController = this.findNavController(R.id.nav_host_fragment)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
@@ -97,8 +76,6 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         // if you want other system/activity level handling
                     }
-                } else {
-                    binding.messageLayout.visibility = View.GONE
                 }
             }
         }
@@ -111,7 +88,6 @@ class MainActivity : AppCompatActivity() {
             viewModel.resetLauncherLiveData.call()
         }
 
-        initClickListeners()
         initObservers(viewModel)
         viewModel.getAppList()
         setupOrientation()
@@ -167,12 +143,6 @@ class MainActivity : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
     }
 
-    private fun initClickListeners() {
-        binding.ivClose.setOnClickListener {
-            binding.messageLayout.visibility = View.GONE
-        }
-    }
-
     private fun initObservers(viewModel: MainViewModel) {
         viewModel.launcherResetFailed.observe(this) {
             openLauncherChooser(it)
@@ -183,26 +153,6 @@ class MainActivity : AppCompatActivity() {
             else
                 showLauncherSelector(Constants.REQUEST_CODE_LAUNCHER_SELECTOR)
         }
-        viewModel.showDialog.observe(this) {
-            when (it) {
-                Constants.Dialog.HIDDEN -> {
-                    showMessageDialog(R.string.hidden_apps, R.string.hidden_apps_message, R.string.okay) {
-                    }
-                }
-
-            }
-        }
-    }
-
-    private fun showMessageDialog(title: Int, message: Int, action: Int, clickListener: () -> Unit) {
-        binding.tvTitle.text = getString(title)
-        binding.tvMessage.text = getString(message)
-        binding.tvAction.text = getString(action)
-        binding.tvAction.setOnClickListener {
-            clickListener()
-            binding.messageLayout.visibility = View.GONE
-        }
-        binding.messageLayout.visibility = View.VISIBLE
     }
 
     @SuppressLint("SourceLockedOrientationActivity")
@@ -215,7 +165,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun backToHomeScreen() {
         if (viewModel.isPrivateSpaceToggling) return
-        binding.messageLayout.visibility = View.GONE
         if (navController.currentDestination?.id != R.id.mainFragment)
             navController.popBackStack(R.id.mainFragment, false)
     }

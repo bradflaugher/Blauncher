@@ -215,12 +215,6 @@ class AppDrawerFragment : Fragment() {
                 prefs.hiddenApps = newSet
                 if (newSet.isEmpty())
                     findNavController().popBackStack()
-                if (prefs.firstHide) {
-                    binding.search.hideKeyboard()
-                    prefs.firstHide = false
-                    viewModel.showDialog.postValue(Constants.Dialog.HIDDEN)
-                    findNavController().navigate(R.id.action_appListFragment_to_settingsFragment2)
-                }
                 viewModel.getAppList()
                 viewModel.getHiddenApps()
             },
