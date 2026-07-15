@@ -2,6 +2,7 @@ package app.olauncher.ui
 
 import android.content.Context
 import android.content.pm.LauncherApps
+import android.content.res.ColorStateList
 import android.os.UserHandle
 import android.text.Editable
 import android.text.TextWatcher
@@ -260,9 +261,9 @@ class AppDrawerAdapter(
             otherProfileIndicator.isVisible = appModel.user != myUserHandle
             categoryMarker.isVisible = flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
             appModel.category?.let { category ->
-                categoryMarker.text = category.symbol
+                categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName
-                categoryMarker.setTextColor(category.color)
+                categoryMarker.imageTintList = ColorStateList.valueOf(category.color)
             }
 
             appTitle.setOnClickListener { clickListener(appModel) }

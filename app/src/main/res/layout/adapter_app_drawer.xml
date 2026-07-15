@@ -16,18 +16,15 @@
         android:paddingVertical="@dimen/app_padding_vertical"
         android:text="@string/app" />
 
-    <TextView
+    <ImageView
         android:id="@+id/categoryMarker"
-        style="@style/TextSmall"
-        android:layout_width="18dp"
-        android:layout_height="wrap_content"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_gravity="start|center_vertical"
         android:layout_marginStart="24dp"
-        android:gravity="center"
-        android:maxLines="1"
-        android:textSize="12sp"
+        android:scaleType="fitCenter"
         android:visibility="gone"
-        tools:text="✦"
+        tools:src="@drawable/ic_category_ai"
         tools:visibility="visible" />
 
     <ImageView
