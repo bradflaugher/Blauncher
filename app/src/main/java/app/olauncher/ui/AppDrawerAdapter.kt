@@ -258,12 +258,21 @@ class AppDrawerAdapter(
                 basePadding,
                 appTitle.paddingBottom,
             )
-            otherProfileIndicator.isVisible = appModel.user != myUserHandle
-            categoryMarker.isVisible = flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
+            val showProfileIndicator = appModel.user != myUserHandle
+            val showCategoryMarker =
+                flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
+            otherProfileIndicator.isVisible = showProfileIndicator
+            categoryMarker.isVisible = showCategoryMarker
             appModel.category?.let { category ->
                 categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName
                 categoryMarker.imageTintList = ColorStateList.valueOf(category.color)
+            }
+            fun closeRenameEditor() {
+                renameLayout.visibility = View.GONE
+                appTitle.visibility = View.VISIBLE
+                categoryMarker.isVisible = showCategoryMarker
+                otherProfileIndicator.isVisible = showProfileIndicator
             }
 
             appTitle.setOnClickListener { clickListener(appModel) }
@@ -301,12 +310,11 @@ class AppDrawerAdapter(
                     etAppRename.setSelectAllOnFocus(true)
                     renameLayout.visibility = View.VISIBLE
                     appHideLayout.visibility = View.GONE
+                    categoryMarker.visibility = View.GONE
+                    otherProfileIndicator.visibility = View.GONE
                     etAppRename.showKeyboard()
                     etAppRename.imeOptions = EditorInfo.IME_ACTION_DONE
                 }
-            }
-            etAppRename.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-                appTitle.visibility = if (hasFocus) View.INVISIBLE else View.VISIBLE
             }
             etAppRename.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
@@ -330,7 +338,7 @@ class AppDrawerAdapter(
                     val renameLabel = etAppRename.text.toString().trim()
                     if (renameLabel.isNotBlank() && appModel.appPackage.isNotBlank()) {
                         appRenameListener(appModel, renameLabel)
-                        renameLayout.visibility = View.GONE
+                        closeRenameEditor()
                     }
                     true
                 }
@@ -341,14 +349,13 @@ class AppDrawerAdapter(
                 val renameLabel = etAppRename.text.toString().trim()
                 if (renameLabel.isNotBlank() && appModel.appPackage.isNotBlank()) {
                     appRenameListener(appModel, renameLabel)
-                    renameLayout.visibility = View.GONE
                 } else {
                     appRenameListener(
                         appModel,
                         getAppName(etAppRename.context, appModel.appPackage, appModel.user)
                     )
-                    renameLayout.visibility = View.GONE
                 }
+                closeRenameEditor()
             }
             appInfo.setOnClickListener { appInfoListener(appModel) }
             appCategory.setOnClickListener { appCategoryListener(appModel) }
@@ -358,8 +365,7 @@ class AppDrawerAdapter(
                 appTitle.visibility = View.VISIBLE
             }
             appRenameClose.setOnClickListener {
-                renameLayout.visibility = View.GONE
-                appTitle.visibility = View.VISIBLE
+                closeRenameEditor()
             }
             appHide.setOnClickListener { appHideListener(appModel, bindingAdapterPosition) }
         }
