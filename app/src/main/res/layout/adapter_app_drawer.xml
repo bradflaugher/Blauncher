@@ -80,10 +80,10 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
-            android:paddingHorizontal="6dp"
+            android:paddingHorizontal="4dp"
             android:text="@string/category"
             android:textSize="12sp"
-            app:drawableTopCompat="@drawable/ic_rounded" />
+            app:drawableTopCompat="@drawable/ic_category" />
 
         <TextView
             android:id="@+id/appHide"

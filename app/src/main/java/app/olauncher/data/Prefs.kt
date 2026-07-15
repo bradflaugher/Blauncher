@@ -663,4 +663,8 @@ class Prefs(context: Context) {
 
     fun clearAppCategoryOverride(appPackage: String) =
         prefs.edit { remove(APP_CATEGORY_OVERRIDE_PREFIX + appPackage) }
+
+    fun clearAppCategoryOverrides() = prefs.edit {
+        prefs.all.keys.filter { it.startsWith(APP_CATEGORY_OVERRIDE_PREFIX) }.forEach(::remove)
+    }
 }

@@ -8,13 +8,11 @@ import android.text.Spannable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isVisible
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -31,9 +29,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentAppDrawerBinding
 import app.olauncher.helper.deletePinnedShortcut
-import app.olauncher.helper.AppCategorizer
 import app.olauncher.helper.hideKeyboard
-import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openSearch
@@ -98,8 +94,6 @@ class AppDrawerFragment : Fragment() {
             binding.search.queryHint = getString(R.string.hidden_apps)
         else if (flag in Constants.FLAG_SET_HOME_APP_1..Constants.FLAG_SET_CALENDAR_APP)
             binding.search.queryHint = "Please select an app"
-        binding.recategorize.visibility = if (flag == Constants.FLAG_LAUNCH_APP) View.VISIBLE else View.GONE
-        updateRoutineLabel()
         try {
             searchTextView = binding.search.findViewById(R.id.search_src_text)
             searchTextView?.gravity = prefs.appLabelAlignment
@@ -126,7 +120,6 @@ class AppDrawerFragment : Fragment() {
                     adapter.filter.filter(newText)
                     binding.appRename.visibility =
                         if (canRename && newText.isNotBlank()) View.VISIBLE else View.GONE
-                    binding.routineLabel.isVisible = flag == Constants.FLAG_LAUNCH_APP && newText.isBlank()
                     return true
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -269,9 +262,6 @@ class AppDrawerFragment : Fragment() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.addOnScrollListener(getRecyclerViewOnScrollListener())
         binding.recyclerView.itemAnimator = null
-        if (requireContext().isEinkDisplay().not())
-            binding.recyclerView.layoutAnimation =
-                AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_anim_from_bottom)
     }
 
     private fun initObservers() {
@@ -343,10 +333,6 @@ class AppDrawerFragment : Fragment() {
     }
 
     private fun initClickListeners() {
-        binding.recategorize.setOnClickListener {
-            viewModel.getAppList()
-            requireContext().showToast(R.string.categories_refreshed)
-        }
         binding.appRename.setOnClickListener {
             val name = binding.search.query.toString().trim()
             if (name.isEmpty()) {
@@ -426,14 +412,7 @@ class AppDrawerFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         cachedIsCjkKeyboard = null
-        updateRoutineLabel()
-        if (flag == Constants.FLAG_LAUNCH_APP) viewModel.getAppList()
         binding.search.showKeyboard(prefs.autoShowKeyboard)
-    }
-
-    private fun updateRoutineLabel() {
-        binding.routineLabel.isVisible = flag == Constants.FLAG_LAUNCH_APP && binding.search.query.isBlank()
-        binding.routineLabel.text = AppCategorizer.currentRoutine(prefs).displayName
     }
 
     override fun onStop() {

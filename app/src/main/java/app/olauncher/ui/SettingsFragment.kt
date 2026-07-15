@@ -31,6 +31,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.animateAlpha
+import app.olauncher.helper.AppCategorizer
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isAccessServiceEnabled
 import app.olauncher.helper.isTablet
@@ -226,6 +227,12 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
         binding.routineSettings.eveningTime.setOnClickListener {
             pickRoutineTime(prefs.routineEveningStart) { prefs.routineEveningStart = it }
+        }
+        binding.routineSettings.refreshCategories.setOnClickListener {
+            prefs.clearAppCategoryOverrides()
+            viewModel.getAppList()
+            populateRoutineTimes()
+            requireContext().showToast(R.string.categories_refreshed)
         }
 
         binding.maxApps0.setOnClickListener(this)
@@ -490,6 +497,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateRoutineTimes() = with(binding.routineSettings) {
+        currentRoutine.text = AppCategorizer.currentRoutine(prefs).displayName
         readingTime.text = formatRoutineTime(prefs.routineReadingStart)
         commuteTime.text = formatRoutineTime(prefs.routineCommuteStart)
         workTime.text = formatRoutineTime(prefs.routineWorkStart)
