@@ -26,6 +26,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/vacation_mode" />
+        <TextView android:id="@+id/vacationMode" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
         <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/current_focus" />
         <TextView android:id="@+id/currentRoutine" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
     </FrameLayout>

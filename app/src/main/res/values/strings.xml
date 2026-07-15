@@ -129,7 +129,7 @@
     <string name="recategorize">Refresh</string>
     <string name="categories_refreshed">App groups reset to automatic</string>
     <string name="daily_routine">Daily routine</string>
-    <string name="daily_routine_summary">Tap a time to tune contextual app ordering. Fitness lasts two hours, then Work resumes.</string>
+    <string name="daily_routine_summary">Tap a time to tune weekdays. Weekends adapt automatically; Vacation overrides the schedule.</string>
     <string name="routine_reading">Early reading</string>
     <string name="routine_commute">Morning commute</string>
     <string name="routine_work">Work</string>
@@ -141,4 +141,5 @@
     <string name="choose_category">Choose group</string>
     <string name="current_focus">Current focus</string>
     <string name="app_groups">App groups</string>
+    <string name="vacation_mode">Vacation mode</string>
 </resources>

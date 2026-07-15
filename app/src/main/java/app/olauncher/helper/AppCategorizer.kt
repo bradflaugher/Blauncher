@@ -113,8 +113,12 @@ object AppCategorizer {
         )
     }
 
-    fun currentRoutine(prefs: Prefs, minuteOfDay: Int = currentMinuteOfDay()): AppRoutine {
-        return resolveRoutine(
+    fun currentRoutine(
+        prefs: Prefs,
+        minuteOfDay: Int = currentMinuteOfDay(),
+        dayOfWeek: Int = Calendar.getInstance().get(Calendar.DAY_OF_WEEK),
+    ): AppRoutine {
+        val weekdayRoutine = resolveRoutine(
             minuteOfDay,
             prefs.routineReadingStart,
             prefs.routineCommuteStart,
@@ -123,6 +127,17 @@ object AppCategorizer {
             prefs.routineFamilyStart,
             prefs.routineEveningStart,
         )
+        return resolveMode(prefs.vacationMode, dayOfWeek, weekdayRoutine)
+    }
+
+    internal fun resolveMode(
+        vacationMode: Boolean,
+        dayOfWeek: Int,
+        weekdayRoutine: AppRoutine,
+    ): AppRoutine = when {
+        vacationMode -> AppRoutine.VACATION
+        dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY -> AppRoutine.WEEKEND
+        else -> weekdayRoutine
     }
 
     internal fun resolveRoutine(
@@ -173,6 +188,14 @@ object AppCategorizer {
             AppCategory.MEDIA, AppCategory.COMMUNICATION, AppCategory.HEALTH,
             AppCategory.TOOLS, AppCategory.PRODUCTIVITY
         )
+        AppRoutine.WEEKEND -> listOf(
+            AppCategory.HEALTH, AppCategory.COMMUNICATION, AppCategory.MEDIA,
+            AppCategory.SHOPPING, AppCategory.TRAVEL
+        )
+        AppRoutine.VACATION -> listOf(
+            AppCategory.TRAVEL, AppCategory.MEDIA, AppCategory.COMMUNICATION,
+            AppCategory.HEALTH, AppCategory.SHOPPING
+        )
     } + AppCategory.entries).distinct()
 
     internal fun categoryFromText(text: String): AppCategory {
@@ -207,6 +230,12 @@ object AppCategorizer {
             )
             AppRoutine.EVENING -> listOf(
                 "audiobook", "audible", "kindle", "book", "read", "reader", "pocket", "podcast"
+            )
+            AppRoutine.WEEKEND -> listOf(
+                "tennis", "family", "camera", "photo", "maps", "food", "delivery", "book", "podcast"
+            )
+            AppRoutine.VACATION -> listOf(
+                "maps", "flight", "airline", "hotel", "translate", "camera", "photo", "audiobook", "book"
             )
         }
         val match = priorities.indexOfFirst { text.contains(it) }

@@ -234,6 +234,11 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             populateRoutineTimes()
             requireContext().showToast(R.string.categories_refreshed)
         }
+        binding.routineSettings.vacationMode.setOnClickListener {
+            prefs.vacationMode = !prefs.vacationMode
+            populateRoutineTimes()
+            viewModel.getAppList()
+        }
 
         binding.maxApps0.setOnClickListener(this)
         binding.maxApps1.setOnClickListener(this)
@@ -498,6 +503,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
     private fun populateRoutineTimes() = with(binding.routineSettings) {
         currentRoutine.text = AppCategorizer.currentRoutine(prefs).displayName
+        vacationMode.text = getString(if (prefs.vacationMode) R.string.on else R.string.off)
         readingTime.text = formatRoutineTime(prefs.routineReadingStart)
         commuteTime.text = formatRoutineTime(prefs.routineCommuteStart)
         workTime.text = formatRoutineTime(prefs.routineWorkStart)

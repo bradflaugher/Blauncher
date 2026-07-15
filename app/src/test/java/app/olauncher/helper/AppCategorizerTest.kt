@@ -6,6 +6,7 @@ import app.olauncher.data.AppRoutine
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Calendar
 
 class AppCategorizerTest {
     @Test
@@ -40,6 +41,8 @@ class AppCategorizerTest {
             AppRoutine.FITNESS to AppCategory.HEALTH,
             AppRoutine.FAMILY to AppCategory.COMMUNICATION,
             AppRoutine.EVENING to AppCategory.MEDIA,
+            AppRoutine.WEEKEND to AppCategory.HEALTH,
+            AppRoutine.VACATION to AppCategory.TRAVEL,
         )
 
         expected.forEach { (routine, category) ->
@@ -93,6 +96,24 @@ class AppCategorizerTest {
         assertAhead(AppRoutine.FITNESS, "com.tennisone", "TennisONE", "com.sleep", "Sleep")
         assertAhead(AppRoutine.FAMILY, "com.whatsapp", "Messages", "com.discord", "Discord")
         assertAhead(AppRoutine.EVENING, "com.audible.application", "Audible", "com.youtube", "YouTube")
+        assertAhead(AppRoutine.WEEKEND, "com.tennisone", "TennisONE", "com.sleep", "Sleep")
+        assertAhead(AppRoutine.VACATION, "com.google.android.apps.maps", "Maps", "com.booking", "Booking")
+    }
+
+    @Test
+    fun vacationOverridesWeekendAndWeekendOverridesWeekday() {
+        assertEquals(
+            AppRoutine.VACATION,
+            AppCategorizer.resolveMode(true, Calendar.SATURDAY, AppRoutine.WORK),
+        )
+        assertEquals(
+            AppRoutine.WEEKEND,
+            AppCategorizer.resolveMode(false, Calendar.SUNDAY, AppRoutine.READING),
+        )
+        assertEquals(
+            AppRoutine.WORK,
+            AppCategorizer.resolveMode(false, Calendar.MONDAY, AppRoutine.WORK),
+        )
     }
 
     private fun assertAhead(

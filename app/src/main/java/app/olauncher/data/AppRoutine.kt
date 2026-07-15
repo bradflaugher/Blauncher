@@ -7,4 +7,6 @@ enum class AppRoutine(val displayName: String) {
     FITNESS("Tennis & fitness"),
     FAMILY("Family time"),
     EVENING("Books & audiobooks"),
+    WEEKEND("Weekend"),
+    VACATION("Vacation"),
 }

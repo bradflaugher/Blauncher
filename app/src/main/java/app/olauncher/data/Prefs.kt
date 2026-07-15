@@ -45,6 +45,7 @@ class Prefs(context: Context) {
     private val ROUTINE_FITNESS_START = "ROUTINE_FITNESS_START"
     private val ROUTINE_FAMILY_START = "ROUTINE_FAMILY_START"
     private val ROUTINE_EVENING_START = "ROUTINE_EVENING_START"
+    private val VACATION_MODE = "VACATION_MODE"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -212,6 +213,10 @@ class Prefs(context: Context) {
     var routineEveningStart: Int
         get() = prefs.getInt(ROUTINE_EVENING_START, 20 * 60)
         set(value) = prefs.edit { putInt(ROUTINE_EVENING_START, value.coerceIn(0, 1439)) }
+
+    var vacationMode: Boolean
+        get() = prefs.getBoolean(VACATION_MODE, false)
+        set(value) = prefs.edit { putBoolean(VACATION_MODE, value) }
 
     var swipeLeftEnabled: Boolean
         get() = prefs.getBoolean(SWIPE_LEFT_ENABLED, true)

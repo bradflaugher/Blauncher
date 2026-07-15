@@ -15,7 +15,8 @@ private Android launcher setup rather than as an official Olauncher release.
 Ranking never reads or stores launch history. It guesses likely activities from
 the current time: early reading, morning commute, work blocks, noon fitness,
 family time, and evening books or audiobooks. Routine start times are editable
-in Settings, and long-pressing an app allows its group to be corrected.
+in Settings, weekends switch automatically, Vacation mode can override the
+schedule, and long-pressing an app allows its group to be corrected.
 
 The application ID is `com.bradflaugher.blauncher`. The inherited source and
 namespace remain under `app.olauncher`.
