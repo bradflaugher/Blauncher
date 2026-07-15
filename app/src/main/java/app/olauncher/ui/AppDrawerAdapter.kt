@@ -290,6 +290,7 @@ class AppDrawerAdapter(
                     else
                         root.context.getString(R.string.adapter_hide)
                     appTitle.visibility = View.INVISIBLE
+                    categoryMarker.visibility = View.GONE
                     appHide.alpha = when (appModel is AppModel.PinnedShortcut) {
                         true -> 0.5f
                         false -> 1.0f
@@ -363,6 +364,7 @@ class AppDrawerAdapter(
             appMenuClose.setOnClickListener {
                 appHideLayout.visibility = View.GONE
                 appTitle.visibility = View.VISIBLE
+                categoryMarker.isVisible = showCategoryMarker
             }
             appRenameClose.setOnClickListener {
                 closeRenameEditor()
