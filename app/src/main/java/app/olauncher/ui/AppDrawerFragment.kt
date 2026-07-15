@@ -177,7 +177,6 @@ class AppDrawerFragment : Fragment() {
             },
             appDeleteListener = { appModel ->
                 when (appModel) {
-                    is AppModel.CategoryHeader -> {}
                     is AppModel.PrivateSpaceHeader -> {}
                     is AppModel.PinnedShortcut ->
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -302,29 +301,12 @@ class AppDrawerFragment : Fragment() {
             adapter.filter.filter(binding.search.query)
             return
         }
-        val combined = mutableListOf<AppModel>()
-        var currentCategory: AppCategory? = null
-        apps.forEach { app ->
-            val category = app.category ?: AppCategory.OTHER
-            if (category != currentCategory) {
-                combined.add(AppModel.CategoryHeader(category))
-                currentCategory = category
-            }
-            combined.add(app)
-        }
+        val combined = apps.toMutableList()
 
         if (flag == Constants.FLAG_LAUNCH_APP && currentPrivateSpaceAvailable) {
             combined.add(AppModel.PrivateSpaceHeader(isLocked = currentPrivateSpaceLocked))
             if (!currentPrivateSpaceLocked) {
-                var privateCategory: AppCategory? = null
-                currentPrivateSpaceApps?.forEach { app ->
-                    val category = app.category ?: AppCategory.OTHER
-                    if (category != privateCategory) {
-                        combined.add(AppModel.CategoryHeader(category, app.user))
-                        privateCategory = category
-                    }
-                    combined.add(app)
-                }
+                currentPrivateSpaceApps?.let(combined::addAll)
             }
         }
 
@@ -405,8 +387,6 @@ class AppDrawerFragment : Fragment() {
 
     private fun checkMessageAndExit() {
         findNavController().popBackStack()
-        if (flag == Constants.FLAG_LAUNCH_APP)
-            viewModel.checkForMessages.call()
     }
 
     override fun onStart() {

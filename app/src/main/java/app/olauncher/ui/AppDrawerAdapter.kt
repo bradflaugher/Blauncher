@@ -19,7 +19,6 @@ import app.olauncher.R
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.databinding.AdapterAppDrawerBinding
-import app.olauncher.databinding.AdapterCategoryHeaderBinding
 import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
@@ -42,7 +41,6 @@ class AppDrawerAdapter(
     companion object {
         const val VIEW_TYPE_APP = 0
         const val VIEW_TYPE_PRIVATE_HEADER = 1
-        const val VIEW_TYPE_CATEGORY_HEADER = 2
 
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
@@ -53,9 +51,6 @@ class AppDrawerAdapter(
                     oldItem.shortcutId == newItem.shortcutId && oldItem.user == newItem.user
 
                 oldItem is AppModel.PrivateSpaceHeader && newItem is AppModel.PrivateSpaceHeader -> true
-
-                oldItem is AppModel.CategoryHeader && newItem is AppModel.CategoryHeader ->
-                    oldItem.category == newItem.category && oldItem.user == newItem.user
 
                 else -> false
             }
@@ -79,7 +74,6 @@ class AppDrawerAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (appFilteredList.getOrNull(position)) {
             is AppModel.PrivateSpaceHeader -> VIEW_TYPE_PRIVATE_HEADER
-            is AppModel.CategoryHeader -> VIEW_TYPE_CATEGORY_HEADER
             else -> VIEW_TYPE_APP
         }
     }
@@ -88,14 +82,6 @@ class AppDrawerAdapter(
         return when (viewType) {
             VIEW_TYPE_PRIVATE_HEADER -> PrivateSpaceHeaderViewHolder(
                 AdapterPrivateSpaceHeaderBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                )
-            )
-
-            VIEW_TYPE_CATEGORY_HEADER -> CategoryHeaderViewHolder(
-                AdapterCategoryHeaderBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
@@ -125,8 +111,6 @@ class AppDrawerAdapter(
                     )
                 }
 
-                is CategoryHeaderViewHolder -> holder.bind(appLabelGravity, appModel)
-
                 is ViewHolder -> holder.bind(
                     flag,
                     appLabelGravity,
@@ -155,9 +139,7 @@ class AppDrawerAdapter(
 
                 val appFilteredList = (if (charSearch.isNullOrBlank()) appsList
                 else appsList.filter { app ->
-                    app !is AppModel.PrivateSpaceHeader &&
-                        app !is AppModel.CategoryHeader &&
-                        appLabelMatches(app.appLabel, charSearch)
+                    app !is AppModel.PrivateSpaceHeader && appLabelMatches(app.appLabel, charSearch)
                 } as MutableList<AppModel>)
 
                 val filterResults = FilterResults()
@@ -186,7 +168,6 @@ class AppDrawerAdapter(
                 && flag == Constants.FLAG_LAUNCH_APP
                 && appFilteredList.isNotEmpty()
                 && appFilteredList[0] !is AppModel.PrivateSpaceHeader
-                && appFilteredList[0] !is AppModel.CategoryHeader
             ) appClickListener(appFilteredList[0])
         } catch (e: Exception) {
             e.printStackTrace()
@@ -223,7 +204,7 @@ class AppDrawerAdapter(
 
     fun launchFirstInList() {
         val first = appFilteredList.firstOrNull {
-            it !is AppModel.PrivateSpaceHeader && it !is AppModel.CategoryHeader
+            it !is AppModel.PrivateSpaceHeader
         }
         if (first != null) appClickListener(first)
     }
@@ -241,16 +222,6 @@ class AppDrawerAdapter(
                 settingsListener()
                 true
             }
-        }
-    }
-
-    class CategoryHeaderViewHolder(private val binding: AdapterCategoryHeaderBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(appLabelGravity: Int, appModel: AppModel) = with(binding.categoryTitle) {
-            val category = appModel.category ?: return@with
-            gravity = appLabelGravity
-            text = category.displayName
-            setTextColor(category.color)
         }
     }
 
@@ -278,7 +249,21 @@ class AppDrawerAdapter(
                 if (appModel.isNew) append(" ✦")
             }
             appTitle.gravity = appLabelGravity
+            val basePadding = (24 * appTitle.resources.displayMetrics.density).toInt()
+            val markerPadding = (48 * appTitle.resources.displayMetrics.density).toInt()
+            appTitle.setPaddingRelative(
+                if (appLabelGravity == android.view.Gravity.START) markerPadding else basePadding,
+                appTitle.paddingTop,
+                basePadding,
+                appTitle.paddingBottom,
+            )
             otherProfileIndicator.isVisible = appModel.user != myUserHandle
+            categoryMarker.isVisible = flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
+            appModel.category?.let { category ->
+                categoryMarker.text = category.symbol
+                categoryMarker.contentDescription = category.displayName
+                categoryMarker.setTextColor(category.color)
+            }
 
             appTitle.setOnClickListener { clickListener(appModel) }
 

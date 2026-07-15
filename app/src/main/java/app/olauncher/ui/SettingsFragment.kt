@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.ViewCompat
@@ -28,6 +29,7 @@ import app.olauncher.BuildConfig
 import app.olauncher.MainViewModel
 import app.olauncher.R
 import app.olauncher.data.Constants
+import app.olauncher.data.AppCategory
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.animateAlpha
@@ -239,6 +241,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             populateRoutineTimes()
             viewModel.getAppList()
         }
+        binding.routineSettings.pinnedCategory.setOnClickListener { showPinnedCategoryChooser() }
 
         binding.maxApps0.setOnClickListener(this)
         binding.maxApps1.setOnClickListener(this)
@@ -261,14 +264,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun initObservers() {
-        if (prefs.firstSettingsOpen) {
-            viewModel.showDialog.postValue(Constants.Dialog.ABOUT)
-            prefs.firstSettingsOpen = false
-        }
+        prefs.firstSettingsOpen = false
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner) {
             if (it) {
                 binding.setLauncher.text = getString(R.string.change_default_launcher)
-                prefs.toShowHintCounter += 1
             }
         }
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
@@ -452,13 +451,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun toggleKeyboardText() {
-        if (prefs.autoShowKeyboard && prefs.keyboardMessageShown.not()) {
-            viewModel.showDialog.postValue(Constants.Dialog.KEYBOARD)
-            prefs.keyboardMessageShown = true
-        } else {
-            prefs.autoShowKeyboard = !prefs.autoShowKeyboard
-            populateKeyboardText()
-        }
+        prefs.autoShowKeyboard = !prefs.autoShowKeyboard
+        populateKeyboardText()
     }
 
     private fun updateTheme(appTheme: Int) {
@@ -504,12 +498,29 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     private fun populateRoutineTimes() = with(binding.routineSettings) {
         currentRoutine.text = AppCategorizer.currentRoutine(prefs).displayName
         vacationMode.text = getString(if (prefs.vacationMode) R.string.on else R.string.off)
+        pinnedCategory.text = prefs.pinnedCategory?.displayName ?: getString(R.string.none)
         readingTime.text = formatRoutineTime(prefs.routineReadingStart)
         commuteTime.text = formatRoutineTime(prefs.routineCommuteStart)
         workTime.text = formatRoutineTime(prefs.routineWorkStart)
         fitnessTime.text = formatRoutineTime(prefs.routineFitnessStart)
         familyTime.text = formatRoutineTime(prefs.routineFamilyStart)
         eveningTime.text = formatRoutineTime(prefs.routineEveningStart)
+    }
+
+    private fun showPinnedCategoryChooser() {
+        val categories = AppCategory.entries
+        val labels = listOf(getString(R.string.none)) + categories.map { it.displayName }
+        val selected = prefs.pinnedCategory?.ordinal?.plus(1) ?: 0
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.pinned_group)
+            .setSingleChoiceItems(labels.toTypedArray(), selected) { dialog, which ->
+                prefs.pinnedCategory = if (which == 0) null else categories[which - 1]
+                dialog.dismiss()
+                populateRoutineTimes()
+                viewModel.getAppList()
+            }
+            .setNegativeButton(R.string.close, null)
+            .show()
     }
 
     private fun formatRoutineTime(minutes: Int): String {
@@ -621,7 +632,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     override fun onDestroy() {
-        viewModel.checkForMessages.call()
         super.onDestroy()
     }
 }

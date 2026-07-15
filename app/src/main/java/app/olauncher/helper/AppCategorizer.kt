@@ -10,6 +10,11 @@ import java.util.Calendar
 
 object AppCategorizer {
     private val packageCategories = linkedMapOf(
+        "com.openai.chatgpt" to AppCategory.AI_AGENTS,
+        "com.anthropic.claude" to AppCategory.AI_AGENTS,
+        "com.google.android.apps.bard" to AppCategory.AI_AGENTS,
+        "ai.perplexity.app.android" to AppCategory.AI_AGENTS,
+        "com.microsoft.copilot" to AppCategory.AI_AGENTS,
         "com.amazon.kindle" to AppCategory.MEDIA,
         "com.audible" to AppCategory.MEDIA,
         "libby" to AppCategory.MEDIA,
@@ -20,6 +25,9 @@ object AppCategorizer {
     )
 
     private val keywordCategories = linkedMapOf(
+        AppCategory.AI_AGENTS to setOf(
+            "chatgpt", "claude", "copilot", "gemini", "grok", "mistral", "perplexity", "poe"
+        ),
         AppCategory.COMMUNICATION to setOf(
             "chat", "discord", "email", "gmail", "mail", "meet", "message", "phone",
             "signal", "slack", "social", "teams", "telegram", "whatsapp", "zoom"
@@ -81,6 +89,7 @@ object AppCategorizer {
     ): AppCategory {
         override?.let { return it }
         packageCategory(packageName)?.let { return it }
+        aiCategoryFromText("$packageName $label")?.let { return it }
         return when (declaredCategory) {
             ApplicationInfo.CATEGORY_GAME -> AppCategory.GAMES
             ApplicationInfo.CATEGORY_AUDIO,
@@ -96,7 +105,8 @@ object AppCategorizer {
 
     fun sortForNow(prefs: Prefs, apps: MutableList<AppModel>) {
         val routine = currentRoutine(prefs)
-        val categoryOrder = categoryOrder(routine).withIndex().associate { it.value to it.index }
+        val categoryOrder = categoryOrder(routine, prefs.pinnedCategory)
+            .withIndex().associate { it.value to it.index }
         apps.sortWith(
             compareBy<AppModel> { categoryOrder[it.category] ?: Int.MAX_VALUE }
                 .thenByDescending { routineScore(it, routine) }
@@ -105,7 +115,7 @@ object AppCategorizer {
     }
 
     fun sortByCategory(prefs: Prefs, apps: MutableList<AppModel>) {
-        val order = categoryOrder(currentRoutine(prefs))
+        val order = categoryOrder(currentRoutine(prefs), prefs.pinnedCategory)
             .withIndex().associate { it.value to it.index }
         apps.sortWith(
             compareBy<AppModel> { order[it.category] ?: Int.MAX_VALUE }
@@ -163,7 +173,10 @@ object AppCategorizer {
         return if (fitnessElapsed < 120) AppRoutine.FITNESS else AppRoutine.WORK
     }
 
-    fun categoryOrder(routine: AppRoutine): List<AppCategory> = (when (routine) {
+    fun categoryOrder(
+        routine: AppRoutine,
+        pinnedCategory: AppCategory? = null,
+    ): List<AppCategory> = (listOfNotNull(pinnedCategory) + when (routine) {
         AppRoutine.READING -> listOf(
             AppCategory.MEDIA, AppCategory.PRODUCTIVITY, AppCategory.HEALTH,
             AppCategory.COMMUNICATION, AppCategory.TOOLS
@@ -208,6 +221,11 @@ object AppCategorizer {
 
     private fun packageCategory(packageName: String): AppCategory? =
         packageCategories.entries.firstOrNull { packageName.lowercase().contains(it.key) }?.value
+
+    private fun aiCategoryFromText(text: String): AppCategory? =
+        AppCategory.AI_AGENTS.takeIf { category ->
+            keywordCategories[category].orEmpty().any { text.contains(it, ignoreCase = true) }
+        }
 
     private fun routineScore(app: AppModel, routine: AppRoutine): Int =
         routineScore(app.appPackage, app.appLabel, routine)

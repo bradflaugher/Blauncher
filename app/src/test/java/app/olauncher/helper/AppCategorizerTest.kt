@@ -25,6 +25,10 @@ class AppCategorizerTest {
             "com.whatsapp WhatsApp" to AppCategory.COMMUNICATION,
             "com.google.android.apps.photos Google Photos" to AppCategory.MEDIA,
             "com.dd.doordash DoorDash" to AppCategory.SHOPPING,
+            "com.openai.chatgpt ChatGPT" to AppCategory.AI_AGENTS,
+            "com.anthropic.claude Claude" to AppCategory.AI_AGENTS,
+            "com.google.android.apps.bard Gemini" to AppCategory.AI_AGENTS,
+            "ai.perplexity.app.android Perplexity" to AppCategory.AI_AGENTS,
         )
 
         examples.forEach { (app, expected) ->
@@ -51,6 +55,17 @@ class AppCategorizerTest {
     }
 
     @Test
+    fun pinnedAiAgentsAlwaysComeFirst() {
+        AppRoutine.entries.forEach { routine ->
+            assertEquals(
+                routine.name,
+                AppCategory.AI_AGENTS,
+                AppCategorizer.categoryOrder(routine, AppCategory.AI_AGENTS).first(),
+            )
+        }
+    }
+
+    @Test
     fun manualAndKnownPackageCategoriesBeatAndroidDefaults() {
         assertEquals(
             AppCategory.MEDIA,
@@ -68,6 +83,15 @@ class AppCategorizerTest {
                 "com.amazon.kindle",
                 "Kindle",
                 ApplicationInfo.CATEGORY_PRODUCTIVITY,
+            ),
+        )
+        assertEquals(
+            AppCategory.AI_AGENTS,
+            AppCategorizer.resolveCategory(
+                null,
+                "ai.poe.app",
+                "Poe",
+                ApplicationInfo.CATEGORY_SOCIAL,
             ),
         )
     }

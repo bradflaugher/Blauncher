@@ -40,6 +40,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/pinned_group" />
+        <TextView android:id="@+id/pinnedCategory" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
         <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/app_groups" />
         <TextView android:id="@+id/refreshCategories" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" android:text="@string/recategorize" />
     </FrameLayout>

@@ -31,16 +31,6 @@ sealed class AppModel : Comparable<AppModel> {
         override val category: AppCategory = AppCategory.OTHER,
     ) : AppModel()
 
-    data class CategoryHeader(
-        override val category: AppCategory,
-        override val user: UserHandle = android.os.Process.myUserHandle(),
-    ) : AppModel() {
-        override val appLabel: String = category.displayName
-        override val key: CollationKey? = null
-        override val appPackage: String = ""
-        override val isNew: Boolean = false
-    }
-
     data class PrivateSpaceHeader(
         val isLocked: Boolean = true,
         override val user: UserHandle = android.os.Process.myUserHandle(),

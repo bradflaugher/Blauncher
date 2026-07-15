@@ -5,7 +5,8 @@ private Android launcher setup rather than as an official Olauncher release.
 
 ## Focus
 
-- Local app categorization with per-app manual overrides.
+- Local app categorization with per-app manual overrides and compact markers.
+- A dedicated AI Agents group pinned first by default, configurable in Settings.
 - Time-aware ranking based on an editable daily routine and app-name hints.
 - Keyboard-first search with single-match auto-launch and web search fallback.
 - A minimal launcher experience without a remote account or synchronization.
@@ -59,7 +60,7 @@ Signing is all-or-nothing: a release is unsigned when none of these variables
 are set, and configuration fails when only some are set.
 
 Every push to `main` runs lint, tests, and a signed release build in GitHub
-Actions. It publishes a GitHub release tagged `build-<run_number>`. Configure
+Actions. It replaces the single `latest` release and its `Blauncher.apk`. Configure
 these repository secrets:
 
 - `BLAUNCHER_KEYSTORE_BASE64`: the keystore encoded with base64.

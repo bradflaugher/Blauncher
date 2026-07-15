@@ -28,10 +28,6 @@
     <string name="on">On</string>
     <string name="change_default_launcher">Change default launcher</string>
     <string name="privacy">Privacy</string>
-    <string name="share">Share</string>
-    <string name="share_now">Share now</string>
-    <string name="rate">Rate</string>
-    <string name="rate_now">Rate now</string>
     <string name="follow">Follow</string>
     <string name="email">Email</string>
     <string name="donate">Donate</string>
@@ -66,22 +62,15 @@
     <string name="system_default">System</string>
     <string name="dark">Dark</string>
     <string name="light">Light</string>
-    <string name="welcome_to_olauncher_settings">Welcome to Blauncher settings.</string>
-    <string name="rate_us_message">Blauncher</string>
-    <string name="keyboard_message">Hi, keyboard is the fastest way to find and launch apps in Blauncher. Can we request you to keep this On for a few more days and then decide?
-        \n\nThe choice is always yours.</string>
     <string name="accessibility_service_description">The accessibility permission is required to enable double tap to lock. Any data acquired by Blauncher via this service will not leave your device.</string>
     <string name="open">Open link</string>
     <string name="copy">Copy</string>
     <string name="close">Close</string>
-    <string name="not_now">Not now</string>
-    <string name="roadmap">Roadmap</string>
     <string name="date">Date</string>
     <string name="date_only">Date only</string>
     <string name="bottom_on">Bottom: On</string>
     <string name="bottom_off">Bottom: Off</string>
     <string name="please_set_olauncher_as_default_first">Please set Blauncher as default first</string>
-    <string name="affiliate">Affiliate</string>
     <string name="tip_start_typing_for_rename">Tip: Start typing for app RENAME option</string>
     <string name="hidden_apps_message">Tap Blauncher at the top of Settings to find your hidden apps.</string>
     <string name="swipe_down_for">Swipe down for</string>
@@ -120,10 +109,6 @@
     <string name="adapter_hide">Hide</string>
     <string name="alignment_changed">Alignment changed ✅</string>
     <string name="home_screen">Home screen</string>
-    <string name="hey">Hey</string>
-    <string name="new_year_wish">Here\'s to a year better than any before. Happy new year!</string>
-    <string name="new_year_wish_1">It doesn\'t matter how January went. You still have the rest of the year to do better than ever.</string>
-    <string name="cheers">Cheers!</string>
     <string name="notification_bar">Notification bar</string>
     <string name="private_space">Private space</string>
     <string name="recategorize">Refresh</string>
@@ -142,4 +127,6 @@
     <string name="current_focus">Current focus</string>
     <string name="app_groups">App groups</string>
     <string name="vacation_mode">Vacation mode</string>
+    <string name="pinned_group">Pinned group</string>
+    <string name="none">None</string>
 </resources>

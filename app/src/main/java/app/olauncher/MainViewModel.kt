@@ -46,13 +46,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var isPrivateSpaceToggling = false
 
     val showDialog = SingleLiveEvent<String>()
-    val checkForMessages = SingleLiveEvent<Unit?>()
     val resetLauncherLiveData = SingleLiveEvent<Unit?>()
     // Home button for recents feature disabled
     // val showRecentApps = SingleLiveEvent<Unit?>()
 
     fun selectedApp(appModel: AppModel, flag: Int) {
-        if (appModel is AppModel.PrivateSpaceHeader || appModel is AppModel.CategoryHeader) return
+        if (appModel is AppModel.PrivateSpaceHeader) return
         when (flag) {
             Constants.FLAG_LAUNCH_APP -> {
                 when (appModel) {
@@ -99,7 +98,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveHomeApp(appModel: AppModel, position: Int) {
         when (appModel) {
-            is AppModel.CategoryHeader -> return
             is AppModel.PrivateSpaceHeader -> return
             is AppModel.App -> {
                 when (position) {
@@ -258,7 +256,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {
         when (appModel) {
-            is AppModel.CategoryHeader -> return
             is AppModel.PrivateSpaceHeader -> return
             is AppModel.App -> {
                 if (isLeft) {

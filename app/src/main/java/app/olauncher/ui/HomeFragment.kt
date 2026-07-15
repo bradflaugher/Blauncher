@@ -572,7 +572,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onClick() {
                 super.onClick()
-                viewModel.checkForMessages.call()
             }
         }
     }

@@ -107,7 +107,6 @@ class MainActivity : AppCompatActivity() {
         if (prefs.firstOpen) {
             viewModel.firstOpen(true)
             prefs.firstOpen = false
-            prefs.firstOpenTime = System.currentTimeMillis()
             viewModel.setDefaultClockApp()
             viewModel.resetLauncherLiveData.call()
         }
@@ -184,24 +183,10 @@ class MainActivity : AppCompatActivity() {
             else
                 showLauncherSelector(Constants.REQUEST_CODE_LAUNCHER_SELECTOR)
         }
-        viewModel.checkForMessages.observe(this) {
-            checkForMessages()
-        }
         viewModel.showDialog.observe(this) {
             when (it) {
-                Constants.Dialog.ABOUT -> {
-                    showMessageDialog(R.string.app_name, R.string.welcome_to_olauncher_settings, R.string.okay) {
-                        binding.messageLayout.visibility = View.GONE
-                    }
-                }
-
                 Constants.Dialog.HIDDEN -> {
                     showMessageDialog(R.string.hidden_apps, R.string.hidden_apps_message, R.string.okay) {
-                    }
-                }
-
-                Constants.Dialog.KEYBOARD -> {
-                    showMessageDialog(R.string.app_name, R.string.keyboard_message, R.string.okay) {
                     }
                 }
 
@@ -218,12 +203,6 @@ class MainActivity : AppCompatActivity() {
             binding.messageLayout.visibility = View.GONE
         }
         binding.messageLayout.visibility = View.VISIBLE
-    }
-
-    private fun checkForMessages() {
-        if (prefs.firstOpenTime == 0L)
-            prefs.firstOpenTime = System.currentTimeMillis()
-
     }
 
     @SuppressLint("SourceLockedOrientationActivity")

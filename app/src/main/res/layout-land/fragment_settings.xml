@@ -27,7 +27,8 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:orientation="vertical"
-            android:paddingVertical="56dp">
+            android:paddingTop="12dp"
+            android:paddingBottom="40dp">
 
             <LinearLayout
                 android:layout_width="match_parent"

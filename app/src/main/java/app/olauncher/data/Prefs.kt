@@ -10,14 +10,12 @@ class Prefs(context: Context) {
     private val PREFS_FILENAME = "app.olauncher"
 
     private val FIRST_OPEN = "FIRST_OPEN"
-    private val FIRST_OPEN_TIME = "FIRST_OPEN_TIME"
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val FIRST_HIDE = "FIRST_HIDE"
     private val USER_STATE = "USER_STATE"
     private val LOCK_MODE = "LOCK_MODE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
-    private val KEYBOARD_MESSAGE = "KEYBOARD_MESSAGE"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
@@ -27,17 +25,11 @@ class Prefs(context: Context) {
     private val SWIPE_RIGHT_ENABLED = "SWIPE_RIGHT_ENABLED"
     private val HIDDEN_APPS = "HIDDEN_APPS"
     private val HIDDEN_APPS_UPDATED = "HIDDEN_APPS_UPDATED"
-    private val SHOW_HINT_COUNTER = "SHOW_HINT_COUNTER"
     private val APP_THEME = "APP_THEME"
-    private val ABOUT_CLICKED = "ABOUT_CLICKED"
-    private val RATE_CLICKED = "RATE_CLICKED"
-    private val SHARE_SHOWN_TIME = "SHARE_SHOWN_TIME"
     private val SWIPE_DOWN_ACTION = "SWIPE_DOWN_ACTION"
     private val TEXT_SIZE_SCALE = "TEXT_SIZE_SCALE"
-    private val PRO_MESSAGE_SHOWN = "PRO_MESSAGE_SHOWN"
     private val HIDE_SET_DEFAULT_LAUNCHER = "HIDE_SET_DEFAULT_LAUNCHER"
     private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
-    private val SHOWN_ON_DAY_OF_YEAR = "SHOWN_ON_DAY_OF_YEAR"
     private val APP_CATEGORY_OVERRIDE_PREFIX = "APP_CATEGORY_OVERRIDE_"
     private val ROUTINE_READING_START = "ROUTINE_READING_START"
     private val ROUTINE_COMMUTE_START = "ROUTINE_COMMUTE_START"
@@ -46,6 +38,7 @@ class Prefs(context: Context) {
     private val ROUTINE_FAMILY_START = "ROUTINE_FAMILY_START"
     private val ROUTINE_EVENING_START = "ROUTINE_EVENING_START"
     private val VACATION_MODE = "VACATION_MODE"
+    private val PINNED_CATEGORY = "PINNED_CATEGORY"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -128,6 +121,14 @@ class Prefs(context: Context) {
             "SCREEN_TIME_APP_USER",
             "SCREEN_TIME_APP_CLASS_NAME",
             "WALLPAPER_MSG_SHOWN",
+            "FIRST_OPEN_TIME",
+            "KEYBOARD_MESSAGE",
+            "SHOW_HINT_COUNTER",
+            "ABOUT_CLICKED",
+            "RATE_CLICKED",
+            "SHARE_SHOWN_TIME",
+            "PRO_MESSAGE_SHOWN",
+            "SHOWN_ON_DAY_OF_YEAR",
         )
         if (obsoleteKeys.any(prefs::contains)) {
             prefs.edit { obsoleteKeys.forEach(::remove) }
@@ -137,10 +138,6 @@ class Prefs(context: Context) {
     var firstOpen: Boolean
         get() = prefs.getBoolean(FIRST_OPEN, true)
         set(value) = prefs.edit { putBoolean(FIRST_OPEN, value).apply() }
-
-    var firstOpenTime: Long
-        get() = prefs.getLong(FIRST_OPEN_TIME, 0L)
-        set(value) = prefs.edit { putLong(FIRST_OPEN_TIME, value).apply() }
 
     var firstSettingsOpen: Boolean
         get() = prefs.getBoolean(FIRST_SETTINGS_OPEN, true)
@@ -161,10 +158,6 @@ class Prefs(context: Context) {
     var autoShowKeyboard: Boolean
         get() = prefs.getBoolean(AUTO_SHOW_KEYBOARD, true)
         set(value) = prefs.edit { putBoolean(AUTO_SHOW_KEYBOARD, value).apply() }
-
-    var keyboardMessageShown: Boolean
-        get() = prefs.getBoolean(KEYBOARD_MESSAGE, false)
-        set(value) = prefs.edit { putBoolean(KEYBOARD_MESSAGE, value).apply() }
 
     var homeAppsNum: Int
         get() = prefs.getInt(HOME_APPS_NUM, 4)
@@ -218,6 +211,14 @@ class Prefs(context: Context) {
         get() = prefs.getBoolean(VACATION_MODE, false)
         set(value) = prefs.edit { putBoolean(VACATION_MODE, value) }
 
+    var pinnedCategory: AppCategory?
+        get() {
+            val stored = prefs.getString(PINNED_CATEGORY, null) ?: return AppCategory.AI_AGENTS
+            if (stored == "NONE") return null
+            return runCatching { AppCategory.valueOf(stored) }.getOrDefault(AppCategory.AI_AGENTS)
+        }
+        set(value) = prefs.edit { putString(PINNED_CATEGORY, value?.name ?: "NONE") }
+
     var swipeLeftEnabled: Boolean
         get() = prefs.getBoolean(SWIPE_LEFT_ENABLED, true)
         set(value) = prefs.edit { putBoolean(SWIPE_LEFT_ENABLED, value).apply() }
@@ -234,10 +235,6 @@ class Prefs(context: Context) {
         get() = prefs.getFloat(TEXT_SIZE_SCALE, 1.0f)
         set(value) = prefs.edit { putFloat(TEXT_SIZE_SCALE, value).apply() }
 
-    var proMessageShown: Boolean
-        get() = prefs.getBoolean(PRO_MESSAGE_SHOWN, false)
-        set(value) = prefs.edit { putBoolean(PRO_MESSAGE_SHOWN, value).apply() }
-
     var hideSetDefaultLauncher: Boolean
         get() = prefs.getBoolean(HIDE_SET_DEFAULT_LAUNCHER, false)
         set(value) = prefs.edit { putBoolean(HIDE_SET_DEFAULT_LAUNCHER, value).apply() }
@@ -245,10 +242,6 @@ class Prefs(context: Context) {
     var launcherRestartTimestamp: Long
         get() = prefs.getLong(LAUNCHER_RESTART_TIMESTAMP, 0L)
         set(value) = prefs.edit { putLong(LAUNCHER_RESTART_TIMESTAMP, value).apply() }
-
-    var shownOnDayOfYear: Int
-        get() = prefs.getInt(SHOWN_ON_DAY_OF_YEAR, 0)
-        set(value) = prefs.edit { putInt(SHOWN_ON_DAY_OF_YEAR, value).apply() }
 
     // Home button for recents feature disabled
     // var homeButtonShowRecents: Boolean
@@ -262,22 +255,6 @@ class Prefs(context: Context) {
     var hiddenAppsUpdated: Boolean
         get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
         set(value) = prefs.edit { putBoolean(HIDDEN_APPS_UPDATED, value).apply() }
-
-    var toShowHintCounter: Int
-        get() = prefs.getInt(SHOW_HINT_COUNTER, 1)
-        set(value) = prefs.edit { putInt(SHOW_HINT_COUNTER, value).apply() }
-
-    var aboutClicked: Boolean
-        get() = prefs.getBoolean(ABOUT_CLICKED, false)
-        set(value) = prefs.edit { putBoolean(ABOUT_CLICKED, value).apply() }
-
-    var rateClicked: Boolean
-        get() = prefs.getBoolean(RATE_CLICKED, false)
-        set(value) = prefs.edit { putBoolean(RATE_CLICKED, value).apply() }
-
-    var shareShownTime: Long
-        get() = prefs.getLong(SHARE_SHOWN_TIME, 0L)
-        set(value) = prefs.edit { putLong(SHARE_SHOWN_TIME, value).apply() }
 
     var swipeDownAction: Int
         get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.NOTIFICATIONS)

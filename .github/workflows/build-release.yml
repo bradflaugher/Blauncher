@@ -68,6 +68,10 @@ jobs:
           BLAUNCHER_KEY_PASSWORD: ${{ secrets.BLAUNCHER_KEY_PASSWORD }}
         run: ./gradlew lint test assembleRelease
 
+      - name: Name signed APK
+        if: github.event_name == 'push'
+        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/Blauncher.apk
+
       - name: Upload release APK
         uses: actions/upload-artifact@v5
         with:
@@ -93,14 +97,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="build-${GITHUB_RUN_NUMBER}"
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$tag" release-apk/app-release.apk --clobber \
-              --repo "$GITHUB_REPOSITORY"
-          else
-            gh release create "$tag" release-apk/app-release.apk \
-              --repo "$GITHUB_REPOSITORY" \
-              --target "$GITHUB_SHA" \
-              --title "Blauncher build ${GITHUB_RUN_NUMBER}" \
-              --notes "Automated release for commit ${GITHUB_SHA}."
+          if gh release view latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release delete latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY"
           fi
+          gh release create latest release-apk/Blauncher.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Blauncher latest" \
+            --notes "Latest signed build from commit ${GITHUB_SHA}."
+
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 100 \
+            --json tagName --jq '.[] | select(.tagName | startswith("build-")) | .tagName' |
+          while read -r old_tag; do
+            gh release delete "$old_tag" --cleanup-tag --yes --repo "$GITHUB_REPOSITORY"
+          done
