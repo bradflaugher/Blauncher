@@ -109,7 +109,6 @@ object AppCategorizer {
             .withIndex().associate { it.value to it.index }
         apps.sortWith(
             compareBy<AppModel> { categoryOrder[it.category] ?: Int.MAX_VALUE }
-                .thenByDescending { routineScore(it, routine) }
                 .thenBy(String.CASE_INSENSITIVE_ORDER) { it.appLabel }
         )
     }
@@ -226,39 +225,6 @@ object AppCategorizer {
         AppCategory.AI_AGENTS.takeIf { category ->
             keywordCategories[category].orEmpty().any { text.contains(it, ignoreCase = true) }
         }
-
-    private fun routineScore(app: AppModel, routine: AppRoutine): Int =
-        routineScore(app.appPackage, app.appLabel, routine)
-
-    internal fun routineScore(packageName: String, label: String, routine: AppRoutine): Int {
-        val text = "$packageName $label".lowercase()
-        val priorities = when (routine) {
-            AppRoutine.READING -> listOf("kindle", "book", "read", "news", "reader", "pocket")
-            AppRoutine.COMMUTE -> listOf(
-                "maps", "transit", "train", "uber", "audiobook", "audible", "podcast", "music"
-            )
-            AppRoutine.WORK -> listOf(
-                "calendar", "mail", "slack", "teams", "notion", "docs", "drive", "notes", "task", "work"
-            )
-            AppRoutine.FITNESS -> listOf(
-                "tennis", "court", "fitness", "fit", "workout", "health", "maps", "calendar"
-            )
-            AppRoutine.FAMILY -> listOf(
-                "family", "message", "phone", "camera", "photo", "calendar", "food", "delivery"
-            )
-            AppRoutine.EVENING -> listOf(
-                "audiobook", "audible", "kindle", "book", "read", "reader", "pocket", "podcast"
-            )
-            AppRoutine.WEEKEND -> listOf(
-                "tennis", "family", "camera", "photo", "maps", "food", "delivery", "book", "podcast"
-            )
-            AppRoutine.VACATION -> listOf(
-                "maps", "flight", "airline", "hotel", "translate", "camera", "photo", "audiobook", "book"
-            )
-        }
-        val match = priorities.indexOfFirst { text.contains(it) }
-        return if (match == -1) 0 else priorities.size - match
-    }
 
     private fun currentMinuteOfDay(): Int = Calendar.getInstance().run {
         get(Calendar.HOUR_OF_DAY) * 60 + get(Calendar.MINUTE)

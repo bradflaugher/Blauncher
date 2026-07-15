@@ -4,7 +4,6 @@ import android.content.pm.ApplicationInfo
 import app.olauncher.data.AppCategory
 import app.olauncher.data.AppRoutine
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Calendar
 
@@ -113,18 +112,6 @@ class AppCategorizerTest {
     }
 
     @Test
-    fun routineHintsRankLikelyAppsAheadOfGenericPeers() {
-        assertAhead(AppRoutine.READING, "com.amazon.kindle", "Kindle", "com.spotify.music", "Spotify")
-        assertAhead(AppRoutine.COMMUTE, "com.google.android.apps.maps", "Maps", "com.booking", "Booking")
-        assertAhead(AppRoutine.WORK, "notion.id", "Notion", "com.microsoft.office", "Office")
-        assertAhead(AppRoutine.FITNESS, "com.tennisone", "TennisONE", "com.sleep", "Sleep")
-        assertAhead(AppRoutine.FAMILY, "com.whatsapp", "Messages", "com.discord", "Discord")
-        assertAhead(AppRoutine.EVENING, "com.audible.application", "Audible", "com.youtube", "YouTube")
-        assertAhead(AppRoutine.WEEKEND, "com.tennisone", "TennisONE", "com.sleep", "Sleep")
-        assertAhead(AppRoutine.VACATION, "com.google.android.apps.maps", "Maps", "com.booking", "Booking")
-    }
-
-    @Test
     fun vacationOverridesWeekendAndWeekendOverridesWeekday() {
         assertEquals(
             AppRoutine.VACATION,
@@ -140,17 +127,4 @@ class AppCategorizerTest {
         )
     }
 
-    private fun assertAhead(
-        routine: AppRoutine,
-        preferredPackage: String,
-        preferredLabel: String,
-        otherPackage: String,
-        otherLabel: String,
-    ) {
-        assertTrue(
-            "$preferredLabel should rank ahead of $otherLabel during ${routine.displayName}",
-            AppCategorizer.routineScore(preferredPackage, preferredLabel, routine) >
-                AppCategorizer.routineScore(otherPackage, otherLabel, routine),
-        )
-    }
 }

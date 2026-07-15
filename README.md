@@ -7,7 +7,7 @@ private Android launcher setup rather than as an official Olauncher release.
 
 - Local app categorization with per-app manual overrides and compact markers.
 - A dedicated AI Agents group pinned first by default, configurable in Settings.
-- Time-aware ranking based on an editable daily routine and app-name hints.
+- Time-aware group ordering with alphabetical apps inside every group.
 - Keyboard-first search with single-match auto-launch and web search fallback.
 - A minimal launcher experience without a remote account or synchronization.
 - No launcher-managed wallpaper or usage-history access.
