@@ -15,49 +15,53 @@ object AppCategorizer {
         "com.google.android.apps.bard" to AppCategory.AI_AGENTS,
         "ai.perplexity.app.android" to AppCategory.AI_AGENTS,
         "com.microsoft.copilot" to AppCategory.AI_AGENTS,
-        "com.amazon.kindle" to AppCategory.MEDIA,
-        "com.audible" to AppCategory.MEDIA,
-        "libby" to AppCategory.MEDIA,
-        "com.google.android.apps.maps" to AppCategory.TRAVEL,
-        "com.google.android.gm" to AppCategory.COMMUNICATION,
-        "com.google.android.apps.photos" to AppCategory.MEDIA,
-        "com.dd.doordash" to AppCategory.SHOPPING,
     )
 
-    private val keywordCategories = linkedMapOf(
+    private val semanticTerms = linkedMapOf(
         AppCategory.AI_AGENTS to setOf(
-            "chatgpt", "claude", "copilot", "gemini", "grok", "mistral", "perplexity", "poe"
+            "ai assistant", "chatbot", "chatgpt", "claude", "copilot", "gemini", "grok",
+            "mistral", "perplexity", "poe"
         ),
         AppCategory.COMMUNICATION to setOf(
-            "chat", "discord", "email", "gmail", "mail", "meet", "message", "phone",
-            "signal", "slack", "social", "teams", "telegram", "whatsapp", "zoom"
+            "call", "camera", "chat", "class", "community", "companion", "contact", "dialer",
+            "discord", "email", "family", "gmail", "home", "inbox", "mail", "meet", "message",
+            "outlook", "parent", "people", "phone", "photo", "portrait", "school", "signal",
+            "slack", "social", "teams", "telegram", "whatsapp", "zoom"
         ),
         AppCategory.PRODUCTIVITY to setOf(
-            "calendar", "docs", "drive", "keep", "notes", "notion", "office", "sheets",
-            "task", "todo", "work", "writer"
+            "calendar", "credential", "docs", "drive", "github", "keep", "notes", "notion",
+            "office", "password", "print", "recorder", "scan", "sheets", "slides", "task",
+            "terminal", "todo", "trello", "vpn", "work", "writer"
         ),
         AppCategory.FINANCE to setOf(
-            "bank", "budget", "cash", "finance", "invest", "paypal", "wallet"
+            "account", "bank", "banking", "budget", "card", "cash", "credit", "finance",
+            "insurance", "invest", "money", "mortgage", "pay", "payroll", "retirement", "stock",
+            "tax", "wallet"
         ),
         AppCategory.HEALTH to setOf(
-            "exercise", "fit", "fitness", "health", "meditate", "run", "sleep", "strava",
-            "tennis", "workout"
+            "club", "exercise", "fit", "fitness", "gym", "health", "meditate", "pilates", "run",
+            "sleep", "strava", "tennis", "workout", "wellness"
         ),
         AppCategory.TRAVEL to setOf(
-            "airline", "flight", "hotel", "maps", "transit", "travel", "uber"
+            "airline", "ballpark", "bicycle", "bike", "car", "cinema", "dining", "flight",
+            "hotel", "map", "parking", "ranch", "reservation", "resort", "restaurant", "rideshare",
+            "spa", "theater", "theatre", "ticket", "transit", "travel", "uber"
+        ),
+        AppCategory.GAMES to setOf(
+            "arcade", "game", "gaming", "play store", "steam"
         ),
         AppCategory.SHOPPING to setOf(
-            "amazon", "delivery", "doordash", "ebay", "food", "instacart", "shop", "store",
-            "ubereats"
+            "amazon", "cafe", "coffee", "delivery", "doordash", "ebay", "food", "grocery",
+            "instacart", "meal", "pizza", "retail", "shop", "store", "ubereats"
         ),
         AppCategory.MEDIA to setOf(
-            "audible", "book", "camera", "gallery", "kindle", "libby", "movie", "music",
-            "news", "photo", "pocket", "podcast", "reader", "spotify", "video", "youtube"
+            "audible", "audio", "audiobook", "book", "classical", "economist", "gallery", "kindle",
+            "libby", "movie", "music", "news", "now playing", "pocket", "podcast", "radio",
+            "reader", "sonos", "spotify", "stream", "tv", "video", "wsj", "youtube"
         ),
-        AppCategory.GAMES to setOf("game", "games", "playgames"),
         AppCategory.TOOLS to setOf(
-            "authenticator", "calculator", "clock", "files", "keyboard", "launcher",
-            "settings", "terminal", "tools", "vpn", "weather"
+            "authenticator", "browser", "calculator", "clock", "file", "keyboard", "launcher",
+            "settings", "translate", "utility", "weather"
         ),
     )
 
@@ -89,8 +93,28 @@ object AppCategorizer {
     ): AppCategory {
         override?.let { return it }
         packageCategory(packageName)?.let { return it }
-        aiCategoryFromText("$packageName $label")?.let { return it }
-        return when (declaredCategory) {
+        return categoryFromEvidence(packageName, label, declaredCategory)
+    }
+
+    private fun categoryFromEvidence(
+        packageName: String,
+        label: String,
+        declaredCategory: Int,
+    ): AppCategory {
+        val scores = mutableMapOf<AppCategory, Int>()
+        androidCategory(declaredCategory)?.let { scores[it] = 1 }
+        val normalized = normalizeText("$packageName $label")
+        semanticTerms.forEach { (category, terms) ->
+            val semanticScore = terms.sumOf { term ->
+                if (containsTerm(normalized, term)) 2 + term.count { it == ' ' } else 0
+            }
+            if (semanticScore > 0) scores[category] = scores.getOrDefault(category, 0) + semanticScore
+        }
+        return scores.maxByOrNull { it.value }?.key ?: AppCategory.OTHER
+    }
+
+    private fun androidCategory(declaredCategory: Int): AppCategory? =
+        when (declaredCategory) {
             ApplicationInfo.CATEGORY_GAME -> AppCategory.GAMES
             ApplicationInfo.CATEGORY_AUDIO,
             ApplicationInfo.CATEGORY_VIDEO,
@@ -99,9 +123,8 @@ object AppCategorizer {
             ApplicationInfo.CATEGORY_SOCIAL -> AppCategory.COMMUNICATION
             ApplicationInfo.CATEGORY_MAPS -> AppCategory.TRAVEL
             ApplicationInfo.CATEGORY_PRODUCTIVITY -> AppCategory.PRODUCTIVITY
-            else -> categoryFromText("$packageName $label")
+            else -> null
         }
-    }
 
     fun sortForNow(prefs: Prefs, apps: MutableList<AppModel>) {
         val routine = currentRoutine(prefs)
@@ -211,19 +234,22 @@ object AppCategorizer {
     } + AppCategory.entries).distinct()
 
     internal fun categoryFromText(text: String): AppCategory {
-        val normalized = text.lowercase()
-        packageCategory(normalized)?.let { return it }
-        return keywordCategories.entries.firstOrNull { (_, keywords) ->
-            keywords.any { normalized.contains(it) }
-        }?.key ?: AppCategory.OTHER
+        packageCategory(text)?.let { return it }
+        return categoryFromEvidence(text.substringBefore(' '), text.substringAfter(' ', ""), -1)
     }
 
     private fun packageCategory(packageName: String): AppCategory? =
         packageCategories.entries.firstOrNull { packageName.lowercase().contains(it.key) }?.value
 
-    private fun aiCategoryFromText(text: String): AppCategory? =
-        AppCategory.AI_AGENTS.takeIf { category ->
-            keywordCategories[category].orEmpty().any { text.contains(it, ignoreCase = true) }
+    private fun normalizeText(text: String): String = text
+        .replace(Regex("([a-z])([A-Z])"), "$1 $2")
+        .lowercase()
+        .replace(Regex("[^a-z0-9]+"), " ")
+        .trim()
+
+    private fun containsTerm(normalizedText: String, term: String): Boolean =
+        " $normalizedText ".let { text ->
+            text.contains(" $term ") || (!term.contains(' ') && text.contains(" ${term}s "))
         }
 
     private fun currentMinuteOfDay(): Int = Calendar.getInstance().run {

@@ -22,7 +22,7 @@ class AppCategorizerTest {
             "notion.id Notion" to AppCategory.PRODUCTIVITY,
             "com.strava Strava" to AppCategory.HEALTH,
             "com.whatsapp WhatsApp" to AppCategory.COMMUNICATION,
-            "com.google.android.apps.photos Google Photos" to AppCategory.MEDIA,
+            "com.google.android.apps.photos Google Photos" to AppCategory.COMMUNICATION,
             "com.dd.doordash DoorDash" to AppCategory.SHOPPING,
             "com.openai.chatgpt ChatGPT" to AppCategory.AI_AGENTS,
             "com.anthropic.claude Claude" to AppCategory.AI_AGENTS,
@@ -32,6 +32,61 @@ class AppCategorizerTest {
 
         examples.forEach { (app, expected) ->
             assertEquals(app, expected, AppCategorizer.categoryFromText(app))
+        }
+    }
+
+    @Test
+    fun semanticEvidenceCorrectsMisleadingAndroidCategories() {
+        val examples = listOf(
+            CategoryExample(
+                "example.camera",
+                "Family Camera",
+                ApplicationInfo.CATEGORY_IMAGE,
+                AppCategory.COMMUNICATION,
+            ),
+            CategoryExample(
+                "example.teams",
+                "Teams",
+                ApplicationInfo.CATEGORY_PRODUCTIVITY,
+                AppCategory.COMMUNICATION,
+            ),
+            CategoryExample(
+                "example.wallet",
+                "Retirement Wallet",
+                ApplicationInfo.CATEGORY_PRODUCTIVITY,
+                AppCategory.FINANCE,
+            ),
+            CategoryExample(
+                "example.theatres",
+                "Local Theatres",
+                ApplicationInfo.CATEGORY_UNDEFINED,
+                AppCategory.TRAVEL,
+            ),
+            CategoryExample(
+                "example.play",
+                "Play Store",
+                ApplicationInfo.CATEGORY_UNDEFINED,
+                AppCategory.GAMES,
+            ),
+            CategoryExample(
+                "example.files",
+                "File Browser",
+                ApplicationInfo.CATEGORY_PRODUCTIVITY,
+                AppCategory.TOOLS,
+            ),
+        )
+
+        examples.forEach { example ->
+            assertEquals(
+                example.label,
+                example.expected,
+                AppCategorizer.resolveCategory(
+                    null,
+                    example.packageName,
+                    example.label,
+                    example.declaredCategory,
+                ),
+            )
         }
     }
 
@@ -126,5 +181,12 @@ class AppCategorizerTest {
             AppCategorizer.resolveMode(false, Calendar.MONDAY, AppRoutine.WORK),
         )
     }
+
+    private data class CategoryExample(
+        val packageName: String,
+        val label: String,
+        val declaredCategory: Int,
+        val expected: AppCategory,
+    )
 
 }
