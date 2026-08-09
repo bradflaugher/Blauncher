@@ -20,7 +20,7 @@ if (!configuredSigningVariables.isEmpty() && configuredSigningVariables.size() !
 def releaseSigningEnabled = configuredSigningVariables.size() == signingEnvironmentVariables.size()
 
 android {
-    compileSdk 36
+    compileSdk 37
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -33,8 +33,8 @@ android {
 
     defaultConfig {
         applicationId "com.bradflaugher.blauncher"
-        minSdkVersion 36
-        targetSdkVersion 36
+        minSdkVersion 37
+        targetSdkVersion 37
         versionCode versionCodeFromEnvironment.toInteger()
         versionName System.getenv('BLAUNCHER_VERSION_NAME') ?: "1.0"
         resValue "string", "app_name", "Blauncher"
@@ -78,21 +78,12 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation libs.kotlin.stdlib
     implementation libs.core.ktx
     implementation libs.appcompat
     implementation libs.recyclerview
-
-    // Android lifecycle
-    implementation libs.lifecycle.extensions
     implementation libs.lifecycle.viewmodel.ktx
-
-    // Navigation
     implementation libs.navigation.fragment.ktx
-
-    //Material dependency
     implementation libs.material
     testImplementation libs.junit
-
 }

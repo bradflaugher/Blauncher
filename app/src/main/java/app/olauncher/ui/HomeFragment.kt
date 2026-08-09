@@ -1,10 +1,8 @@
 package app.olauncher.ui
 
-import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.os.BatteryManager
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -12,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -44,8 +41,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     private lateinit var prefs: Prefs
     private lateinit var viewModel: MainViewModel
-    private lateinit var deviceManager: DevicePolicyManager
-
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
@@ -60,8 +55,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         viewModel = activity?.run {
             ViewModelProvider(this)[MainViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
-
-        deviceManager = context?.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
         initObservers()
         setHomeAlignment(prefs.homeAlignment)
@@ -488,39 +481,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
-    private fun lockPhone() {
-        requireActivity().runOnUiThread {
-            try {
-                deviceManager.lockNow()
-            } catch (e: SecurityException) {
-                requireContext().showToast(getString(R.string.please_turn_on_double_tap_to_unlock), Toast.LENGTH_LONG)
-                findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
-            } catch (e: Exception) {
-                requireContext().showToast(getString(R.string.launcher_failed_to_lock_device), Toast.LENGTH_LONG)
-                prefs.lockModeOn = false
-            }
-        }
-    }
-
     private fun showStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            requireActivity().window.insetsController?.show(WindowInsets.Type.statusBars())
-        else
-            @Suppress("DEPRECATION", "InlinedApi")
-            requireActivity().window.decorView.apply {
-                systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            }
+        requireActivity().window.insetsController?.show(WindowInsets.Type.statusBars())
     }
 
     private fun hideStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            requireActivity().window.insetsController?.hide(WindowInsets.Type.statusBars())
-        else {
-            @Suppress("DEPRECATION")
-            requireActivity().window.decorView.apply {
-                systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_FULLSCREEN
-            }
-        }
+        requireActivity().window.insetsController?.hide(WindowInsets.Type.statusBars())
     }
 
     private fun showLongPressToast() = requireContext().showToast(getString(R.string.long_press_to_select_app))
@@ -564,10 +530,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             override fun onDoubleClick() {
                 super.onDoubleClick()
                 if (!prefs.lockModeOn) return
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                    binding.lock.performClick()
-                else
-                    lockPhone()
+                binding.lock.performClick()
             }
 
             override fun onClick() {

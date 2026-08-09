@@ -8,15 +8,14 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import app.olauncher.data.Constants
@@ -43,11 +42,6 @@ class MainActivity : AppCompatActivity() {
     private var isResumed = false
     private var profileReceiver: BroadcastReceiver? = null
 
-//    override fun onBackPressed() {
-//        if (navController.currentDestination?.id != R.id.mainFragment)
-//            super.onBackPressed()
-//    }
-
     override fun attachBaseContext(context: Context) {
         val newConfig = Configuration(context.resources.configuration)
         newConfig.fontScale = Prefs(context).textSizeScale
@@ -67,19 +61,13 @@ class MainActivity : AppCompatActivity() {
         navController = this.findNavController(R.id.nav_host_fragment)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (navController.currentDestination?.id != R.id.mainFragment) {
-                    // then we might want to finish the activity or disable this callback.
-                    if (navController.popBackStack()) {
-                        // Successfully popped back
-                    } else {
-                        // if you want other system/activity level handling
-                    }
+                    navController.popBackStack()
                 }
             }
-        }
-        onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+        })
 
         if (prefs.firstOpen) {
             viewModel.firstOpen(true)
@@ -92,19 +80,19 @@ class MainActivity : AppCompatActivity() {
         viewModel.getAppList()
         setupOrientation()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            profileReceiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
-                    viewModel.isPrivateSpaceToggling = false
-                    viewModel.getPrivateSpaceAppList()
-                }
+        profileReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                viewModel.isPrivateSpaceToggling = false
+                viewModel.getPrivateSpaceAppList()
             }
-            val filter = IntentFilter().apply {
+        }
+        registerReceiver(
+            profileReceiver,
+            IntentFilter().apply {
                 addAction(Intent.ACTION_PROFILE_AVAILABLE)
                 addAction(Intent.ACTION_PROFILE_UNAVAILABLE)
-            }
-            registerReceiver(profileReceiver, filter)
-        }
+            },
+        )
     }
 
     override fun onStart() {
@@ -130,11 +118,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onNewIntent(intent: Intent?) {
-        // Home button for recents feature disabled
-        // val alreadyHome = navController.currentDestination?.id == R.id.mainFragment
         backToHomeScreen()
-        // if (alreadyHome && isResumed && prefs.homeButtonShowRecents)
-        //     viewModel.showRecentApps.call()
         super.onNewIntent(intent)
     }
 
@@ -148,7 +132,7 @@ class MainActivity : AppCompatActivity() {
             openLauncherChooser(it)
         }
         viewModel.resetLauncherLiveData.observe(this) {
-            if (isDefaultLauncher() || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+            if (isDefaultLauncher())
                 resetLauncherViaFakeActivity()
             else
                 showLauncherSelector(Constants.REQUEST_CODE_LAUNCHER_SELECTOR)
@@ -157,9 +141,8 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SourceLockedOrientationActivity")
     private fun setupOrientation() {
-        if (isTablet(this) || Build.VERSION.SDK_INT == Build.VERSION_CODES.O)
-            return
-        // In Android 8.0, windowIsTranslucent cannot be used with screenOrientation=portrait
+        // Large screens ignore orientation locks under targetSdk 37; phones stay portrait.
+        if (isTablet(this)) return
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
 
@@ -171,8 +154,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun openLauncherChooser(resetFailed: Boolean) {
         if (resetFailed) {
-            val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
-            startActivity(intent)
+            startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
         }
     }
 
@@ -209,16 +191,8 @@ class MainActivity : AppCompatActivity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            Constants.REQUEST_CODE_ENABLE_ADMIN -> {
-                if (resultCode == Activity.RESULT_OK)
-                    prefs.lockModeOn = true
-            }
-
-            Constants.REQUEST_CODE_LAUNCHER_SELECTOR -> {
-                if (resultCode == Activity.RESULT_OK)
-                    resetLauncherViaFakeActivity()
-            }
+        if (requestCode == Constants.REQUEST_CODE_LAUNCHER_SELECTOR && resultCode == Activity.RESULT_OK) {
+            resetLauncherViaFakeActivity()
         }
     }
 }

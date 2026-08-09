@@ -42,10 +42,6 @@ object Constants {
         "com.miui.clock", //Xiaomi Clock
     )
 
-//    const val THEME_MODE_DARK = 0
-//    const val THEME_MODE_LIGHT = 1
-//    const val THEME_MODE_SYSTEM = 2
-
     const val FLAG_LAUNCH_APP = 100
     const val FLAG_HIDDEN_APPS = 101
 
@@ -63,7 +59,6 @@ object Constants {
     const val FLAG_SET_CLOCK_APP = 13
     const val FLAG_SET_CALENDAR_APP = 14
 
-    const val REQUEST_CODE_ENABLE_ADMIN = 666
     const val REQUEST_CODE_LAUNCHER_SELECTOR = 678
 
     const val LONG_PRESS_DELAY_MS = 500L

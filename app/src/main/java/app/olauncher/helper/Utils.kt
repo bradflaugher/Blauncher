@@ -10,24 +10,23 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.hardware.display.DisplayManager
 import android.net.Uri
-import android.os.Build
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.provider.Settings
-import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
+import android.view.Display
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import app.olauncher.BuildConfig
 import app.olauncher.R
@@ -59,8 +58,8 @@ suspend fun getAppsList(
         val appList: MutableList<AppModel> = mutableListOf()
 
         try {
-            if (!Prefs(context).hiddenAppsUpdated) upgradeHiddenApps(Prefs(context))
-            val hiddenApps = Prefs(context).hiddenApps
+            if (!prefs.hiddenAppsUpdated) upgradeHiddenApps(prefs)
+            val hiddenApps = prefs.hiddenApps
 
             val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
             val launcherApps =
@@ -88,28 +87,22 @@ suspend fun getAppsList(
                         ),
                     )
 
-                    // if the current app is not OLauncher
                     if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
-                        // is this a hidden app?
                         if (hiddenApps.contains(app.applicationInfo.packageName + "|" + profile.toString())) {
                             if (includeHiddenApps) {
                                 appList.add(appModel)
                             }
-                        } else {
-                            // this is a regular app
-                            if (includeRegularApps) {
-                                appList.add(appModel)
-                            }
+                        } else if (includeRegularApps) {
+                            appList.add(appModel)
                         }
                     }
                 }
             }
 
-            // Add shortcuts if we're getting regular apps
-            if (includeRegularApps && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (includeRegularApps) {
                 val pinned = try {
                     getPinnedShortcuts(context, prefs, collator)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     emptyList()
                 }
                 appList.addAll(pinned)
@@ -123,7 +116,6 @@ suspend fun getAppsList(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 private suspend fun getPinnedShortcuts(
     context: Context,
     prefs: Prefs,
@@ -171,8 +163,7 @@ private suspend fun getPinnedShortcuts(
         pinnedShortcuts
     }
 
-// This is to ensure backward compatibility with older app versions
-// which did not support multiple user profiles
+// One-time migration for installs that stored hidden apps without a user handle.
 private fun upgradeHiddenApps(prefs: Prefs) {
     val hiddenAppsSet = prefs.hiddenApps
     val newHiddenAppsSet = mutableSetOf<String>()
@@ -187,16 +178,14 @@ private fun upgradeHiddenApps(prefs: Prefs) {
 fun isPackageInstalled(context: Context, packageName: String, userString: String): Boolean {
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     val activityInfo = launcher.getActivityList(packageName, getUserHandleFromString(context, userString))
-    if (activityInfo.isNotEmpty()) return true
-    return false
+    return activityInfo.isNotEmpty()
 }
 
 fun isPrivateSpaceProfile(context: Context, userHandle: UserHandle): Boolean {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return false
     return try {
         val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         launcherApps.getLauncherUserInfo(userHandle)?.userType == "android.os.usertype.profile.PRIVATE"
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -205,13 +194,12 @@ fun isPrivateSpaceLocked(context: Context, userHandle: UserHandle): Boolean {
     return try {
         val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
         userManager.isQuietModeEnabled(userHandle)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         true
     }
 }
 
 fun getPrivateSpaceUserHandle(context: Context): UserHandle? {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return null
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     for (profile in userManager.userProfiles) {
         if (isPrivateSpaceProfile(context, profile)) return profile
@@ -315,7 +303,6 @@ fun openSearch(context: Context) {
 
 @SuppressLint("WrongConstant", "PrivateApi")
 fun expandNotificationDrawer(context: Context) {
-    // Source: https://stackoverflow.com/a/51132142
     try {
         val statusBarService = context.getSystemService("statusbar")
         val statusBarManager = Class.forName("android.app.StatusBarManager")
@@ -328,8 +315,7 @@ fun expandNotificationDrawer(context: Context) {
 
 fun openDialerApp(context: Context) {
     try {
-        val sendIntent = Intent(Intent.ACTION_DIAL)
-        context.startActivity(sendIntent)
+        context.startActivity(Intent(Intent.ACTION_DIAL))
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -337,8 +323,7 @@ fun openDialerApp(context: Context) {
 
 fun openCameraApp(context: Context) {
     try {
-        val sendIntent = Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA)
-        context.startActivity(sendIntent)
+        context.startActivity(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA))
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -346,8 +331,7 @@ fun openCameraApp(context: Context) {
 
 fun openAlarmApp(context: Context) {
     try {
-        val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-        context.startActivity(intent)
+        context.startActivity(Intent(AlarmClock.ACTION_SHOW_ALARMS))
     } catch (e: Exception) {
         Log.d("TAG", e.toString())
     }
@@ -361,7 +345,7 @@ fun openCalendar(context: Context) {
             .appendPath("time")
             .build()
         context.startActivity(Intent(Intent.ACTION_VIEW, calendarUri))
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         try {
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_APP_CALENDAR)
@@ -375,7 +359,7 @@ fun openCalendar(context: Context) {
 fun isAccessServiceEnabled(context: Context): Boolean {
     val enabled = try {
         Settings.Secure.getInt(context.applicationContext.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         0
     }
     if (enabled == 1) {
@@ -386,14 +370,11 @@ fun isAccessServiceEnabled(context: Context): Boolean {
 }
 
 fun isTablet(context: Context): Boolean {
-    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    val metrics = DisplayMetrics()
-    windowManager.defaultDisplay.getMetrics(metrics)
+    val metrics = context.resources.displayMetrics
     val widthInches = metrics.widthPixels / metrics.xdpi
     val heightInches = metrics.heightPixels / metrics.ydpi
     val diagonalInches = sqrt(widthInches.toDouble().pow(2.0) + heightInches.toDouble().pow(2.0))
-    if (diagonalInches >= 7.0) return true
-    return false
+    return diagonalInches >= 7.0
 }
 
 fun Context.isDarkThemeOn(): Boolean {
@@ -461,39 +442,32 @@ fun View.animateAlpha(alpha: Float = 1.0f) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N_MR1)
 fun Context.deletePinnedShortcut(packageName: String, shortcutIdToDelete: String, user: UserHandle) {
     val launcherApps = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-
-    // 1. Query for existing pinned shortcuts for the package
     val query = LauncherApps.ShortcutQuery().apply {
         setPackage(packageName)
-        // Query only for pinned shortcuts
         setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
     }
 
     try {
         val pinnedShortcuts = launcherApps.getShortcuts(query, user)
-
         if (pinnedShortcuts != null) {
-            // 2. Filter out the shortcut to be deleted
             val updatedPinnedIds = pinnedShortcuts
                 .filter { it.id != shortcutIdToDelete }
                 .map { it.id }
-
-            // 3. Re-pin the remaining shortcuts
-            // This replaces the existing set of pinned shortcuts for this package
             launcherApps.pinShortcuts(packageName, updatedPinnedIds, user)
         }
     } catch (e: SecurityException) {
-        // Handle cases where the app doesn't have permission
-        // (e.g., not the default launcher or active voice interaction service)
         Log.e("ShortcutHelper", "Permission denied to modify pinned shortcuts for $packageName", e)
     } catch (e: IllegalStateException) {
-        // Handle cases where the user profile is locked or not running
         Log.e("ShortcutHelper", "User profile unavailable for modifying pinned shortcuts for $packageName", e)
     } catch (e: Exception) {
-        // Handle other potential exceptions (like RemoteException wrapped)
         Log.e("ShortcutHelper", "Failed to modify pinned shortcuts for $packageName", e)
     }
+}
+
+fun Context.primaryDisplayRefreshRate(): Float {
+    val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+    return displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.refreshRate
+        ?: (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.refreshRate
 }

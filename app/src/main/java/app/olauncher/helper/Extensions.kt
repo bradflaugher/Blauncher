@@ -11,14 +11,11 @@ import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
-import android.os.Build
 import android.os.UserHandle
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import androidx.annotation.RequiresApi
 import app.olauncher.BuildConfig
 import app.olauncher.data.Constants
 import java.util.Locale
@@ -38,12 +35,11 @@ fun View.showKeyboard(show: Boolean = true) {
         }, 100)
 }
 
-
-@RequiresApi(Build.VERSION_CODES.Q)
 fun Activity.showLauncherSelector(requestCode: Int) {
     val roleManager = getSystemService(Context.ROLE_SERVICE) as RoleManager
     if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
         val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+        @Suppress("DEPRECATION")
         startActivityForResult(intent, requestCode)
     } else
         resetDefaultLauncher()
@@ -90,8 +86,7 @@ fun Context.openSearch(query: String? = null) {
 
 fun Context.isEinkDisplay(): Boolean {
     return try {
-        val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.refreshRate <= Constants.MIN_ANIM_REFRESH_RATE
+        primaryDisplayRefreshRate() <= Constants.MIN_ANIM_REFRESH_RATE
     } catch (e: Exception) {
         e.printStackTrace()
         false

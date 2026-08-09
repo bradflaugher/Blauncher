@@ -13,7 +13,7 @@ private Android launcher setup rather than as an official Olauncher release.
 - Keyboard-first search with single-match auto-launch and web search fallback.
 - A minimal launcher experience without a remote account or synchronization.
 - No launcher-managed wallpaper or usage-history access.
-- Android 16 only: the minimum, target, and compile SDK are all API 36.
+- **Android 17 only**: minimum, target, and compile SDK are all API 37.
 
 Ranking never reads or stores launch history. It guesses likely activities from
 the current time: early reading (News first, then Media), morning commute, work
@@ -22,12 +22,15 @@ start times are editable in Settings, weekends switch automatically, Vacation
 mode can override the schedule, and long-pressing an app allows its group to be
 corrected.
 
+Double-tap lock uses the accessibility service (no device-admin path). Private
+Space is always available on supported devices.
+
 The application ID is `com.bradflaugher.blauncher`. The inherited source and
 namespace remain under `app.olauncher`.
 
 ## Build
 
-Install JDK 17 and Android SDK Platform 36, then run:
+Install JDK 17 and Android SDK Platform 37, then run:
 
 ```sh
 ./gradlew lint test assembleDebug
