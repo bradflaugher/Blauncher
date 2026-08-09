@@ -28,13 +28,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # API 37 platforms install as platforms;android-37.0 (not android-37).
+      # setup-android@v4 ships cmdline-tools that can see the 37.x packages.
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK Platform 37
-        run: |
-          sdkmanager --install "platforms;android-37" "build-tools;35.0.0" "platform-tools"
-          yes | sdkmanager --licenses >/dev/null || true
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5

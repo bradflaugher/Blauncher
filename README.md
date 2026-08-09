@@ -13,7 +13,8 @@ private Android launcher setup rather than as an official Olauncher release.
 - Keyboard-first search with single-match auto-launch and web search fallback.
 - A minimal launcher experience without a remote account or synchronization.
 - No launcher-managed wallpaper or usage-history access.
-- **Android 17 only**: minimum, target, and compile SDK are all API 37.
+- **Android 17 only** (API 37): min, target, and compile SDK are all 37. Built
+  with Android Gradle Plugin 9.3 and Gradle 9.5.
 
 Ranking never reads or stores launch history. It guesses likely activities from
 the current time: early reading (News first, then Media), morning commute, work
@@ -30,7 +31,8 @@ namespace remain under `app.olauncher`.
 
 ## Build
 
-Install JDK 17 and Android SDK Platform 37, then run:
+Install JDK 17 and Android SDK Platform **37.0** (`platforms;android-37.0`),
+then run:
 
 ```sh
 ./gradlew lint test assembleDebug

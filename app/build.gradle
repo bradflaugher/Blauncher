@@ -1,5 +1,6 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+plugins {
+    alias(libs.plugins.android.application)
+}
 
 def versionCodeFromEnvironment = System.getenv('BLAUNCHER_VERSION_CODE') ?: '1'
 if (!(versionCodeFromEnvironment ==~ /[1-9]\d*/)) {
@@ -20,27 +21,24 @@ if (!configuredSigningVariables.isEmpty() && configuredSigningVariables.size() !
 def releaseSigningEnabled = configuredSigningVariables.size() == signingEnvironmentVariables.size()
 
 android {
+    namespace 'app.olauncher'
     compileSdk 37
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
 
     defaultConfig {
         applicationId "com.bradflaugher.blauncher"
-        minSdkVersion 37
-        targetSdkVersion 37
+        minSdk 37
+        targetSdk 37
         versionCode versionCodeFromEnvironment.toInteger()
         versionName System.getenv('BLAUNCHER_VERSION_NAME') ?: "1.0"
         resValue "string", "app_name", "Blauncher"
 
         resourceConfigurations += ["en"]
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     signingConfigs {
@@ -70,15 +68,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        resValues = true
     }
-    namespace 'app.olauncher'
 }
 
 dependencies {
-    implementation libs.kotlin.stdlib
     implementation libs.core.ktx
     implementation libs.appcompat
     implementation libs.recyclerview

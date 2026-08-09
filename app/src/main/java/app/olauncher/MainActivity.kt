@@ -1,7 +1,6 @@
 package app.olauncher
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,6 +10,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.WindowCompat
@@ -18,7 +18,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.ActivityMainBinding
 import app.olauncher.helper.getColorFromAttr
@@ -41,6 +40,14 @@ class MainActivity : AppCompatActivity() {
     private var timerJob: Job? = null
     private var isResumed = false
     private var profileReceiver: BroadcastReceiver? = null
+
+    private val launcherSelectorLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            resetLauncherViaFakeActivity()
+        }
+    }
 
     override fun attachBaseContext(context: Context) {
         val newConfig = Configuration(context.resources.configuration)
@@ -92,6 +99,7 @@ class MainActivity : AppCompatActivity() {
                 addAction(Intent.ACTION_PROFILE_AVAILABLE)
                 addAction(Intent.ACTION_PROFILE_UNAVAILABLE)
             },
+            RECEIVER_NOT_EXPORTED,
         )
     }
 
@@ -117,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         super.onUserLeaveHint()
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         backToHomeScreen()
         super.onNewIntent(intent)
     }
@@ -135,7 +143,7 @@ class MainActivity : AppCompatActivity() {
             if (isDefaultLauncher())
                 resetLauncherViaFakeActivity()
             else
-                showLauncherSelector(Constants.REQUEST_CODE_LAUNCHER_SELECTOR)
+                showLauncherSelector(launcherSelectorLauncher)
         }
     }
 
@@ -186,13 +194,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
         super.onDestroy()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Constants.REQUEST_CODE_LAUNCHER_SELECTOR && resultCode == Activity.RESULT_OK) {
-            resetLauncherViaFakeActivity()
-        }
     }
 }

@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.result.ActivityResultLauncher
 import app.olauncher.BuildConfig
 import app.olauncher.data.Constants
 import java.util.Locale
@@ -35,14 +36,13 @@ fun View.showKeyboard(show: Boolean = true) {
         }, 100)
 }
 
-fun Activity.showLauncherSelector(requestCode: Int) {
+fun Activity.showLauncherSelector(launcher: ActivityResultLauncher<Intent>) {
     val roleManager = getSystemService(Context.ROLE_SERVICE) as RoleManager
     if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
-        val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-        @Suppress("DEPRECATION")
-        startActivityForResult(intent, requestCode)
-    } else
+        launcher.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME))
+    } else {
         resetDefaultLauncher()
+    }
 }
 
 @SuppressLint("UnsafeImplicitIntentLaunch")

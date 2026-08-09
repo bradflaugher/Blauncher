@@ -59,8 +59,6 @@ object Constants {
     const val FLAG_SET_CLOCK_APP = 13
     const val FLAG_SET_CALENDAR_APP = 14
 
-    const val REQUEST_CODE_LAUNCHER_SELECTOR = 678
-
     const val LONG_PRESS_DELAY_MS = 500L
     const val ONE_HOUR_IN_MILLIS = 3600000L
 
