@@ -15,6 +15,24 @@ object AppCategorizer {
         "com.google.android.apps.bard" to AppCategory.AI_AGENTS,
         "ai.perplexity.app.android" to AppCategory.AI_AGENTS,
         "com.microsoft.copilot" to AppCategory.AI_AGENTS,
+        "com.nytimes.android" to AppCategory.NEWS,
+        "wsj.reader_sp" to AppCategory.NEWS,
+        "com.economist.lamarr" to AppCategory.NEWS,
+        "com.google.android.apps.magazines" to AppCategory.NEWS,
+        "flipboard.app" to AppCategory.NEWS,
+        "com.devhd.feedly" to AppCategory.NEWS,
+        "com.bbc.news" to AppCategory.NEWS,
+        "com.cnn.mobile.android.phone" to AppCategory.NEWS,
+        "com.npr.nprnews" to AppCategory.NEWS,
+        "com.groundnews" to AppCategory.NEWS,
+        "com.medium.reader" to AppCategory.NEWS,
+        "com.reddit.frontpage" to AppCategory.NEWS,
+        "com.spotify.music" to AppCategory.MEDIA,
+        "com.google.android.youtube" to AppCategory.MEDIA,
+        "com.netflix.mediaclient" to AppCategory.MEDIA,
+        "com.amazon.kindle" to AppCategory.MEDIA,
+        "com.audible.application" to AppCategory.MEDIA,
+        "com.overdrive.mobile.android.libby" to AppCategory.MEDIA,
     )
 
     private val semanticTerms = linkedMapOf(
@@ -54,10 +72,16 @@ object AppCategorizer {
             "amazon", "cafe", "coffee", "delivery", "doordash", "ebay", "food", "grocery",
             "instacart", "meal", "pizza", "retail", "shop", "store", "ubereats"
         ),
+        AppCategory.NEWS to setOf(
+            "ap news", "article", "bbc", "breaking news", "cnn", "daily news", "economist",
+            "feedly", "flipboard", "fox news", "ground news", "guardian", "headline", "magazine",
+            "medium", "news", "newspaper", "npr", "nyt", "new york times", "pocket", "press",
+            "reuters", "rss", "substack", "wsj", "wall street journal"
+        ),
         AppCategory.MEDIA to setOf(
-            "audible", "audio", "audiobook", "book", "classical", "economist", "gallery", "kindle",
-            "libby", "movie", "music", "news", "now playing", "pocket", "podcast", "radio",
-            "reader", "sonos", "spotify", "stream", "tv", "video", "wsj", "youtube"
+            "audible", "audio", "audiobook", "book", "classical", "gallery", "kindle",
+            "libby", "movie", "music", "netflix", "now playing", "podcast", "radio",
+            "reader", "sonos", "spotify", "stream", "tv", "video", "youtube"
         ),
         AppCategory.TOOLS to setOf(
             "authenticator", "browser", "calculator", "clock", "file", "keyboard", "launcher",
@@ -123,8 +147,8 @@ object AppCategorizer {
             ApplicationInfo.CATEGORY_GAME -> AppCategory.GAMES
             ApplicationInfo.CATEGORY_AUDIO,
             ApplicationInfo.CATEGORY_VIDEO,
-            ApplicationInfo.CATEGORY_IMAGE,
-            ApplicationInfo.CATEGORY_NEWS -> AppCategory.MEDIA
+            ApplicationInfo.CATEGORY_IMAGE -> AppCategory.MEDIA
+            ApplicationInfo.CATEGORY_NEWS -> AppCategory.NEWS
             ApplicationInfo.CATEGORY_SOCIAL -> AppCategory.COMMUNICATION
             ApplicationInfo.CATEGORY_MAPS -> AppCategory.TRAVEL
             ApplicationInfo.CATEGORY_PRODUCTIVITY -> AppCategory.PRODUCTIVITY
@@ -205,16 +229,16 @@ object AppCategorizer {
         pinnedCategory: AppCategory? = null,
     ): List<AppCategory> = (listOfNotNull(pinnedCategory) + when (routine) {
         AppRoutine.READING -> listOf(
-            AppCategory.MEDIA, AppCategory.PRODUCTIVITY, AppCategory.HEALTH,
+            AppCategory.NEWS, AppCategory.MEDIA, AppCategory.PRODUCTIVITY, AppCategory.HEALTH,
             AppCategory.COMMUNICATION, AppCategory.TOOLS
         )
         AppRoutine.COMMUTE -> listOf(
-            AppCategory.TRAVEL, AppCategory.MEDIA, AppCategory.COMMUNICATION,
+            AppCategory.TRAVEL, AppCategory.NEWS, AppCategory.MEDIA, AppCategory.COMMUNICATION,
             AppCategory.PRODUCTIVITY, AppCategory.TOOLS
         )
         AppRoutine.WORK -> listOf(
             AppCategory.PRODUCTIVITY, AppCategory.COMMUNICATION, AppCategory.FINANCE,
-            AppCategory.TOOLS, AppCategory.TRAVEL
+            AppCategory.NEWS, AppCategory.TOOLS, AppCategory.TRAVEL
         )
         AppRoutine.FITNESS -> listOf(
             AppCategory.HEALTH, AppCategory.TRAVEL, AppCategory.COMMUNICATION,
@@ -225,15 +249,15 @@ object AppCategorizer {
             AppCategory.TRAVEL, AppCategory.HEALTH
         )
         AppRoutine.EVENING -> listOf(
-            AppCategory.MEDIA, AppCategory.COMMUNICATION, AppCategory.HEALTH,
+            AppCategory.MEDIA, AppCategory.NEWS, AppCategory.COMMUNICATION, AppCategory.HEALTH,
             AppCategory.TOOLS, AppCategory.PRODUCTIVITY
         )
         AppRoutine.WEEKEND -> listOf(
-            AppCategory.HEALTH, AppCategory.COMMUNICATION, AppCategory.MEDIA,
+            AppCategory.HEALTH, AppCategory.COMMUNICATION, AppCategory.NEWS, AppCategory.MEDIA,
             AppCategory.SHOPPING, AppCategory.TRAVEL
         )
         AppRoutine.VACATION -> listOf(
-            AppCategory.TRAVEL, AppCategory.MEDIA, AppCategory.COMMUNICATION,
+            AppCategory.TRAVEL, AppCategory.NEWS, AppCategory.MEDIA, AppCategory.COMMUNICATION,
             AppCategory.HEALTH, AppCategory.SHOPPING
         )
     } + AppCategory.entries).distinct()

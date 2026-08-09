@@ -6,6 +6,8 @@ private Android launcher setup rather than as an official Olauncher release.
 ## Focus
 
 - Local app categorization with per-app manual overrides and compact markers.
+- Separate **News** and **Media** groups (each with its own glyph), so NYT / WSJ /
+  BBC-style apps do not sit under music and video.
 - A dedicated AI Agents group pinned first by default, configurable in Settings.
 - Time-aware group ordering with alphabetical apps inside every group.
 - Keyboard-first search with single-match auto-launch and web search fallback.
@@ -14,10 +16,11 @@ private Android launcher setup rather than as an official Olauncher release.
 - Android 16 only: the minimum, target, and compile SDK are all API 36.
 
 Ranking never reads or stores launch history. It guesses likely activities from
-the current time: early reading, morning commute, work blocks, noon fitness,
-family time, and evening books or audiobooks. Routine start times are editable
-in Settings, weekends switch automatically, Vacation mode can override the
-schedule, and long-pressing an app allows its group to be corrected.
+the current time: early reading (News first, then Media), morning commute, work
+blocks, noon fitness, family time, and evening books or audiobooks. Routine
+start times are editable in Settings, weekends switch automatically, Vacation
+mode can override the schedule, and long-pressing an app allows its group to be
+corrected.
 
 The application ID is `com.bradflaugher.blauncher`. The inherited source and
 namespace remain under `app.olauncher`.
@@ -78,4 +81,4 @@ It is derived from Olauncher by Tanuj Notes:
 https://github.com/tanujnotes/Olauncher
 
 Modifications in this repository are part of the Blauncher hard fork and are
-not endorsed by the upstream project.
+released under the same GPL-3.0 terms.

@@ -16,6 +16,12 @@ class AppCategorizerTest {
             "com.audible.application Audible" to AppCategory.MEDIA,
             "com.google.android.apps.maps Google Maps" to AppCategory.TRAVEL,
             "com.spotify.music Spotify" to AppCategory.MEDIA,
+            "com.google.android.youtube YouTube" to AppCategory.MEDIA,
+            "com.nytimes.android NYTimes" to AppCategory.NEWS,
+            "wsj.reader_sp WSJ" to AppCategory.NEWS,
+            "com.economist.lamarr The Economist" to AppCategory.NEWS,
+            "com.bbc.news BBC News" to AppCategory.NEWS,
+            "flipboard.app Flipboard" to AppCategory.NEWS,
             "com.google.android.gm Gmail" to AppCategory.COMMUNICATION,
             "com.Slack Slack" to AppCategory.COMMUNICATION,
             "com.microsoft.teams Teams" to AppCategory.COMMUNICATION,
@@ -33,6 +39,36 @@ class AppCategorizerTest {
         examples.forEach { (app, expected) ->
             assertEquals(app, expected, AppCategorizer.categoryFromText(app))
         }
+    }
+
+    @Test
+    fun newsIsSeparateFromMedia() {
+        assertEquals(
+            AppCategory.NEWS,
+            AppCategorizer.resolveCategory(
+                null,
+                "com.example.news",
+                "Local News",
+                ApplicationInfo.CATEGORY_NEWS,
+            ),
+        )
+        assertEquals(
+            AppCategory.MEDIA,
+            AppCategorizer.resolveCategory(
+                null,
+                "com.example.stream",
+                "Music Stream",
+                ApplicationInfo.CATEGORY_AUDIO,
+            ),
+        )
+        assertEquals(
+            AppCategory.NEWS,
+            AppCategorizer.categoryFromText("com.example.reader Wall Street Journal"),
+        )
+        assertEquals(
+            AppCategory.MEDIA,
+            AppCategorizer.categoryFromText("com.example.player Podcast Player"),
+        )
     }
 
     @Test
@@ -93,7 +129,7 @@ class AppCategorizerTest {
     @Test
     fun eachRoutinePutsTheExpectedCategoryFirst() {
         val expected = mapOf(
-            AppRoutine.READING to AppCategory.MEDIA,
+            AppRoutine.READING to AppCategory.NEWS,
             AppRoutine.COMMUTE to AppCategory.TRAVEL,
             AppRoutine.WORK to AppCategory.PRODUCTIVITY,
             AppRoutine.FITNESS to AppCategory.HEALTH,
@@ -106,6 +142,13 @@ class AppCategorizerTest {
         expected.forEach { (routine, category) ->
             assertEquals(routine.name, category, AppCategorizer.categoryOrder(routine).first())
         }
+    }
+
+    @Test
+    fun readingRoutineSurfacesNewsBeforeMedia() {
+        val order = AppCategorizer.categoryOrder(AppRoutine.READING)
+        assertEquals(AppCategory.NEWS, order[0])
+        assertEquals(AppCategory.MEDIA, order[1])
     }
 
     @Test
@@ -146,6 +189,15 @@ class AppCategorizerTest {
                 "ai.poe.app",
                 "Poe",
                 ApplicationInfo.CATEGORY_SOCIAL,
+            ),
+        )
+        assertEquals(
+            AppCategory.NEWS,
+            AppCategorizer.resolveCategory(
+                null,
+                "com.nytimes.android",
+                "NYTimes",
+                ApplicationInfo.CATEGORY_NEWS,
             ),
         )
     }
