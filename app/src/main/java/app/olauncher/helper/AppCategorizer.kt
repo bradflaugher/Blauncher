@@ -95,18 +95,37 @@ object AppCategorizer {
         packageName: String,
         label: String,
         declaredCategory: Int? = null,
-    ): AppCategory {
+    ): AppCategory = categories(context, prefs, packageName, label, declaredCategory).first()
+
+    /** All groups this app should appear under (manual multi-select or a single automatic group). */
+    fun categories(
+        context: Context,
+        prefs: Prefs,
+        packageName: String,
+        label: String,
+        declaredCategory: Int? = null,
+    ): List<AppCategory> {
         val androidCategory = declaredCategory ?: try {
             context.packageManager.getApplicationInfo(packageName, 0).category
         } catch (_: Exception) {
             ApplicationInfo.CATEGORY_UNDEFINED
         }
-        return resolveCategory(
-            prefs.getAppCategoryOverride(packageName),
+        return resolveCategories(
+            prefs.getAppCategoryOverrides(packageName),
             packageName,
             label,
             androidCategory,
         )
+    }
+
+    internal fun resolveCategories(
+        overrides: List<AppCategory>?,
+        packageName: String,
+        label: String,
+        declaredCategory: Int,
+    ): List<AppCategory> {
+        if (!overrides.isNullOrEmpty()) return overrides.distinct()
+        return listOf(resolveCategory(null, packageName, label, declaredCategory))
     }
 
     internal fun resolveCategory(

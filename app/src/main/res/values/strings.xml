@@ -121,8 +121,9 @@
     <string name="routine_family">Family time</string>
     <string name="routine_evening">Books &amp; audiobooks</string>
     <string name="automatic">Automatic</string>
+    <string name="save_groups">Save</string>
     <string name="category">Group</string>
-    <string name="choose_category">Choose group</string>
+    <string name="choose_category">Choose groups</string>
     <string name="current_focus">Current focus</string>
     <string name="app_groups">App groups</string>
     <string name="category_export">Category data</string>

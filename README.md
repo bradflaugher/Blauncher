@@ -5,7 +5,7 @@ private Android launcher setup rather than as an official Olauncher release.
 
 ## Focus
 
-- Local app categorization with per-app manual overrides and compact markers.
+- Local app categorization with per-app manual overrides (including multi-group membership so an app can appear in more than one group) and compact markers. Search still dedupes so keyboard matching and single-match auto-launch stay correct.
 - Separate **News** and **Media** groups (each with its own glyph), so NYT / WSJ /
   BBC-style apps do not sit under music and video.
 - A dedicated AI Agents group pinned first by default, configurable in Settings.

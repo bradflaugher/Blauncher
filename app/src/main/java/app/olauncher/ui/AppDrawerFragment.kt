@@ -331,13 +331,23 @@ class AppDrawerFragment : Fragment() {
     private fun showCategoryChooser(appModel: AppModel) {
         binding.search.hideKeyboard()
         val categories = AppCategory.entries
-        val labels = listOf(getString(R.string.automatic)) + categories.map { it.displayName }
-        val selected = prefs.getAppCategoryOverride(appModel.appPackage)?.ordinal?.plus(1) ?: 0
+        val labels = categories.map { it.displayName }.toTypedArray()
+        val current = prefs.getAppCategoryOverrides(appModel.appPackage).orEmpty().toMutableSet()
+        val checked = BooleanArray(categories.size) { current.contains(categories[it]) }
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.choose_category)
-            .setSingleChoiceItems(labels.toTypedArray(), selected) { dialog, which ->
-                if (which == 0) prefs.clearAppCategoryOverride(appModel.appPackage)
-                else prefs.setAppCategoryOverride(appModel.appPackage, categories[which - 1])
+            .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
+                if (isChecked) current.add(categories[which])
+                else current.remove(categories[which])
+            }
+            .setPositiveButton(R.string.save_groups) { dialog, _ ->
+                if (current.isEmpty()) prefs.clearAppCategoryOverride(appModel.appPackage)
+                else prefs.setAppCategoryOverrides(appModel.appPackage, current)
+                dialog.dismiss()
+                viewModel.getAppList()
+            }
+            .setNeutralButton(R.string.automatic) { dialog, _ ->
+                prefs.clearAppCategoryOverride(appModel.appPackage)
                 dialog.dismiss()
                 viewModel.getAppList()
             }
