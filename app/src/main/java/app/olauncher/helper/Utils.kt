@@ -71,29 +71,32 @@ suspend fun getAppsList(
                 for (app in launcherApps.getActivityList(null, profile)) {
                     val appLabelShown = prefs.getAppRenameLabel(app.applicationInfo.packageName)
                         .ifBlank { app.label.toString() }
-                    val appModel = AppModel.App(
-                        appLabel = appLabelShown,
-                        key = collator.getCollationKey(app.label.toString()),
-                        appPackage = app.applicationInfo.packageName,
-                        activityClassName = app.componentName.className,
-                        isNew = (System.currentTimeMillis() - app.firstInstallTime) < Constants.ONE_HOUR_IN_MILLIS,
-                        user = profile,
-                        category = AppCategorizer.categorize(
-                            context,
-                            prefs,
-                            app.applicationInfo.packageName,
-                            app.label.toString(),
-                            app.applicationInfo.category,
-                        ),
+                    val categories = AppCategorizer.categories(
+                        context,
+                        prefs,
+                        app.applicationInfo.packageName,
+                        app.label.toString(),
+                        app.applicationInfo.category,
                     )
+                    val appModels = categories.map { category ->
+                        AppModel.App(
+                            appLabel = appLabelShown,
+                            key = collator.getCollationKey(app.label.toString()),
+                            appPackage = app.applicationInfo.packageName,
+                            activityClassName = app.componentName.className,
+                            isNew = (System.currentTimeMillis() - app.firstInstallTime) < Constants.ONE_HOUR_IN_MILLIS,
+                            user = profile,
+                            category = category,
+                        )
+                    }
 
                     if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
                         if (hiddenApps.contains(app.applicationInfo.packageName + "|" + profile.toString())) {
                             if (includeHiddenApps) {
-                                appList.add(appModel)
+                                appList.addAll(appModels)
                             }
                         } else if (includeRegularApps) {
-                            appList.add(appModel)
+                            appList.addAll(appModels)
                         }
                     }
                 }
@@ -137,22 +140,25 @@ private suspend fun getPinnedShortcuts(
                                 .takeIf { it.isNotBlank() }
                                 ?: shortcut.shortLabel?.toString()
                                 ?: shortcut.longLabel?.toString().orEmpty()
-                            pinnedShortcuts.add(
-                                AppModel.PinnedShortcut(
-                                    appLabel = label,
-                                    key = collator.getCollationKey(label),
-                                    appPackage = shortcut.`package`,
-                                    shortcutId = shortcut.id,
-                                    isNew = false,
-                                    user = profile,
-                                    category = AppCategorizer.categorize(
-                                        context,
-                                        prefs,
-                                        shortcut.`package`,
-                                        label,
-                                    ),
-                                )
+                            val categories = AppCategorizer.categories(
+                                context,
+                                prefs,
+                                shortcut.`package`,
+                                label,
                             )
+                            categories.forEach { category ->
+                                pinnedShortcuts.add(
+                                    AppModel.PinnedShortcut(
+                                        appLabel = label,
+                                        key = collator.getCollationKey(label),
+                                        appPackage = shortcut.`package`,
+                                        shortcutId = shortcut.id,
+                                        isNew = false,
+                                        user = profile,
+                                        category = category,
+                                    )
+                                )
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -222,23 +228,26 @@ suspend fun getPrivateSpaceApps(
                 if (app.applicationInfo.packageName == BuildConfig.APPLICATION_ID) continue
                 val appLabelShown = prefs.getAppRenameLabel(app.applicationInfo.packageName)
                     .ifBlank { app.label.toString() }
-                appList.add(
-                    AppModel.App(
-                        appLabel = appLabelShown,
-                        key = collator.getCollationKey(app.label.toString()),
-                        appPackage = app.applicationInfo.packageName,
-                        activityClassName = app.componentName.className,
-                        isNew = false,
-                        user = privateSpaceHandle,
-                        category = AppCategorizer.categorize(
-                            context,
-                            prefs,
-                            app.applicationInfo.packageName,
-                            app.label.toString(),
-                            app.applicationInfo.category,
-                        ),
-                    )
+                val categories = AppCategorizer.categories(
+                    context,
+                    prefs,
+                    app.applicationInfo.packageName,
+                    app.label.toString(),
+                    app.applicationInfo.category,
                 )
+                categories.forEach { category ->
+                    appList.add(
+                        AppModel.App(
+                            appLabel = appLabelShown,
+                            key = collator.getCollationKey(app.label.toString()),
+                            appPackage = app.applicationInfo.packageName,
+                            activityClassName = app.componentName.className,
+                            isNew = false,
+                            user = privateSpaceHandle,
+                            category = category,
+                        )
+                    )
+                }
             }
             AppCategorizer.sortByCategory(prefs, appList)
         } catch (e: Exception) {

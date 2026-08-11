@@ -46,10 +46,14 @@ class AppDrawerAdapter(
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
                 oldItem is AppModel.App && newItem is AppModel.App ->
-                    oldItem.appPackage == newItem.appPackage && oldItem.user == newItem.user
+                    oldItem.appPackage == newItem.appPackage &&
+                        oldItem.user == newItem.user &&
+                        oldItem.category == newItem.category
 
                 oldItem is AppModel.PinnedShortcut && newItem is AppModel.PinnedShortcut ->
-                    oldItem.shortcutId == newItem.shortcutId && oldItem.user == newItem.user
+                    oldItem.shortcutId == newItem.shortcutId &&
+                        oldItem.user == newItem.user &&
+                        oldItem.category == newItem.category
 
                 oldItem is AppModel.PrivateSpaceHeader && newItem is AppModel.PrivateSpaceHeader -> true
 
@@ -138,10 +142,18 @@ class AppDrawerAdapter(
                 isBangSearch = charSearch?.startsWith("!") ?: false
                 autoLaunch = allowAutoLaunch && (charSearch?.startsWith(" ")?.not() ?: true)
 
-                val appFilteredList = (if (charSearch.isNullOrBlank()) appsList
-                else appsList.filter { app ->
-                    app !is AppModel.PrivateSpaceHeader && appLabelMatches(app.appLabel, charSearch)
-                } as MutableList<AppModel>)
+                val appFilteredList = if (charSearch.isNullOrBlank()) {
+                    appsList
+                } else {
+                    // Dedupe multi-category duplicates so keyboard matching / auto-launch
+                    // still treats each app as a single result.
+                    dedupeAppsForSearch(
+                        appsList.filter { app ->
+                            app !is AppModel.PrivateSpaceHeader &&
+                                appLabelMatches(app.appLabel, charSearch)
+                        }
+                    )
+                }
 
                 val filterResults = FilterResults()
                 filterResults.values = appFilteredList
@@ -173,6 +185,21 @@ class AppDrawerAdapter(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+
+    private fun dedupeAppsForSearch(apps: List<AppModel>): MutableList<AppModel> {
+        val seen = LinkedHashSet<String>()
+        val result = mutableListOf<AppModel>()
+        for (app in apps) {
+            val key = when (app) {
+                is AppModel.App -> "app:${app.appPackage}|${app.user}"
+                is AppModel.PinnedShortcut -> "shortcut:${app.shortcutId}|${app.user}"
+                is AppModel.PrivateSpaceHeader -> "private-space"
+            }
+            if (seen.add(key)) result.add(app)
+        }
+        return result
     }
 
     private fun appLabelMatches(appLabel: String, charSearch: CharSequence): Boolean {

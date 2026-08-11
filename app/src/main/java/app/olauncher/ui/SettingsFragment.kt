@@ -361,20 +361,29 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
             val exportedApps = JSONArray()
             apps.forEach { app ->
-                val category = app.category
+                val overrides = prefs.getAppCategoryOverrides(app.appPackage)
+                val categories = overrides ?: listOf(app.category)
+                val categoryNames = JSONArray()
+                val categoryLabels = JSONArray()
+                categories.forEach { category ->
+                    categoryNames.put(category.name)
+                    categoryLabels.put(category.displayName)
+                }
                 exportedApps.put(
                     JSONObject()
                         .put("name", app.appLabel)
                         .put("package", app.appPackage)
-                        .put("category", category.name)
-                        .put("categoryLabel", category.displayName)
-                        .put("manual", prefs.getAppCategoryOverride(app.appPackage) != null)
+                        .put("category", categories.first().name)
+                        .put("categoryLabel", categories.first().displayName)
+                        .put("categories", categoryNames)
+                        .put("categoryLabels", categoryLabels)
+                        .put("manual", overrides != null)
                         .put("hidden", hiddenApps.any { it.startsWith("${app.appPackage}|") })
                 )
             }
             val export = JSONObject()
                 .put("format", "Blauncher app categories")
-                .put("version", 1)
+                .put("version", 2)
                 .put("exportedAt", Instant.now().toString())
                 .put("apps", exportedApps)
                 .toString(2)

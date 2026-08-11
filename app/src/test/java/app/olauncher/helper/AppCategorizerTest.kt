@@ -234,6 +234,46 @@ class AppCategorizerTest {
         )
     }
 
+    @Test
+    fun multiCategoryOverridesArePreservedInOrder() {
+        val overrides = listOf(AppCategory.NEWS, AppCategory.MEDIA, AppCategory.NEWS)
+        assertEquals(
+            listOf(AppCategory.NEWS, AppCategory.MEDIA),
+            AppCategorizer.resolveCategories(
+                overrides,
+                "com.example.reader",
+                "News Reader",
+                ApplicationInfo.CATEGORY_UNDEFINED,
+            ),
+        )
+    }
+
+    @Test
+    fun automaticPlacementStillReturnsASingleCategory() {
+        assertEquals(
+            listOf(AppCategory.MEDIA),
+            AppCategorizer.resolveCategories(
+                null,
+                "com.spotify.music",
+                "Spotify",
+                ApplicationInfo.CATEGORY_AUDIO,
+            ),
+        )
+    }
+
+    @Test
+    fun emptyOverridesFallBackToAutomatic() {
+        assertEquals(
+            listOf(AppCategory.AI_AGENTS),
+            AppCategorizer.resolveCategories(
+                emptyList(),
+                "com.openai.chatgpt",
+                "ChatGPT",
+                ApplicationInfo.CATEGORY_UNDEFINED,
+            ),
+        )
+    }
+
     private data class CategoryExample(
         val packageName: String,
         val label: String,

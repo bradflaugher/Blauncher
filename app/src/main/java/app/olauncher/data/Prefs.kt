@@ -631,13 +631,36 @@ class Prefs(context: Context) {
 
     fun setAppRenameLabel(appPackage: String, renameLabel: String) = prefs.edit { putString(appPackage, renameLabel) }
 
+    fun getAppCategoryOverrides(appPackage: String): List<AppCategory>? {
+        val raw = prefs.getString(APP_CATEGORY_OVERRIDE_PREFIX + appPackage, null) ?: return null
+        val categories = raw.split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .mapNotNull { runCatching { AppCategory.valueOf(it) }.getOrNull() }
+            .distinct()
+        return categories.ifEmpty { null }
+    }
+
+    /** First manual category, or null when using automatic placement. Legacy single-value keys still work. */
     fun getAppCategoryOverride(appPackage: String): AppCategory? =
-        prefs.getString(APP_CATEGORY_OVERRIDE_PREFIX + appPackage, null)?.let {
-            runCatching { AppCategory.valueOf(it) }.getOrNull()
-        }
+        getAppCategoryOverrides(appPackage)?.firstOrNull()
 
     fun setAppCategoryOverride(appPackage: String, category: AppCategory) =
-        prefs.edit { putString(APP_CATEGORY_OVERRIDE_PREFIX + appPackage, category.name) }
+        setAppCategoryOverrides(appPackage, listOf(category))
+
+    fun setAppCategoryOverrides(appPackage: String, categories: Collection<AppCategory>) {
+        val distinct = categories.distinct()
+        if (distinct.isEmpty()) {
+            clearAppCategoryOverride(appPackage)
+            return
+        }
+        prefs.edit {
+            putString(
+                APP_CATEGORY_OVERRIDE_PREFIX + appPackage,
+                distinct.joinToString(",") { it.name },
+            )
+        }
+    }
 
     fun clearAppCategoryOverride(appPackage: String) =
         prefs.edit { remove(APP_CATEGORY_OVERRIDE_PREFIX + appPackage) }
