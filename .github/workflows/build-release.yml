@@ -79,11 +79,15 @@ jobs:
           fi
           printf 'BLAUNCHER_KEYSTORE_PATH=%s\n' "$keystore_path" >> "$GITHUB_ENV"
 
+      # Signing is all-or-nothing in app/build.gradle, and the keystore (with
+      # BLAUNCHER_KEYSTORE_PATH) is only restored on push. Pass the remaining
+      # signing variables only on push too, so pull requests configure a
+      # clean unsigned build instead of failing as partially configured.
       - name: Lint, test, and build release APK
         env:
-          BLAUNCHER_STORE_PASSWORD: ${{ secrets.BLAUNCHER_STORE_PASSWORD }}
-          BLAUNCHER_KEY_ALIAS: ${{ secrets.BLAUNCHER_KEY_ALIAS }}
-          BLAUNCHER_KEY_PASSWORD: ${{ secrets.BLAUNCHER_KEY_PASSWORD }}
+          BLAUNCHER_STORE_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_STORE_PASSWORD || '' }}
+          BLAUNCHER_KEY_ALIAS: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_ALIAS || '' }}
+          BLAUNCHER_KEY_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_PASSWORD || '' }}
         run: ./gradlew lint test assembleRelease
 
       - name: Name signed APK
