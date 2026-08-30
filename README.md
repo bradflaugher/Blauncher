@@ -58,7 +58,7 @@ Older Android is not supported. Full policy: [`AGENTS.md`](AGENTS.md).
 
 ## Build
 
-Latest JDK and Android SDK platform (see [`AGENTS.md`](AGENTS.md)):
+Use the JDK and SDK pinned in Gradle:
 
 ```sh
 ./gradlew lint test assembleDebug

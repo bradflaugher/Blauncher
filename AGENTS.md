@@ -21,10 +21,13 @@ everything** — maximum security and freshness, zero backwards compatibility:
 - The toolchain tracks the latest stable releases too: Android Gradle Plugin
   and all dependencies in `gradle/libs.versions.toml`, Gradle in
   `gradle/wrapper/gradle-wrapper.properties` (keep the distribution
-  checksum-pinned), and the JDK named in `README.md` and CI. Dependabot keeps
+  checksum-pinned), and the JDK in `app/build.gradle`. Dependabot keeps
   these current — do not hold versions back for compatibility reasons.
 - If a change only works by targeting an older API level or downgrading a
   dependency, that change is wrong for this project.
+
+Do not copy version numbers into docs. Pins live in Gradle and are updated
+by Dependabot.
 
 ## Security and privacy invariants
 
@@ -42,8 +45,9 @@ Never regress these without an explicit request from the maintainer:
 
 ## Build and test
 
-JDK 17 and the latest Android SDK platform (currently
-`platforms;android-37.0`) are required.
+Toolchain versions live in Gradle — `app/build.gradle`,
+`gradle/libs.versions.toml`, and
+`gradle/wrapper/gradle-wrapper.properties`.
 
 ```sh
 ./gradlew lint test assembleDebug   # what CI runs on every PR (plus assembleRelease)
