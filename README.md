@@ -3,6 +3,10 @@
 Blauncher is a personal hard fork of Olauncher. It is maintained for a focused,
 private Android launcher setup rather than as an official Olauncher release.
 
+New here? The launcher has no on-screen buttons by design — read the
+[user guide](GUIDE.md) to learn the gestures (short version: swipe up for
+apps, long-press the home screen for settings).
+
 ## Focus
 
 - Local app categorization with per-app manual overrides (including multi-group membership so an app can appear in more than one group) and compact markers. Search still dedupes so keyboard matching and single-match auto-launch stay correct.
