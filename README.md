@@ -15,7 +15,7 @@ private Android launcher setup rather than as an official Olauncher release.
 - A minimal launcher experience without a remote account or synchronization.
 - No launcher-managed wallpaper or usage-history access.
 - **Android 17 only** (API 37): min, target, and compile SDK are all 37. Built
-  with Android Gradle Plugin 9.3 and Gradle 9.5.
+  with Android Gradle Plugin 9.3 and Gradle 9.7.
 
 Group ordering is driven by a tiny on-device model with nothing to configure.
 Smooth built-in time-of-day curves (with weekday and weekend variants) provide
@@ -72,8 +72,9 @@ Signing is all-or-nothing: a release is unsigned when none of these variables
 are set, and configuration fails when only some are set.
 
 Every push to `main` runs lint, tests, and a signed release build in GitHub
-Actions. It replaces the single `latest` release and its `Blauncher.apk`. Configure
-these repository secrets:
+Actions. It replaces the single `latest` release and its `Blauncher.apk`,
+publishing a `Blauncher.apk.sha256` checksum alongside it (see `SECURITY.md`).
+Configure these repository secrets:
 
 - `BLAUNCHER_KEYSTORE_BASE64`: the keystore encoded with base64.
 - `BLAUNCHER_STORE_PASSWORD`

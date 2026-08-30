@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Gradle plugins and Android/Kotlin libraries (gradle/libs.versions.toml).
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      androidx:
+        patterns:
+          - "androidx.*"
+          - "com.google.android.material:*"
+
+  # GitHub Actions used by the workflows. Actions are pinned to commit SHAs;
+  # Dependabot keeps the pins current and updates the version comments.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
