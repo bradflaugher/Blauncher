@@ -2,10 +2,8 @@ package app.olauncher.helper
 
 import android.content.pm.ApplicationInfo
 import app.olauncher.data.AppCategory
-import app.olauncher.data.AppRoutine
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.util.Calendar
 
 class AppCategorizerTest {
     @Test
@@ -127,42 +125,6 @@ class AppCategorizerTest {
     }
 
     @Test
-    fun eachRoutinePutsTheExpectedCategoryFirst() {
-        val expected = mapOf(
-            AppRoutine.READING to AppCategory.NEWS,
-            AppRoutine.COMMUTE to AppCategory.TRAVEL,
-            AppRoutine.WORK to AppCategory.PRODUCTIVITY,
-            AppRoutine.FITNESS to AppCategory.HEALTH,
-            AppRoutine.FAMILY to AppCategory.COMMUNICATION,
-            AppRoutine.EVENING to AppCategory.MEDIA,
-            AppRoutine.WEEKEND to AppCategory.HEALTH,
-            AppRoutine.VACATION to AppCategory.TRAVEL,
-        )
-
-        expected.forEach { (routine, category) ->
-            assertEquals(routine.name, category, AppCategorizer.categoryOrder(routine).first())
-        }
-    }
-
-    @Test
-    fun readingRoutineSurfacesNewsBeforeMedia() {
-        val order = AppCategorizer.categoryOrder(AppRoutine.READING)
-        assertEquals(AppCategory.NEWS, order[0])
-        assertEquals(AppCategory.MEDIA, order[1])
-    }
-
-    @Test
-    fun pinnedAiAgentsAlwaysComeFirst() {
-        AppRoutine.entries.forEach { routine ->
-            assertEquals(
-                routine.name,
-                AppCategory.AI_AGENTS,
-                AppCategorizer.categoryOrder(routine, AppCategory.AI_AGENTS).first(),
-            )
-        }
-    }
-
-    @Test
     fun manualAndKnownPackageCategoriesBeatAndroidDefaults() {
         assertEquals(
             AppCategory.MEDIA,
@@ -199,38 +161,6 @@ class AppCategorizerTest {
                 "NYTimes",
                 ApplicationInfo.CATEGORY_NEWS,
             ),
-        )
-    }
-
-    @Test
-    fun fitnessDoesNotOverrideALaterRoutine() {
-        assertEquals(
-            AppRoutine.EVENING,
-            AppCategorizer.resolveRoutine(21 * 60, 5 * 60, 7 * 60, 9 * 60, 19 * 60, 17 * 60, 20 * 60),
-        )
-        assertEquals(
-            AppRoutine.FITNESS,
-            AppCategorizer.resolveRoutine(30, 5 * 60, 7 * 60, 9 * 60, 23 * 60, 17 * 60, 20 * 60),
-        )
-        assertEquals(
-            AppRoutine.WORK,
-            AppCategorizer.resolveRoutine(90, 5 * 60, 7 * 60, 9 * 60, 23 * 60, 17 * 60, 20 * 60),
-        )
-    }
-
-    @Test
-    fun vacationOverridesWeekendAndWeekendOverridesWeekday() {
-        assertEquals(
-            AppRoutine.VACATION,
-            AppCategorizer.resolveMode(true, Calendar.SATURDAY, AppRoutine.WORK),
-        )
-        assertEquals(
-            AppRoutine.WEEKEND,
-            AppCategorizer.resolveMode(false, Calendar.SUNDAY, AppRoutine.READING),
-        )
-        assertEquals(
-            AppRoutine.WORK,
-            AppCategorizer.resolveMode(false, Calendar.MONDAY, AppRoutine.WORK),
         )
     }
 

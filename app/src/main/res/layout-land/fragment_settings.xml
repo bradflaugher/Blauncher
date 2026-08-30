@@ -86,8 +86,8 @@
             </LinearLayout>
 
             <include
-                android:id="@+id/routineSettings"
-                layout="@layout/settings_routine"
+                android:id="@+id/smartOrderSettings"
+                layout="@layout/settings_smart_order"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="12dp" />

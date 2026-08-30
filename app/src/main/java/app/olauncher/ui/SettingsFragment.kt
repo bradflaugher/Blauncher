@@ -1,17 +1,17 @@
 package app.olauncher.ui
 
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
-import android.text.format.DateFormat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
@@ -31,7 +31,7 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
-import app.olauncher.helper.AppCategorizer
+import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.getAppsList
@@ -44,7 +44,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
-import java.util.Calendar
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -82,7 +81,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAlignment()
         populateStatusBar()
         populateDateTime()
-        populateRoutineTimes()
+        populateSmartOrdering()
         populateSwipeApps()
         populateSwipeDownAction()
         initClickListeners()
@@ -208,37 +207,20 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.closeAccessibility.setOnClickListener(this)
         binding.github.setOnClickListener(this)
 
-        binding.routineSettings.readingTime.setOnClickListener {
-            pickRoutineTime(prefs.routineReadingStart) { prefs.routineReadingStart = it }
-        }
-        binding.routineSettings.commuteTime.setOnClickListener {
-            pickRoutineTime(prefs.routineCommuteStart) { prefs.routineCommuteStart = it }
-        }
-        binding.routineSettings.workTime.setOnClickListener {
-            pickRoutineTime(prefs.routineWorkStart) { prefs.routineWorkStart = it }
-        }
-        binding.routineSettings.fitnessTime.setOnClickListener {
-            pickRoutineTime(prefs.routineFitnessStart) { prefs.routineFitnessStart = it }
-        }
-        binding.routineSettings.familyTime.setOnClickListener {
-            pickRoutineTime(prefs.routineFamilyStart) { prefs.routineFamilyStart = it }
-        }
-        binding.routineSettings.eveningTime.setOnClickListener {
-            pickRoutineTime(prefs.routineEveningStart) { prefs.routineEveningStart = it }
-        }
-        binding.routineSettings.refreshCategories.setOnClickListener {
+        binding.smartOrderSettings.refreshCategories.setOnClickListener {
             prefs.clearAppCategoryOverrides()
             viewModel.getAppList()
-            populateRoutineTimes()
+            populateSmartOrdering()
             requireContext().showToast(R.string.categories_refreshed)
         }
-        binding.routineSettings.exportCategories.setOnClickListener { exportCategories() }
-        binding.routineSettings.vacationMode.setOnClickListener {
-            prefs.vacationMode = !prefs.vacationMode
-            populateRoutineTimes()
+        binding.smartOrderSettings.exportCategories.setOnClickListener { exportCategories() }
+        binding.smartOrderSettings.resetLearning.setOnClickListener {
+            prefs.clearCategoryUsageData()
             viewModel.getAppList()
+            populateSmartOrdering()
+            requireContext().showToast(R.string.learning_reset)
         }
-        binding.routineSettings.pinnedCategory.setOnClickListener { showPinnedCategoryChooser() }
+        binding.smartOrderSettings.pinnedGroups.setOnClickListener { showPinnedGroupsChooser() }
 
         binding.maxApps0.setOnClickListener(this)
         binding.maxApps1.setOnClickListener(this)
@@ -483,54 +465,58 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.textSizeCurrent.text = formatted
     }
 
-    private fun pickRoutineTime(current: Int, save: (Int) -> Unit) {
-        TimePickerDialog(
-            requireContext(),
-            { _, hour, minute ->
-                save(hour * 60 + minute)
-                populateRoutineTimes()
-                viewModel.getAppList()
-            },
-            current / 60,
-            current % 60,
-            DateFormat.is24HourFormat(requireContext()),
-        ).show()
+    private fun populateSmartOrdering() = with(binding.smartOrderSettings) {
+        val pinned = prefs.pinnedCategories
+        pinnedGroups.text = when {
+            pinned.isEmpty() -> getString(R.string.none)
+            pinned.size <= 3 -> pinned.joinToString(", ") { it.displayName }
+            else -> pinned.take(3).joinToString(", ") { it.displayName } + " +${pinned.size - 3}"
+        }
+        // What the model would surface right now, past the pins.
+        topGroups.text = SmartOrder.currentOrder(prefs)
+            .filterNot { it in pinned }
+            .take(3)
+            .joinToString(" · ") { it.displayName }
     }
 
-    private fun populateRoutineTimes() = with(binding.routineSettings) {
-        currentRoutine.text = AppCategorizer.currentRoutine(prefs).displayName
-        vacationMode.text = getString(if (prefs.vacationMode) R.string.on else R.string.off)
-        pinnedCategory.text = prefs.pinnedCategory?.displayName ?: getString(R.string.none)
-        readingTime.text = formatRoutineTime(prefs.routineReadingStart)
-        commuteTime.text = formatRoutineTime(prefs.routineCommuteStart)
-        workTime.text = formatRoutineTime(prefs.routineWorkStart)
-        fitnessTime.text = formatRoutineTime(prefs.routineFitnessStart)
-        familyTime.text = formatRoutineTime(prefs.routineFamilyStart)
-        eveningTime.text = formatRoutineTime(prefs.routineEveningStart)
-    }
-
-    private fun showPinnedCategoryChooser() {
+    // Tapping pins a group at the end of the list; tapping again unpins it. The
+    // number in front of each pinned group shows the order the drawer will use.
+    private fun showPinnedGroupsChooser() {
         val categories = AppCategory.entries
-        val labels = listOf(getString(R.string.none)) + categories.map { it.displayName }
-        val selected = prefs.pinnedCategory?.ordinal?.plus(1) ?: 0
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.pinned_group)
-            .setSingleChoiceItems(labels.toTypedArray(), selected) { dialog, which ->
-                prefs.pinnedCategory = if (which == 0) null else categories[which - 1]
-                dialog.dismiss()
-                populateRoutineTimes()
+        val pinned = prefs.pinnedCategories.toMutableList()
+        val adapter = object : ArrayAdapter<AppCategory>(
+            requireContext(),
+            android.R.layout.simple_list_item_1,
+            categories,
+        ) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val category = categories[position]
+                val index = pinned.indexOf(category)
+                (view as TextView).text =
+                    if (index >= 0) "${index + 1} · ${category.displayName}"
+                    else category.displayName
+                view.alpha = if (index >= 0) 1f else 0.5f
+                return view
+            }
+        }
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.pin_groups_in_order)
+            .setAdapter(adapter, null)
+            .setPositiveButton(R.string.done) { d, _ ->
+                prefs.pinnedCategories = pinned
+                d.dismiss()
+                populateSmartOrdering()
                 viewModel.getAppList()
             }
             .setNegativeButton(R.string.close, null)
-            .show()
-    }
-
-    private fun formatRoutineTime(minutes: Int): String {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, minutes / 60)
-            set(Calendar.MINUTE, minutes % 60)
+            .create()
+        dialog.listView.setOnItemClickListener { _, _, position, _ ->
+            val category = categories[position]
+            if (!pinned.remove(category)) pinned.add(category)
+            adapter.notifyDataSetChanged()
         }
-        return DateFormat.getTimeFormat(requireContext()).format(calendar.time)
+        dialog.show()
     }
 
     private fun populateKeyboardText() {

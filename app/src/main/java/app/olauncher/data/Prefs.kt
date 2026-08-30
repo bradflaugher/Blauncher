@@ -30,14 +30,9 @@ class Prefs(context: Context) {
     private val HIDE_SET_DEFAULT_LAUNCHER = "HIDE_SET_DEFAULT_LAUNCHER"
     private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
     private val APP_CATEGORY_OVERRIDE_PREFIX = "APP_CATEGORY_OVERRIDE_"
-    private val ROUTINE_READING_START = "ROUTINE_READING_START"
-    private val ROUTINE_COMMUTE_START = "ROUTINE_COMMUTE_START"
-    private val ROUTINE_WORK_START = "ROUTINE_WORK_START"
-    private val ROUTINE_FITNESS_START = "ROUTINE_FITNESS_START"
-    private val ROUTINE_FAMILY_START = "ROUTINE_FAMILY_START"
-    private val ROUTINE_EVENING_START = "ROUTINE_EVENING_START"
-    private val VACATION_MODE = "VACATION_MODE"
     private val PINNED_CATEGORY = "PINNED_CATEGORY"
+    private val PINNED_CATEGORIES = "PINNED_CATEGORIES"
+    private val CATEGORY_USAGE_DATA = "CATEGORY_USAGE_DATA"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -129,10 +124,33 @@ class Prefs(context: Context) {
             "PRO_MESSAGE_SHOWN",
             "SHOWN_ON_DAY_OF_YEAR",
             "FIRST_HIDE",
+            "ROUTINE_READING_START",
+            "ROUTINE_COMMUTE_START",
+            "ROUTINE_WORK_START",
+            "ROUTINE_FITNESS_START",
+            "ROUTINE_FAMILY_START",
+            "ROUTINE_EVENING_START",
+            "VACATION_MODE",
         )
         if (obsoleteKeys.any(prefs::contains)) {
             prefs.edit { obsoleteKeys.forEach(::remove) }
         }
+        migratePinnedCategory()
+    }
+
+    // The single pinned group grew into an ordered list; carry the old choice over once.
+    private fun migratePinnedCategory() {
+        if (!prefs.contains(PINNED_CATEGORY)) return
+        if (!prefs.contains(PINNED_CATEGORIES)) {
+            val stored = prefs.getString(PINNED_CATEGORY, null)
+            val migrated = when {
+                stored == null || stored == "NONE" -> ""
+                else -> runCatching { AppCategory.valueOf(stored).name }
+                    .getOrDefault(AppCategory.AI_AGENTS.name)
+            }
+            prefs.edit { putString(PINNED_CATEGORIES, migrated) }
+        }
+        prefs.edit { remove(PINNED_CATEGORY) }
     }
 
     var firstOpen: Boolean
@@ -179,41 +197,26 @@ class Prefs(context: Context) {
         get() = prefs.getInt(DATE_TIME_VISIBILITY, Constants.DateTime.ON)
         set(value) = prefs.edit { putInt(DATE_TIME_VISIBILITY, value).apply() }
 
-    var routineReadingStart: Int
-        get() = prefs.getInt(ROUTINE_READING_START, 5 * 60)
-        set(value) = prefs.edit { putInt(ROUTINE_READING_START, value.coerceIn(0, 1439)) }
-
-    var routineCommuteStart: Int
-        get() = prefs.getInt(ROUTINE_COMMUTE_START, 7 * 60)
-        set(value) = prefs.edit { putInt(ROUTINE_COMMUTE_START, value.coerceIn(0, 1439)) }
-
-    var routineWorkStart: Int
-        get() = prefs.getInt(ROUTINE_WORK_START, 9 * 60)
-        set(value) = prefs.edit { putInt(ROUTINE_WORK_START, value.coerceIn(0, 1439)) }
-
-    var routineFitnessStart: Int
-        get() = prefs.getInt(ROUTINE_FITNESS_START, 12 * 60)
-        set(value) = prefs.edit { putInt(ROUTINE_FITNESS_START, value.coerceIn(0, 1439)) }
-
-    var routineFamilyStart: Int
-        get() = prefs.getInt(ROUTINE_FAMILY_START, 17 * 60)
-        set(value) = prefs.edit { putInt(ROUTINE_FAMILY_START, value.coerceIn(0, 1439)) }
-
-    var routineEveningStart: Int
-        get() = prefs.getInt(ROUTINE_EVENING_START, 20 * 60)
-        set(value) = prefs.edit { putInt(ROUTINE_EVENING_START, value.coerceIn(0, 1439)) }
-
-    var vacationMode: Boolean
-        get() = prefs.getBoolean(VACATION_MODE, false)
-        set(value) = prefs.edit { putBoolean(VACATION_MODE, value) }
-
-    var pinnedCategory: AppCategory?
+    /** Ordered groups that always stay on top of the drawer. */
+    var pinnedCategories: List<AppCategory>
         get() {
-            val stored = prefs.getString(PINNED_CATEGORY, null) ?: return AppCategory.AI_AGENTS
-            if (stored == "NONE") return null
-            return runCatching { AppCategory.valueOf(stored) }.getOrDefault(AppCategory.AI_AGENTS)
+            val stored = prefs.getString(PINNED_CATEGORIES, null)
+                ?: return listOf(AppCategory.AI_AGENTS)
+            return stored.split(',')
+                .filter { it.isNotBlank() }
+                .mapNotNull { runCatching { AppCategory.valueOf(it) }.getOrNull() }
+                .distinct()
         }
-        set(value) = prefs.edit { putString(PINNED_CATEGORY, value?.name ?: "NONE") }
+        set(value) = prefs.edit {
+            putString(PINNED_CATEGORIES, value.distinct().joinToString(",") { it.name })
+        }
+
+    /** Locally learned launch weights used by SmartOrder. Never leaves the device. */
+    var categoryUsageData: String?
+        get() = prefs.getString(CATEGORY_USAGE_DATA, null)
+        set(value) = prefs.edit { putString(CATEGORY_USAGE_DATA, value) }
+
+    fun clearCategoryUsageData() = prefs.edit { remove(CATEGORY_USAGE_DATA) }
 
     var swipeLeftEnabled: Boolean
         get() = prefs.getBoolean(SWIPE_LEFT_ENABLED, true)

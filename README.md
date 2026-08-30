@@ -8,20 +8,24 @@ private Android launcher setup rather than as an official Olauncher release.
 - Local app categorization with per-app manual overrides (including multi-group membership so an app can appear in more than one group) and compact markers. Search still dedupes so keyboard matching and single-match auto-launch stay correct.
 - Separate **News** and **Media** groups (each with its own glyph), so NYT / WSJ /
   BBC-style apps do not sit under music and video.
-- A dedicated AI Agents group pinned first by default, configurable in Settings.
-- Time-aware group ordering with alphabetical apps inside every group.
+- Pinned groups: any number of groups can be pinned to the top of the drawer,
+  in an order you choose (AI Agents is pinned first by default).
+- Smart group ordering with alphabetical apps inside every group.
 - Keyboard-first search with single-match auto-launch and web search fallback.
 - A minimal launcher experience without a remote account or synchronization.
 - No launcher-managed wallpaper or usage-history access.
 - **Android 17 only** (API 37): min, target, and compile SDK are all 37. Built
   with Android Gradle Plugin 9.3 and Gradle 9.5.
 
-Ranking never reads or stores launch history. It guesses likely activities from
-the current time: early reading (News first, then Media), morning commute, work
-blocks, noon fitness, family time, and evening books or audiobooks. Routine
-start times are editable in Settings, weekends switch automatically, Vacation
-mode can override the schedule, and long-pressing an app allows its group to be
-corrected.
+Group ordering is driven by a tiny on-device model with nothing to configure.
+Smooth built-in time-of-day curves (with weekday and weekend variants) provide
+a sensible default — news in the early morning, focus during work hours, media
+in the evening — and the launcher quietly learns from the apps you actually
+open, bucketed by hour and day type, so your real habits sharpen the order over
+time. Learned weights fade with a two-week half-life, live only in local app
+preferences, never leave the device, and never touch the system usage-stats
+API. Learning can be reset in Settings, and long-pressing an app still lets
+its group be corrected.
 
 Double-tap lock uses the accessibility service (no device-admin path). Private
 Space is always available on supported devices.

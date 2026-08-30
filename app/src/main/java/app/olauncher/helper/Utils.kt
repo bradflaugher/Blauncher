@@ -111,7 +111,7 @@ suspend fun getAppsList(
                 appList.addAll(pinned)
             }
 
-            AppCategorizer.sortForNow(prefs, appList)
+            SmartOrder.sort(prefs, appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -249,7 +249,7 @@ suspend fun getPrivateSpaceApps(
                     )
                 }
             }
-            AppCategorizer.sortByCategory(prefs, appList)
+            SmartOrder.sort(prefs, appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }

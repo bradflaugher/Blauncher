@@ -393,6 +393,8 @@ class AppDrawerFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         cachedIsCjkKeyboard = null
+        if (flag == Constants.FLAG_LAUNCH_APP)
+            viewModel.refreshAppOrder()
         binding.search.showKeyboard(prefs.autoShowKeyboard)
     }
 

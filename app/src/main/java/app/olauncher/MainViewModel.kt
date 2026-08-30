@@ -14,6 +14,7 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.helper.SingleLiveEvent
+import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.getAppsList
 import app.olauncher.helper.getPrivateSpaceApps
 import app.olauncher.helper.getPrivateSpaceUserHandle
@@ -52,6 +53,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (appModel is AppModel.PrivateSpaceHeader) return
         when (flag) {
             Constants.FLAG_LAUNCH_APP -> {
+                SmartOrder.recordLaunch(prefs, appModel.category)
                 when (appModel) {
                     is AppModel.PinnedShortcut -> launchShortcut(appModel)
                     is AppModel.App ->
@@ -63,6 +65,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             Constants.FLAG_HIDDEN_APPS -> {
                 if (appModel is AppModel.App) {
+                    SmartOrder.recordLaunch(prefs, appModel.category)
                     launchApp(appModel.appPackage, appModel.activityClassName, appModel.user)
                 }
             }
@@ -357,6 +360,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         } catch (e: Exception) {
             appContext.showToast(appContext.getString(R.string.unable_to_open_app))
+        }
+    }
+
+    // The smart order shifts through the day; re-sort cached lists when the drawer opens.
+    fun refreshAppOrder() {
+        appList.value?.let { apps ->
+            val sorted = apps.toMutableList()
+            SmartOrder.sort(prefs, sorted)
+            if (sorted != apps) appList.value = sorted
+        }
+        privateSpaceApps.value?.let { apps ->
+            val sorted = apps.toMutableList()
+            SmartOrder.sort(prefs, sorted)
+            if (sorted != apps) privateSpaceApps.value = sorted
         }
     }
 
