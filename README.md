@@ -41,9 +41,8 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 
 ## Latest-only platform
 
-Blauncher tracks **only the latest public stable Android** — currently
-Android 17 (API 37) for `minSdk`, `targetSdk`, and `compileSdk` — plus the
-current AGP and Gradle (pinned in
+Blauncher tracks **only the latest public stable Android** for `minSdk`,
+`targetSdk`, and `compileSdk`, plus the current AGP and Gradle (pinned in
 [`gradle/libs.versions.toml`](gradle/libs.versions.toml) and
 [`gradle/wrapper/gradle-wrapper.properties`](gradle/wrapper/gradle-wrapper.properties)).
 Older Android is not supported. Full policy: [`AGENTS.md`](AGENTS.md).
@@ -55,11 +54,11 @@ Older Android is not supported. Full policy: [`AGENTS.md`](AGENTS.md).
    Optionally verify the `Blauncher.apk.sha256` checksum
    ([`SECURITY.md`](SECURITY.md)).
 2. Install it, open it, and tap **Set as default launcher**.
-3. Requires the latest stable Android (currently Android 17, API 37).
+3. Requires the latest stable Android.
 
 ## Build
 
-JDK 17 and Android SDK Platform 37 (`platforms;android-37.0`):
+Latest JDK and Android SDK platform (see [`AGENTS.md`](AGENTS.md)):
 
 ```sh
 ./gradlew lint test assembleDebug
@@ -71,8 +70,7 @@ Unsigned release:
 ./gradlew assembleRelease
 ```
 
-Local builds default to version code `1` / name `1.0`. CI overrides with
-`BLAUNCHER_VERSION_CODE` and `BLAUNCHER_VERSION_NAME`:
+CI sets `BLAUNCHER_VERSION_CODE` and `BLAUNCHER_VERSION_NAME`:
 
 ```sh
 BLAUNCHER_VERSION_CODE=42 BLAUNCHER_VERSION_NAME=1.0.42 ./gradlew assembleRelease
