@@ -32,9 +32,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # build-mode none scans Kotlin/Java without needing the Android SDK.
+          # Kotlin needs a real traced build: buildless extraction cannot
+          # process an AGP 9 / API 37 Android project.
           - language: java-kotlin
-            build-mode: none
+            build-mode: manual
           # Scans the GitHub Actions workflows for injection and pinning issues.
           - language: actions
             build-mode: none
@@ -45,11 +46,35 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up JDK 17
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        if: matrix.language == 'java-kotlin'
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
+
+      - name: Set up Gradle
+        if: matrix.language == 'java-kotlin'
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
+        with:
+          validate-wrappers: true
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
+
+      # The daemon is disabled so the CodeQL tracer can observe compilation.
+      - name: Build for CodeQL
+        if: matrix.language == 'java-kotlin'
+        run: ./gradlew --no-daemon assembleDebug
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
