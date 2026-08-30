@@ -19,22 +19,25 @@
         style="@style/TextSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="4dp"
         android:alpha="0.65"
         android:text="@string/smart_ordering_summary" />
+
+    <!-- Passive status line, deliberately styled unlike the tappable rows below. -->
+    <TextView
+        android:id="@+id/topGroups"
+        style="@style/TextSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:alpha="0.45"
+        android:textStyle="italic" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/pinned_groups" />
         <TextView android:id="@+id/pinnedGroups" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/up_next" />
-        <TextView android:id="@+id/topGroups" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" />
     </FrameLayout>
 
     <FrameLayout

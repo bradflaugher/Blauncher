@@ -116,7 +116,7 @@
     <string name="smart_ordering_summary">Groups order themselves by time of day and quietly learn from the apps you open, on this device only. Pinned groups always stay on top, in your order.</string>
     <string name="pinned_groups">Pinned groups</string>
     <string name="pin_groups_in_order">Pin groups in your order</string>
-    <string name="up_next">Right now</string>
+    <string name="up_next_status">Right now: %1$s</string>
     <string name="usage_learning">Usage learning</string>
     <string name="reset">Reset</string>
     <string name="learning_reset">Learning reset — starting fresh</string>

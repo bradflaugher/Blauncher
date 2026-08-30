@@ -473,10 +473,11 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             else -> pinned.take(3).joinToString(", ") { it.displayName } + " +${pinned.size - 3}"
         }
         // What the model would surface right now, past the pins.
-        topGroups.text = SmartOrder.currentOrder(prefs)
+        val preview = SmartOrder.currentOrder(prefs)
             .filterNot { it in pinned }
             .take(3)
             .joinToString(" · ") { it.displayName }
+        topGroups.text = getString(R.string.up_next_status, preview)
     }
 
     // Tapping pins a group at the end of the list; tapping again unpins it. The
