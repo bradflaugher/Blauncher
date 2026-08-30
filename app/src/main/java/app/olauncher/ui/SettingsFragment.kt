@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
-import android.provider.Settings
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -32,10 +31,8 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.SmartOrder
-import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.getAppsList
-import app.olauncher.helper.isAccessServiceEnabled
 import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
@@ -73,7 +70,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
         binding.homeAppsNum.text = prefs.homeAppsNum.toString()
         populateKeyboardText()
-        populateLockSettings()
         // Home button for recents feature disabled
         // populateHomeButtonRecents()
         populateAppThemeText()
@@ -106,7 +102,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.hiddenApps -> showHiddenApps()
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
-            R.id.toggleLock -> toggleLockMode()
             // Home button for recents feature disabled
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
@@ -126,8 +121,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
             R.id.themeSystem -> updateTheme(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             R.id.textSizeValue -> binding.textSizesLayout.visibility = View.VISIBLE
-            R.id.actionAccessibility -> openAccessibilityService()
-            R.id.closeAccessibility -> toggleAccessibilityVisibility(false)
             R.id.tvGestures -> binding.flSwipeDown.visibility = View.VISIBLE
 
             R.id.maxApps0 -> updateHomeAppsNum(0)
@@ -168,7 +161,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
             R.id.swipeLeftApp -> toggleSwipeLeft()
             R.id.swipeRightApp -> toggleSwipeRight()
-            R.id.toggleLock -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
         return true
     }
@@ -179,7 +171,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.appInfo.setOnClickListener(this)
         binding.setLauncher.setOnClickListener(this)
         binding.autoShowKeyboard.setOnClickListener(this)
-        binding.toggleLock.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
         binding.homeAppsNum.setOnClickListener(this)
@@ -203,8 +194,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.themeDark.setOnClickListener(this)
         binding.themeSystem.setOnClickListener(this)
         binding.textSizeValue.setOnClickListener(this)
-        binding.actionAccessibility.setOnClickListener(this)
-        binding.closeAccessibility.setOnClickListener(this)
         binding.github.setOnClickListener(this)
 
         binding.smartOrderSettings.refreshCategories.setOnClickListener {
@@ -239,7 +228,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.appThemeText.setOnLongClickListener(this)
         binding.swipeLeftApp.setOnLongClickListener(this)
         binding.swipeRightApp.setOnLongClickListener(this)
-        binding.toggleLock.setOnLongClickListener(this)
     }
 
     private fun initObservers() {
@@ -381,28 +369,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
-    private fun toggleAccessibilityVisibility(show: Boolean) {
-        if (isAccessServiceEnabled(requireContext()))
-            binding.actionAccessibility.text = getString(R.string.disable)
-        binding.accessibilityLayout.isVisible = show
-        binding.scrollView.animateAlpha(if (show) 0.5f else 1f)
-    }
-
-    private fun openAccessibilityService() {
-        toggleAccessibilityVisibility(false)
-        populateLockSettings()
-        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-    }
-
-    private fun toggleLockMode() {
-        if (!prefs.lockModeOn && !isAccessServiceEnabled(requireContext())) {
-            toggleAccessibilityVisibility(true)
-            return
-        }
-        prefs.lockModeOn = !prefs.lockModeOn
-        populateLockSettings()
-    }
-
     private fun updateHomeAppsNum(num: Int) {
         binding.homeAppsNum.text = num.toString()
         binding.appsNumSelectLayout.visibility = View.GONE
@@ -466,11 +432,12 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateSmartOrdering() = with(binding.smartOrderSettings) {
+        // The row shows a compact summary; the chooser dialog holds the full ordered list.
         val pinned = prefs.pinnedCategories
         pinnedGroups.text = when {
             pinned.isEmpty() -> getString(R.string.none)
-            pinned.size <= 3 -> pinned.joinToString(", ") { it.displayName }
-            else -> pinned.take(3).joinToString(", ") { it.displayName } + " +${pinned.size - 3}"
+            pinned.size == 1 -> pinned.first().displayName
+            else -> getString(R.string.pinned_count, pinned.size)
         }
         // What the model would surface right now, past the pins.
         val preview = SmartOrder.currentOrder(prefs)
@@ -544,30 +511,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.alignmentBottom.text = if (prefs.homeBottomAlignment)
             getString(R.string.bottom_on)
         else getString(R.string.bottom_off)
-    }
-
-    // Home button for recents feature disabled
-    // private fun toggleHomeButtonRecents() {
-    //     if (!prefs.homeButtonShowRecents && !isAccessServiceEnabled(requireContext())) {
-    //         toggleAccessibilityVisibility(true)
-    //         return
-    //     }
-    //     prefs.homeButtonShowRecents = !prefs.homeButtonShowRecents
-    //     populateHomeButtonRecents()
-    // }
-
-    // private fun populateHomeButtonRecents() {
-    //     binding.homeButtonRecents.text = getString(
-    //         if (prefs.homeButtonShowRecents && isAccessServiceEnabled(requireContext())) R.string.on
-    //         else R.string.off
-    //     )
-    // }
-
-    private fun populateLockSettings() {
-        binding.toggleLock.text = getString(
-            if (prefs.lockModeOn && isAccessServiceEnabled(requireContext())) R.string.on
-            else R.string.off
-        )
     }
 
     private fun populateSwipeDownAction() {

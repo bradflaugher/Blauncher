@@ -12,7 +12,6 @@ class Prefs(context: Context) {
     private val FIRST_OPEN = "FIRST_OPEN"
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val USER_STATE = "USER_STATE"
-    private val LOCK_MODE = "LOCK_MODE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
@@ -131,6 +130,7 @@ class Prefs(context: Context) {
             "ROUTINE_FAMILY_START",
             "ROUTINE_EVENING_START",
             "VACATION_MODE",
+            "LOCK_MODE",
         )
         if (obsoleteKeys.any(prefs::contains)) {
             prefs.edit { obsoleteKeys.forEach(::remove) }
@@ -164,10 +164,6 @@ class Prefs(context: Context) {
     var userState: String
         get() = prefs.getString(USER_STATE, Constants.UserState.START).toString()
         set(value) = prefs.edit { putString(USER_STATE, value).apply() }
-
-    var lockModeOn: Boolean
-        get() = prefs.getBoolean(LOCK_MODE, false)
-        set(value) = prefs.edit { putBoolean(LOCK_MODE, value).apply() }
 
     var autoShowKeyboard: Boolean
         get() = prefs.getBoolean(AUTO_SHOW_KEYBOARD, true)

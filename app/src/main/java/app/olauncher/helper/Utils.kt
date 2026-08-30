@@ -365,19 +365,6 @@ fun openCalendar(context: Context) {
     }
 }
 
-fun isAccessServiceEnabled(context: Context): Boolean {
-    val enabled = try {
-        Settings.Secure.getInt(context.applicationContext.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)
-    } catch (_: Exception) {
-        0
-    }
-    if (enabled == 1) {
-        val enabledServicesString: String? = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-        return enabledServicesString?.contains(context.packageName + "/" + MyAccessibilityService::class.java.name) ?: false
-    }
-    return false
-}
-
 fun isTablet(context: Context): Boolean {
     val metrics = context.resources.displayMetrics
     val widthInches = metrics.widthPixels / metrics.xdpi

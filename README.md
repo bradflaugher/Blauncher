@@ -27,8 +27,8 @@ preferences, never leave the device, and never touch the system usage-stats
 API. Learning can be reset in Settings, and long-pressing an app still lets
 its group be corrected.
 
-Double-tap lock uses the accessibility service (no device-admin path). Private
-Space is always available on supported devices.
+Private Space is always available on supported devices. There is no
+accessibility service and no double-tap-to-lock gesture.
 
 The application ID is `com.bradflaugher.blauncher`. The inherited source and
 namespace remain under `app.olauncher`.

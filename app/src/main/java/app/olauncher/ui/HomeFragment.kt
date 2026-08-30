@@ -72,7 +72,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.lock -> {}
             // Home button for recents feature disabled
             // R.id.recents -> {}
             R.id.clock -> openClockApp()
@@ -192,7 +191,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun initClickListeners() {
-        binding.lock.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.recents.setOnClickListener(this)
         binding.clock.setOnClickListener(this)
@@ -525,12 +523,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-            }
-
-            override fun onDoubleClick() {
-                super.onDoubleClick()
-                if (!prefs.lockModeOn) return
-                binding.lock.performClick()
             }
 
             override fun onClick() {
