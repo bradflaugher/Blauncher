@@ -106,19 +106,17 @@
     <string name="pinned_groups">Pinned groups</string>
     <string name="pinned_count">%1$d pinned</string>
     <string name="pin_groups_in_order">Pin groups in your order</string>
-    <string name="up_next_status">Right now: %1$s</string>
+    <string name="up_next_label">Right now:</string>
     <string name="usage_learning">Usage learning</string>
     <string name="reset">Reset</string>
     <string name="learning_reset">Learning reset — starting fresh</string>
+    <string name="confirm_reset_learning">Forget everything the launcher has learned from your app launches? Smart ordering starts fresh from the built-in defaults.</string>
+    <string name="confirm_refresh_categories">Clear all manual group choices and re-categorize every app automatically? This cannot be undone.</string>
     <string name="done">Done</string>
     <string name="automatic">Automatic</string>
     <string name="save_groups">Save</string>
     <string name="category">Group</string>
     <string name="choose_category">Choose groups</string>
     <string name="app_groups">App groups</string>
-    <string name="category_export">Category data</string>
-    <string name="export">Export</string>
-    <string name="category_export_subject">Blauncher app categories</string>
-    <string name="share_category_export">Share category data</string>
     <string name="none">None</string>
 </resources>

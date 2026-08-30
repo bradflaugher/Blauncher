@@ -21,16 +21,19 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:alpha="0.65"
-        android:text="@string/smart_ordering_summary" />
+        android:text="@string/smart_ordering_summary"
+        android:textColor="?attr/primaryColor" />
 
-    <!-- Passive status line, deliberately styled unlike the tappable rows below. -->
+    <!-- Passive status line, deliberately styled unlike the tappable rows below.
+         The group names are tinted with their category colors in code. -->
     <TextView
         android:id="@+id/topGroups"
         style="@style/TextSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:alpha="0.45"
+        android:alpha="0.8"
+        android:textColor="?attr/primaryColor"
         android:textStyle="italic" />
 
     <LinearLayout
@@ -38,29 +41,22 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal">
-        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/pinned_groups" />
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/pinned_groups" android:textColor="?attr/primaryColor" />
         <TextView android:id="@+id/pinnedGroups" style="@style/TextSmallBold" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:ellipsize="end" android:gravity="end" android:maxLines="1" android:padding="8dp" />
     </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/app_groups" />
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/app_groups" android:textColor="?attr/primaryColor" />
         <TextView android:id="@+id/refreshCategories" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" android:text="@string/recategorize" />
     </FrameLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/usage_learning" />
+        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingVertical="8dp" android:text="@string/usage_learning" android:textColor="?attr/primaryColor" />
         <TextView android:id="@+id/resetLearning" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" android:text="@string/reset" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView style="@style/TextSmall" android:layout_width="wrap_content" android:layout_height="wrap_content" android:alpha="0.65" android:paddingVertical="8dp" android:text="@string/category_export" />
-        <TextView android:id="@+id/exportCategories" style="@style/TextSmallBold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:padding="8dp" android:text="@string/export" />
     </FrameLayout>
 
 </LinearLayout>

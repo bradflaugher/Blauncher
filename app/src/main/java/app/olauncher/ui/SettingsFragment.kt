@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -20,27 +23,20 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import app.olauncher.BuildConfig
 import app.olauncher.MainViewModel
 import app.olauncher.R
 import app.olauncher.data.AppCategory
-import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.getColorFromAttr
-import app.olauncher.helper.getAppsList
 import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.showToast
-import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
-import java.time.Instant
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -197,17 +193,20 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.github.setOnClickListener(this)
 
         binding.smartOrderSettings.refreshCategories.setOnClickListener {
-            prefs.clearAppCategoryOverrides()
-            viewModel.getAppList()
-            populateSmartOrdering()
-            requireContext().showToast(R.string.categories_refreshed)
+            confirmSmartOrderAction(R.string.app_groups, R.string.confirm_refresh_categories, R.string.recategorize) {
+                prefs.clearAppCategoryOverrides()
+                viewModel.getAppList()
+                populateSmartOrdering()
+                requireContext().showToast(R.string.categories_refreshed)
+            }
         }
-        binding.smartOrderSettings.exportCategories.setOnClickListener { exportCategories() }
         binding.smartOrderSettings.resetLearning.setOnClickListener {
-            prefs.clearCategoryUsageData()
-            viewModel.getAppList()
-            populateSmartOrdering()
-            requireContext().showToast(R.string.learning_reset)
+            confirmSmartOrderAction(R.string.usage_learning, R.string.confirm_reset_learning, R.string.reset) {
+                prefs.clearCategoryUsageData()
+                viewModel.getAppList()
+                populateSmartOrdering()
+                requireContext().showToast(R.string.learning_reset)
+            }
         }
         binding.smartOrderSettings.pinnedGroups.setOnClickListener { showPinnedGroupsChooser() }
 
@@ -318,55 +317,16 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         )
     }
 
-    private fun exportCategories() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val hiddenApps = prefs.hiddenApps
-            val apps = getAppsList(
-                requireContext(),
-                prefs,
-                includeRegularApps = true,
-                includeHiddenApps = true,
-            ).filterIsInstance<AppModel.App>()
-                .distinctBy { it.appPackage }
-
-            val exportedApps = JSONArray()
-            apps.forEach { app ->
-                val overrides = prefs.getAppCategoryOverrides(app.appPackage)
-                val categories = overrides ?: listOf(app.category)
-                val categoryNames = JSONArray()
-                val categoryLabels = JSONArray()
-                categories.forEach { category ->
-                    categoryNames.put(category.name)
-                    categoryLabels.put(category.displayName)
-                }
-                exportedApps.put(
-                    JSONObject()
-                        .put("name", app.appLabel)
-                        .put("package", app.appPackage)
-                        .put("category", categories.first().name)
-                        .put("categoryLabel", categories.first().displayName)
-                        .put("categories", categoryNames)
-                        .put("categoryLabels", categoryLabels)
-                        .put("manual", overrides != null)
-                        .put("hidden", hiddenApps.any { it.startsWith("${app.appPackage}|") })
-                )
+    private fun confirmSmartOrderAction(titleRes: Int, messageRes: Int, actionRes: Int, action: () -> Unit) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(titleRes)
+            .setMessage(messageRes)
+            .setPositiveButton(actionRes) { dialog, _ ->
+                action()
+                dialog.dismiss()
             }
-            val export = JSONObject()
-                .put("format", "Blauncher app categories")
-                .put("version", 2)
-                .put("exportedAt", Instant.now().toString())
-                .put("apps", exportedApps)
-                .toString(2)
-
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.category_export_subject))
-                putExtra(Intent.EXTRA_TEXT, export)
-            }
-            startActivity(
-                Intent.createChooser(shareIntent, getString(R.string.share_category_export))
-            )
-        }
+            .setNegativeButton(R.string.close, null)
+            .show()
     }
 
     private fun updateHomeAppsNum(num: Int) {
@@ -439,12 +399,24 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             pinned.size == 1 -> pinned.first().displayName
             else -> getString(R.string.pinned_count, pinned.size)
         }
-        // What the model would surface right now, past the pins.
-        val preview = SmartOrder.currentOrder(prefs)
+        // What the model would surface right now, past the pins,
+        // each group name tinted with its category color.
+        val preview = SpannableStringBuilder(getString(R.string.up_next_label)).append(' ')
+        SmartOrder.currentOrder(prefs)
             .filterNot { it in pinned }
             .take(3)
-            .joinToString(" · ") { it.displayName }
-        topGroups.text = getString(R.string.up_next_status, preview)
+            .forEachIndexed { index, category ->
+                if (index > 0) preview.append("  ·  ")
+                val start = preview.length
+                preview.append(category.displayName)
+                preview.setSpan(
+                    ForegroundColorSpan(category.color),
+                    start,
+                    preview.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+        topGroups.text = preview
     }
 
     // Tapping pins a group at the end of the list; tapping again unpins it. The
