@@ -1,6 +1,7 @@
 package app.olauncher.ui
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Process
 import android.text.Spannable
@@ -10,10 +11,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -26,7 +28,9 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.AppCategory
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
+import app.olauncher.databinding.DialogAppGroupsBinding
 import app.olauncher.databinding.FragmentAppDrawerBinding
+import app.olauncher.databinding.ItemGroupChoiceBinding
 import app.olauncher.helper.deletePinnedShortcut
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
@@ -227,7 +231,13 @@ class AppDrawerFragment : Fragment() {
             appCategoryListener = { appModel -> showCategoryChooser(appModel) },
             appEmphasisListener = { appModel ->
                 if (appModel.emphasisKey.isBlank()) return@AppDrawerAdapter
-                prefs.toggleAppEmphasized(appModel.emphasisKey)
+                val emphasized = prefs.toggleAppEmphasized(appModel.emphasisKey)
+                requireContext().showToast(
+                    getString(
+                        if (emphasized) R.string.emphasized_toast else R.string.unemphasized_toast,
+                        appModel.appLabel,
+                    )
+                )
                 viewModel.getAppList()
             },
             privateSpaceToggleListener = {
@@ -333,39 +343,60 @@ class AppDrawerFragment : Fragment() {
         }
     }
 
+    /**
+     * The Group sheet for one app: an Emphasize switch on top, then the groups the app is listed
+     * under. With no manual choice the current automatic group is pre-ticked so the sheet always
+     * shows where the app actually is; saving an unchanged automatic selection stays automatic.
+     */
     private fun showCategoryChooser(appModel: AppModel) {
+        if (appModel.appPackage.isBlank()) return
         binding.search.hideKeyboard()
+        val context = requireContext()
         val categories = AppCategory.entries
-        val labels = (listOf(getString(R.string.emphasize)) + categories.map { it.displayName })
-            .toTypedArray()
-        val current = prefs.getAppCategoryOverrides(appModel.appPackage).orEmpty().toMutableSet()
-        val emphasized = prefs.isAppEmphasized(appModel.emphasisKey)
-        val checked = BooleanArray(labels.size) { index ->
-            if (index == 0) emphasized else current.contains(categories[index - 1])
-        }
-        var emphasizeChecked = emphasized
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle(R.string.choose_category)
-            .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
-                if (which == 0) {
-                    emphasizeChecked = isChecked
-                } else if (isChecked) {
-                    current.add(categories[which - 1])
-                } else {
-                    current.remove(categories[which - 1])
-                }
+        val manual = prefs.getAppCategoryOverrides(appModel.appPackage)
+        val automatic = currentGroupsOf(appModel)
+        val checked = (manual ?: automatic).toMutableSet()
+        val builder = AlertDialog.Builder(context)
+        // Inflate against the dialog's own theme so the sheet matches the dialog's colors.
+        val inflater = LayoutInflater.from(builder.context)
+        val sheet = DialogAppGroupsBinding.inflate(inflater)
+
+        sheet.emphasizeSwitch.isChecked = prefs.isAppEmphasized(appModel.emphasisKey)
+        sheet.emphasizeRow.setOnClickListener { sheet.emphasizeSwitch.toggle() }
+        sheet.groupsSummary.setText(
+            if (manual == null) R.string.groups_automatic_summary else R.string.groups_manual_summary
+        )
+        categories.forEach { category ->
+            val row = ItemGroupChoiceBinding.inflate(inflater, sheet.groupList, true).root
+            row.text = category.displayName
+            row.isChecked = category in checked
+            row.setCompoundDrawablesRelativeWithIntrinsicBounds(category.iconRes, 0, 0, 0)
+            TextViewCompat.setCompoundDrawableTintList(row, ColorStateList.valueOf(category.color))
+            row.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) checked.add(category) else checked.remove(category)
             }
+        }
+
+        fun saveEmphasis() {
+            if (appModel.emphasisKey.isNotBlank()) {
+                prefs.setAppEmphasized(appModel.emphasisKey, sheet.emphasizeSwitch.isChecked)
+            }
+        }
+
+        val dialog = builder
+            .setTitle(appModel.appLabel)
+            .setView(sheet.root)
             .setPositiveButton(R.string.save_groups) { dialog, _ ->
-                if (current.isEmpty()) prefs.clearAppCategoryOverride(appModel.appPackage)
-                else prefs.setAppCategoryOverrides(appModel.appPackage, current)
-                if (appModel.emphasisKey.isNotBlank()) {
-                    prefs.setAppEmphasized(appModel.emphasisKey, emphasizeChecked)
-                }
+                val keepAutomatic = manual == null && checked == automatic.toSet()
+                if (checked.isEmpty() || keepAutomatic) prefs.clearAppCategoryOverride(appModel.appPackage)
+                else prefs.setAppCategoryOverrides(appModel.appPackage, checked)
+                saveEmphasis()
                 dialog.dismiss()
                 viewModel.getAppList()
             }
             .setNeutralButton(R.string.automatic) { dialog, _ ->
                 prefs.clearAppCategoryOverride(appModel.appPackage)
+                saveEmphasis()
                 dialog.dismiss()
                 viewModel.getAppList()
             }
@@ -375,6 +406,15 @@ class AppDrawerFragment : Fragment() {
             _binding?.search?.showKeyboard(prefs.autoShowKeyboard)
         }
         dialog.show()
+    }
+
+    /** Every group this app (or pinned shortcut) is currently listed under in the drawer. */
+    private fun currentGroupsOf(appModel: AppModel): List<AppCategory> {
+        val groups = adapter.appsList
+            .filter { it.emphasisKey == appModel.emphasisKey }
+            .mapNotNull { it.category }
+            .distinct()
+        return groups.ifEmpty { listOfNotNull(appModel.category) }
     }
 
     private fun getRecyclerViewOnScrollListener(): RecyclerView.OnScrollListener {

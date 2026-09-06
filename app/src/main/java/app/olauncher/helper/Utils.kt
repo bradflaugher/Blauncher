@@ -60,6 +60,7 @@ suspend fun getAppsList(
         try {
             if (!prefs.hiddenAppsUpdated) upgradeHiddenApps(prefs)
             val hiddenApps = prefs.hiddenApps
+            val emphasizedApps = prefs.emphasizedApps
 
             val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
             val launcherApps =
@@ -88,7 +89,7 @@ suspend fun getAppsList(
                             user = profile,
                             category = category,
                         )
-                        model.copy(emphasized = prefs.isAppEmphasized(model.emphasisKey))
+                        model.copy(emphasized = model.emphasisKey in emphasizedApps)
                     }
 
                     if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
@@ -105,7 +106,7 @@ suspend fun getAppsList(
 
             if (includeRegularApps) {
                 val pinned = try {
-                    getPinnedShortcuts(context, prefs, collator)
+                    getPinnedShortcuts(context, prefs, collator, emphasizedApps)
                 } catch (_: Exception) {
                     emptyList()
                 }
@@ -113,6 +114,7 @@ suspend fun getAppsList(
             }
 
             SmartOrder.sort(prefs, appList)
+            SmartOrder.applyGroupEmphasis(appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -124,6 +126,7 @@ private suspend fun getPinnedShortcuts(
     context: Context,
     prefs: Prefs,
     collator: Collator,
+    emphasizedApps: Set<String>,
 ): List<AppModel.PinnedShortcut> =
     withContext(Dispatchers.IO) {
         val pinnedShortcuts = mutableListOf<AppModel.PinnedShortcut>()
@@ -157,7 +160,7 @@ private suspend fun getPinnedShortcuts(
                                         isNew = false,
                                         user = profile,
                                         category = category,
-                                    ).let { it.copy(emphasized = prefs.isAppEmphasized(it.emphasisKey)) }
+                                    ).let { it.copy(emphasized = it.emphasisKey in emphasizedApps) }
                                 )
                             }
                         }
@@ -224,6 +227,7 @@ suspend fun getPrivateSpaceApps(
             val privateSpaceHandle = getPrivateSpaceUserHandle(context) ?: return@withContext appList
             val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
             val collator = Collator.getInstance()
+            val emphasizedApps = prefs.emphasizedApps
 
             for (app in launcherApps.getActivityList(null, privateSpaceHandle)) {
                 if (app.applicationInfo.packageName == BuildConfig.APPLICATION_ID) continue
@@ -246,11 +250,12 @@ suspend fun getPrivateSpaceApps(
                             isNew = false,
                             user = privateSpaceHandle,
                             category = category,
-                        ).let { it.copy(emphasized = prefs.isAppEmphasized(it.emphasisKey)) }
+                        ).let { it.copy(emphasized = it.emphasisKey in emphasizedApps) }
                     )
                 }
             }
             SmartOrder.sort(prefs, appList)
+            SmartOrder.applyGroupEmphasis(appList)
         } catch (e: Exception) {
             e.printStackTrace()
         }

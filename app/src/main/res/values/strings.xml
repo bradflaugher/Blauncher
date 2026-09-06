@@ -116,8 +116,13 @@
     <string name="automatic">Automatic</string>
     <string name="save_groups">Save</string>
     <string name="category">Group</string>
-    <string name="choose_category">Choose groups</string>
+    <string name="groups">Groups</string>
+    <string name="groups_automatic_summary">Chosen automatically. Tick groups to choose them yourself.</string>
+    <string name="groups_manual_summary">Chosen by you. Automatic lets the launcher decide again.</string>
     <string name="emphasize">Emphasize</string>
+    <string name="emphasize_summary">Bold and first in its group; the rest of the group fades back. Long-press an app\'s glyph to toggle this quickly.</string>
+    <string name="emphasized_toast">%1$s emphasized</string>
+    <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>
     <string name="none">None</string>
 </resources>

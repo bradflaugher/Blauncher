@@ -669,9 +669,10 @@ class Prefs(context: Context) {
         prefs.all.keys.filter { it.startsWith(APP_CATEGORY_OVERRIDE_PREFIX) }.forEach(::remove)
     }
 
-    var emphasizedApps: MutableSet<String>
-        get() = prefs.getStringSet(EMPHASIZED_APPS, mutableSetOf()) as MutableSet<String>
-        set(value) = prefs.edit { putStringSet(EMPHASIZED_APPS, value).apply() }
+    /** Emphasis keys (see [AppModel.emphasisKey]) of apps that render bold and first in their group. */
+    var emphasizedApps: Set<String>
+        get() = prefs.getStringSet(EMPHASIZED_APPS, null)?.toSet() ?: emptySet()
+        set(value) = prefs.edit { putStringSet(EMPHASIZED_APPS, value.toSet()) }
 
     fun isAppEmphasized(key: String): Boolean =
         key.isNotBlank() && emphasizedApps.contains(key)
@@ -683,6 +684,7 @@ class Prefs(context: Context) {
         emphasizedApps = next
     }
 
+    /** Flips emphasis for [key] and returns the new state. */
     fun toggleAppEmphasized(key: String): Boolean {
         val next = !isAppEmphasized(key)
         setAppEmphasized(key, next)

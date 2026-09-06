@@ -12,7 +12,7 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 
 | Home | App drawer | Settings |
 | :---: | :---: | :---: |
-| ![Home screen: clock, date, and a short text list of apps](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
+| ![Home screen: clock, date, and a short text list of apps](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group is faded](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
 
 ## What it does
 
@@ -26,11 +26,11 @@ settings. Full details in the **[user guide](GUIDE.md)**.
   or a space to browse without auto-launch.
 - **Grouped apps.** Apps are categorized on-device into groups such as AI
   Agents, People, Focus, News, Media, and Tools, each with a small colored
-  glyph. Heuristic and local. Long-press an app to recategorize it, including
-  into several groups at once (search still dedupes). Inside a group you can
-  **emphasize** the apps you actually use — they go bold and rise to the top;
-  the rest stay light and soften to grey. Toggle it from the Group sheet or
-  by long-pressing the colored glyph.
+  glyph. Heuristic and local. Long-press an app → **Group** to see which
+  groups it is under and pick others, including several at once (search still
+  dedupes). The same sheet has an **Emphasize** switch: emphasized apps go
+  bold and rise to the top of their group while the rest of that group fades
+  back. Long-press an app's colored glyph to toggle emphasis in place.
 - **Smart group order.** Groups follow time of day — news in the morning,
   focus during work, media in the evening — then sharpen from the apps you
   actually open (hour and weekday/weekend buckets, two-week half-life). Apps
