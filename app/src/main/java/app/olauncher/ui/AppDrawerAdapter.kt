@@ -3,15 +3,19 @@ package app.olauncher.ui
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.os.UserHandle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Filter
 import android.widget.Filterable
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -35,6 +39,7 @@ class AppDrawerAdapter(
     private val appHideListener: (AppModel, Int) -> Unit,
     private val appRenameListener: (AppModel, String) -> Unit,
     private val appCategoryListener: (AppModel) -> Unit,
+    private val appEmphasisListener: (AppModel) -> Unit = {},
     private val privateSpaceToggleListener: () -> Unit = {},
     private val privateSpaceSettingsListener: () -> Unit = {},
 ) : ListAdapter<AppModel, RecyclerView.ViewHolder>(DIFF_CALLBACK), Filterable {
@@ -127,6 +132,8 @@ class AppDrawerAdapter(
                     appHideListener,
                     appRenameListener,
                     appCategoryListener,
+                    appEmphasisListener,
+                    groupHasEmphasis(appModel),
                 )
             }
         } catch (e: Exception) {
@@ -230,6 +237,11 @@ class AppDrawerAdapter(
         submitList(appsList)
     }
 
+    private fun groupHasEmphasis(appModel: AppModel): Boolean {
+        val category = appModel.category ?: return false
+        return appsList.any { it.category == category && it.emphasized }
+    }
+
     fun launchFirstInList() {
         val first = appFilteredList.firstOrNull {
             it !is AppModel.PrivateSpaceHeader
@@ -266,6 +278,8 @@ class AppDrawerAdapter(
             appHideListener: (AppModel, Int) -> Unit,
             appRenameListener: (AppModel, String) -> Unit,
             appCategoryListener: (AppModel) -> Unit,
+            appEmphasisListener: (AppModel) -> Unit,
+            groupHasEmphasis: Boolean,
         ) = with(binding) {
             appHideLayout.visibility = View.GONE
             renameLayout.visibility = View.GONE
@@ -277,6 +291,7 @@ class AppDrawerAdapter(
                 if (appModel.isNew) append(" ✦")
             }
             appTitle.gravity = appLabelGravity
+            applyEmphasisStyle(appTitle, appModel.emphasized, groupHasEmphasis)
             val basePadding = (24 * appTitle.resources.displayMetrics.density).toInt()
             val markerPadding = (48 * appTitle.resources.displayMetrics.density).toInt()
             appTitle.setPaddingRelative(
@@ -290,10 +305,25 @@ class AppDrawerAdapter(
                 flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
             otherProfileIndicator.isVisible = showProfileIndicator
             categoryMarker.isVisible = showCategoryMarker
+            categoryMarker.alpha = 1f
             appModel.category?.let { category ->
                 categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName
                 categoryMarker.imageTintList = ColorStateList.valueOf(category.color)
+                categoryMarker.alpha = when {
+                    appModel.emphasized -> 1f
+                    groupHasEmphasis -> 0.4f
+                    else -> 1f
+                }
+            }
+            categoryMarker.isLongClickable = flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
+            categoryMarker.setOnLongClickListener {
+                if (appModel.appPackage.isNotEmpty() && flag == Constants.FLAG_LAUNCH_APP) {
+                    appEmphasisListener(appModel)
+                    true
+                } else {
+                    false
+                }
             }
             fun closeRenameEditor() {
                 renameLayout.visibility = View.GONE
@@ -397,6 +427,33 @@ class AppDrawerAdapter(
                 closeRenameEditor()
             }
             appHide.setOnClickListener { appHideListener(appModel, bindingAdapterPosition) }
+        }
+
+        private fun applyEmphasisStyle(
+            title: android.widget.TextView,
+            emphasized: Boolean,
+            groupHasEmphasis: Boolean,
+        ) {
+            val context = title.context
+            if (emphasized) {
+                title.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+                title.setTextColor(colorAttr(context, R.attr.primaryColor))
+            } else {
+                title.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+                title.setTextColor(
+                    colorAttr(
+                        context,
+                        if (groupHasEmphasis) R.attr.primaryColorTrans50 else R.attr.primaryColor,
+                    )
+                )
+            }
+        }
+
+        @ColorInt
+        private fun colorAttr(context: Context, @AttrRes attr: Int): Int {
+            val value = TypedValue()
+            context.theme.resolveAttribute(attr, value, true)
+            return value.data
         }
 
         private fun getAppName(context: Context, appPackage: String, user: UserHandle): String {

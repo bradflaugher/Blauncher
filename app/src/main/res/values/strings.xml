@@ -117,6 +117,7 @@
     <string name="save_groups">Save</string>
     <string name="category">Group</string>
     <string name="choose_category">Choose groups</string>
+    <string name="emphasize">Emphasize</string>
     <string name="app_groups">App groups</string>
     <string name="none">None</string>
 </resources>

@@ -29,6 +29,7 @@ class Prefs(context: Context) {
     private val HIDE_SET_DEFAULT_LAUNCHER = "HIDE_SET_DEFAULT_LAUNCHER"
     private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
     private val APP_CATEGORY_OVERRIDE_PREFIX = "APP_CATEGORY_OVERRIDE_"
+    private val EMPHASIZED_APPS = "EMPHASIZED_APPS"
     private val PINNED_CATEGORY = "PINNED_CATEGORY"
     private val PINNED_CATEGORIES = "PINNED_CATEGORIES"
     private val CATEGORY_USAGE_DATA = "CATEGORY_USAGE_DATA"
@@ -666,5 +667,25 @@ class Prefs(context: Context) {
 
     fun clearAppCategoryOverrides() = prefs.edit {
         prefs.all.keys.filter { it.startsWith(APP_CATEGORY_OVERRIDE_PREFIX) }.forEach(::remove)
+    }
+
+    var emphasizedApps: MutableSet<String>
+        get() = prefs.getStringSet(EMPHASIZED_APPS, mutableSetOf()) as MutableSet<String>
+        set(value) = prefs.edit { putStringSet(EMPHASIZED_APPS, value).apply() }
+
+    fun isAppEmphasized(key: String): Boolean =
+        key.isNotBlank() && emphasizedApps.contains(key)
+
+    fun setAppEmphasized(key: String, emphasized: Boolean) {
+        if (key.isBlank()) return
+        val next = emphasizedApps.toMutableSet()
+        if (emphasized) next.add(key) else next.remove(key)
+        emphasizedApps = next
+    }
+
+    fun toggleAppEmphasized(key: String): Boolean {
+        val next = !isAppEmphasized(key)
+        setAppEmphasized(key, next)
+        return next
     }
 }

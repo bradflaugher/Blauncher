@@ -39,7 +39,9 @@ choosing. Everything else is gestures:
 
 Swipe up from the home screen. Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
-glyph, alphabetical within the group.
+glyph, alphabetical within the group. Emphasized apps sit at the top of
+their group in a heavier weight; the others go slightly grey once any
+app in that group is emphasized.
 
 - **Search first**: the keyboard opens automatically. Type a few letters —
   if exactly one app matches, it launches by itself. Press enter to launch
@@ -50,7 +52,12 @@ glyph, alphabetical within the group.
   Info**.
   - **Group** lets you pick which group(s) the app appears under — pick
     several to have it show up in each, or **Automatic** to let the
-    launcher decide again.
+    launcher decide again. The first checkbox, **Emphasize**, is a
+    visual class inside the group: emphasized apps render in a medium
+    weight and rise to the top of that group; the others stay light and
+    go slightly grey once anything in the group is emphasized. Long-press
+    the colored glyph next to an app to flip this without opening the
+    menu again.
   - **Hide** removes it from the drawer; find it later under Settings →
     **Hidden apps**, where the same menu shows **Show** to bring it back.
 - If your device has a **Private Space**, it appears at the bottom of the
@@ -63,7 +70,7 @@ The order of the groups is not fixed — it follows the time of day (news
 surfaces in the morning, focus apps during work hours, media in the evening)
 and quietly learns from what you actually open. Learning happens entirely on
 this device, is never sent anywhere, and fades after a couple of weeks. Apps
-stay alphabetical inside each group, so nothing jumps around within a group.
+stay alphabetical inside each group, with emphasized apps first.
 
 In **Settings → Smart ordering**:
 
