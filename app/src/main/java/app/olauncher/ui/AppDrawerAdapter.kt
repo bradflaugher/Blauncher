@@ -7,15 +7,12 @@ import android.graphics.Typeface
 import android.os.UserHandle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Filter
 import android.widget.Filterable
-import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -47,6 +44,11 @@ class AppDrawerAdapter(
     companion object {
         const val VIEW_TYPE_APP = 0
         const val VIEW_TYPE_PRIVATE_HEADER = 1
+
+        /** Emphasized rows use the medium face; everything else keeps the drawer's light face. */
+        private val EMPHASIZED_TYPEFACE: Typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        private val REGULAR_TYPEFACE: Typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+        private const val DIMMED_ALPHA = 0.5f
 
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
@@ -133,7 +135,6 @@ class AppDrawerAdapter(
                     appRenameListener,
                     appCategoryListener,
                     appEmphasisListener,
-                    groupHasEmphasis(appModel),
                 )
             }
         } catch (e: Exception) {
@@ -237,11 +238,6 @@ class AppDrawerAdapter(
         submitList(appsList)
     }
 
-    private fun groupHasEmphasis(appModel: AppModel): Boolean {
-        val category = appModel.category ?: return false
-        return appsList.any { it.category == category && it.emphasized }
-    }
-
     fun launchFirstInList() {
         val first = appFilteredList.firstOrNull {
             it !is AppModel.PrivateSpaceHeader
@@ -279,7 +275,6 @@ class AppDrawerAdapter(
             appRenameListener: (AppModel, String) -> Unit,
             appCategoryListener: (AppModel) -> Unit,
             appEmphasisListener: (AppModel) -> Unit,
-            groupHasEmphasis: Boolean,
         ) = with(binding) {
             appHideLayout.visibility = View.GONE
             renameLayout.visibility = View.GONE
@@ -291,7 +286,8 @@ class AppDrawerAdapter(
                 if (appModel.isNew) append(" ✦")
             }
             appTitle.gravity = appLabelGravity
-            applyEmphasisStyle(appTitle, appModel.emphasized, groupHasEmphasis)
+            appTitle.typeface = if (appModel.emphasized) EMPHASIZED_TYPEFACE else REGULAR_TYPEFACE
+            appTitle.alpha = if (appModel.dimmed) DIMMED_ALPHA else 1f
             val basePadding = (24 * appTitle.resources.displayMetrics.density).toInt()
             val markerPadding = (48 * appTitle.resources.displayMetrics.density).toInt()
             appTitle.setPaddingRelative(
@@ -305,25 +301,25 @@ class AppDrawerAdapter(
                 flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
             otherProfileIndicator.isVisible = showProfileIndicator
             categoryMarker.isVisible = showCategoryMarker
-            categoryMarker.alpha = 1f
+            categoryMarker.alpha = if (appModel.dimmed) DIMMED_ALPHA else 1f
             appModel.category?.let { category ->
                 categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName
                 categoryMarker.imageTintList = ColorStateList.valueOf(category.color)
-                categoryMarker.alpha = when {
-                    appModel.emphasized -> 1f
-                    groupHasEmphasis -> 0.4f
-                    else -> 1f
-                }
             }
-            categoryMarker.isLongClickable = flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
-            categoryMarker.setOnLongClickListener {
-                if (appModel.appPackage.isNotEmpty() && flag == Constants.FLAG_LAUNCH_APP) {
+            // The glyph sits on top of the title, so it must keep behaving like the row on tap.
+            // Long-press is the quick emphasis toggle.
+            if (showCategoryMarker) {
+                categoryMarker.setOnClickListener { clickListener(appModel) }
+                categoryMarker.setOnLongClickListener {
                     appEmphasisListener(appModel)
                     true
-                } else {
-                    false
                 }
+            } else {
+                categoryMarker.setOnClickListener(null)
+                categoryMarker.setOnLongClickListener(null)
+                categoryMarker.isClickable = false
+                categoryMarker.isLongClickable = false
             }
             fun closeRenameEditor() {
                 renameLayout.visibility = View.GONE
@@ -427,33 +423,6 @@ class AppDrawerAdapter(
                 closeRenameEditor()
             }
             appHide.setOnClickListener { appHideListener(appModel, bindingAdapterPosition) }
-        }
-
-        private fun applyEmphasisStyle(
-            title: android.widget.TextView,
-            emphasized: Boolean,
-            groupHasEmphasis: Boolean,
-        ) {
-            val context = title.context
-            if (emphasized) {
-                title.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-                title.setTextColor(colorAttr(context, R.attr.primaryColor))
-            } else {
-                title.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
-                title.setTextColor(
-                    colorAttr(
-                        context,
-                        if (groupHasEmphasis) R.attr.primaryColorTrans50 else R.attr.primaryColor,
-                    )
-                )
-            }
-        }
-
-        @ColorInt
-        private fun colorAttr(context: Context, @AttrRes attr: Int): Int {
-            val value = TypedValue()
-            context.theme.resolveAttribute(attr, value, true)
-            return value.data
         }
 
         private fun getAppName(context: Context, appPackage: String, user: UserHandle): String {

@@ -39,9 +39,9 @@ choosing. Everything else is gestures:
 
 Swipe up from the home screen. Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
-glyph, alphabetical within the group. Emphasized apps sit at the top of
-their group in a heavier weight; the others go slightly grey once any
-app in that group is emphasized.
+glyph, alphabetical within the group. An **emphasized** app is bold and
+sits at the top of its group; once a group has one, its other apps fade
+back so the ones you chose stand out.
 
 - **Search first**: the keyboard opens automatically. Type a few letters —
   if exactly one app matches, it launches by itself. Press enter to launch
@@ -50,14 +50,17 @@ app in that group is emphasized.
   DuckDuckGo directly.
 - **Long-press an app** for its menu: **Uninstall · Rename · Group · Hide ·
   Info**.
-  - **Group** lets you pick which group(s) the app appears under — pick
-    several to have it show up in each, or **Automatic** to let the
-    launcher decide again. The first checkbox, **Emphasize**, is a
-    visual class inside the group: emphasized apps render in a medium
-    weight and rise to the top of that group; the others stay light and
-    go slightly grey once anything in the group is emphasized. Long-press
-    the colored glyph next to an app to flip this without opening the
-    menu again.
+  - **Group** opens a sheet named after the app, with two parts:
+    - **Emphasize** (the switch at the top) makes the app bold and first
+      in its group; the other apps in that group fade back. It does not
+      change which group the app is in.
+    - **Groups** lists every group with its glyph and shows where the app
+      is now — the automatic pick is already ticked. Tick several to have
+      the app appear under each, then **Save**. **Automatic** clears your
+      picks and lets the launcher decide again.
+  - **Long-press the colored glyph** next to any app to toggle emphasis
+    without opening the menu; a short toast confirms it. Tapping the glyph
+    launches the app like the rest of the row.
   - **Hide** removes it from the drawer; find it later under Settings →
     **Hidden apps**, where the same menu shows **Show** to bring it back.
 - If your device has a **Private Space**, it appears at the bottom of the

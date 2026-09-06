@@ -16,15 +16,18 @@
         android:paddingVertical="@dimen/app_padding_vertical"
         android:text="@string/app" />
 
+    <!-- Drawn as a 20dp glyph at 24dp from the edge; the padding widens the touch target
+         to the whole 48dp gutter so tap (launch) and long-press (emphasize) are easy to hit. -->
     <ImageView
         android:id="@+id/categoryMarker"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="48dp"
+        android:layout_height="match_parent"
         android:layout_gravity="start|center_vertical"
-        android:layout_marginStart="24dp"
-        android:longClickable="true"
+        android:paddingStart="24dp"
+        android:paddingEnd="4dp"
         android:scaleType="fitCenter"
         android:visibility="gone"
+        tools:ignore="RtlSymmetry"
         tools:src="@drawable/ic_category_ai"
         tools:visibility="visible" />
 

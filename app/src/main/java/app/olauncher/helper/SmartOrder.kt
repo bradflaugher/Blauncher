@@ -96,10 +96,12 @@ object SmartOrder {
     }
 
     /** Group rank, then emphasized apps above the rest, then A-Z. */
-    fun drawerComparator(order: Map<AppCategory, Int>): Comparator<AppModel> =
-        compareBy<AppModel> { order[it.category] ?: Int.MAX_VALUE }
-            .thenBy { if (it.emphasized) 0 else 1 }
-            .thenBy(String.CASE_INSENSITIVE_ORDER) { it.appLabel }
+    fun drawerComparator(order: Map<AppCategory, Int>): Comparator<AppModel> = Comparator { a, b ->
+        compareDrawerRows(
+            order[a.category] ?: Int.MAX_VALUE, a.emphasized, a.appLabel,
+            order[b.category] ?: Int.MAX_VALUE, b.emphasized, b.appLabel,
+        )
+    }
 
     fun compareDrawerRows(
         groupRankA: Int,
@@ -115,6 +117,23 @@ object SmartOrder {
         if (byEmphasis != 0) return byEmphasis
         return labelA.compareTo(labelB, ignoreCase = true)
     }
+
+    /**
+     * Marks the rows that should fade back: any non-emphasized row whose group has at least one
+     * emphasized row. Applied per list (drawer, private space) right after loading, so the flag
+     * travels with the row and flipping one app re-renders every row in its group.
+     */
+    fun applyGroupEmphasis(apps: MutableList<AppModel>) {
+        val groups = groupsWithEmphasis(apps.map { it.category to it.emphasized })
+        for (index in apps.indices) {
+            val app = apps[index]
+            apps[index] = app.withDimmed(!app.emphasized && app.category in groups)
+        }
+    }
+
+    /** From (group, emphasized) rows, the groups that contain at least one emphasized row. */
+    fun groupsWithEmphasis(rows: List<Pair<AppCategory?, Boolean>>): Set<AppCategory> =
+        rows.filter { it.second }.mapNotNullTo(HashSet()) { it.first }
 
     /** The full group order for the current moment. */
     fun currentOrder(
