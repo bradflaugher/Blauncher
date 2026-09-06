@@ -19,7 +19,6 @@ import app.olauncher.helper.getAppsList
 import app.olauncher.helper.getPrivateSpaceApps
 import app.olauncher.helper.getPrivateSpaceUserHandle
 import app.olauncher.helper.isOlauncherDefault
-import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.isPrivateSpaceLocked
 import app.olauncher.helper.showToast
 import kotlinx.coroutines.launch
@@ -31,7 +30,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val firstOpen = MutableLiveData<Boolean>()
     val refreshHome = MutableLiveData<Boolean>()
-    val toggleDateTime = MutableLiveData<Unit>()
     val updateSwipeApps = MutableLiveData<Any>()
     val appList = MutableLiveData<List<AppModel>?>()
     val hiddenApps = MutableLiveData<List<AppModel>?>()
@@ -81,7 +79,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             Constants.FLAG_SET_SWIPE_LEFT_APP -> saveSwipeApp(appModel, isLeft = true)
             Constants.FLAG_SET_SWIPE_RIGHT_APP -> saveSwipeApp(appModel, isLeft = false)
-            Constants.FLAG_SET_CLOCK_APP -> saveClockApp(appModel)
             Constants.FLAG_SET_CALENDAR_APP -> saveCalendarApp(appModel)
         }
     }
@@ -297,14 +294,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateSwipeApps()
     }
 
-    private fun saveClockApp(appModel: AppModel) {
-        if (appModel is AppModel.App) {
-            prefs.clockAppPackage = appModel.appPackage
-            prefs.clockAppUser = appModel.user.toString()
-            prefs.clockAppClassName = appModel.activityClassName
-        }
-    }
-
     private fun saveCalendarApp(appModel: AppModel) {
         if (appModel is AppModel.App) {
             prefs.calendarAppPackage = appModel.appPackage
@@ -319,10 +308,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refreshHome(appCountUpdated: Boolean) {
         refreshHome.value = appCountUpdated
-    }
-
-    fun toggleDateTime() {
-        toggleDateTime.postValue(Unit)
     }
 
     private fun updateSwipeApps() {
@@ -441,22 +426,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             isPrivateSpaceToggling = false
             e.printStackTrace()
-        }
-    }
-
-    fun setDefaultClockApp() {
-        viewModelScope.launch {
-            try {
-                Constants.CLOCK_APP_PACKAGES.firstOrNull { appContext.isPackageInstalled(it) }?.let { packageName ->
-                    appContext.packageManager.getLaunchIntentForPackage(packageName)?.component?.className?.let {
-                        prefs.clockAppPackage = packageName
-                        prefs.clockAppClassName = it
-                        prefs.clockAppUser = android.os.Process.myUserHandle().toString()
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
         }
     }
 }

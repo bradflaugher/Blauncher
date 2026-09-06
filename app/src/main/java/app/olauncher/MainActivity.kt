@@ -79,7 +79,6 @@ class MainActivity : AppCompatActivity() {
         if (prefs.firstOpen) {
             viewModel.firstOpen(true)
             prefs.firstOpen = false
-            viewModel.setDefaultClockApp()
             viewModel.resetLauncherLiveData.call()
         }
 

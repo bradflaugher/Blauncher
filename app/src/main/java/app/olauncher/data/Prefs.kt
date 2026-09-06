@@ -18,8 +18,7 @@ class Prefs(context: Context) {
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
-    private val STATUS_BAR = "STATUS_BAR"
-    private val DATE_TIME_VISIBILITY = "DATE_TIME_VISIBILITY"
+    private val DATE_BOLD = "DATE_BOLD"
     private val SWIPE_LEFT_ENABLED = "SWIPE_LEFT_ENABLED"
     private val SWIPE_RIGHT_ENABLED = "SWIPE_RIGHT_ENABLED"
     private val HIDDEN_APPS = "HIDDEN_APPS"
@@ -78,9 +77,6 @@ class Prefs(context: Context) {
     private val APP_ACTIVITY_CLASS_NAME_SWIPE_RIGHT = "APP_ACTIVITY_CLASS_NAME_SWIPE_RIGHT"
     private val APP_USER_SWIPE_LEFT = "APP_USER_SWIPE_LEFT"
     private val APP_USER_SWIPE_RIGHT = "APP_USER_SWIPE_RIGHT"
-    private val CLOCK_APP_PACKAGE = "CLOCK_APP_PACKAGE"
-    private val CLOCK_APP_USER = "CLOCK_APP_USER"
-    private val CLOCK_APP_CLASS_NAME = "CLOCK_APP_CLASS_NAME"
     private val CALENDAR_APP_PACKAGE = "CALENDAR_APP_PACKAGE"
     private val CALENDAR_APP_USER = "CALENDAR_APP_USER"
     private val CALENDAR_APP_CLASS_NAME = "CALENDAR_APP_CLASS_NAME"
@@ -192,13 +188,10 @@ class Prefs(context: Context) {
         get() = prefs.getInt(APP_LABEL_ALIGNMENT, Gravity.START)
         set(value) = prefs.edit { putInt(APP_LABEL_ALIGNMENT, value).apply() }
 
-    var showStatusBar: Boolean
-        get() = prefs.getBoolean(STATUS_BAR, false)
-        set(value) = prefs.edit { putBoolean(STATUS_BAR, value).apply() }
-
-    var dateTimeVisibility: Int
-        get() = prefs.getInt(DATE_TIME_VISIBILITY, Constants.DateTime.ON)
-        set(value) = prefs.edit { putInt(DATE_TIME_VISIBILITY, value).apply() }
+    /** Draws the home-screen date in the same medium face the emphasized apps use. */
+    var dateBold: Boolean
+        get() = prefs.getBoolean(DATE_BOLD, false)
+        set(value) = prefs.edit { putBoolean(DATE_BOLD, value).apply() }
 
     /** Ordered groups that always stay on top of the drawer. */
     var pinnedCategories: List<AppCategory>
@@ -422,18 +415,6 @@ class Prefs(context: Context) {
         get() = prefs.getString(APP_USER_SWIPE_RIGHT, "").toString()
         set(value) = prefs.edit { putString(APP_USER_SWIPE_RIGHT, value).apply() }
 
-    var clockAppPackage: String
-        get() = prefs.getString(CLOCK_APP_PACKAGE, "").toString()
-        set(value) = prefs.edit { putString(CLOCK_APP_PACKAGE, value).apply() }
-
-    var clockAppUser: String
-        get() = prefs.getString(CLOCK_APP_USER, "").toString()
-        set(value) = prefs.edit { putString(CLOCK_APP_USER, value).apply() }
-
-    var clockAppClassName: String?
-        get() = prefs.getString(CLOCK_APP_CLASS_NAME, "").toString()
-        set(value) = prefs.edit { putString(CLOCK_APP_CLASS_NAME, value).apply() }
-
     var calendarAppPackage: String
         get() = prefs.getString(CALENDAR_APP_PACKAGE, "").toString()
         set(value) = prefs.edit { putString(CALENDAR_APP_PACKAGE, value).apply() }
@@ -627,7 +608,6 @@ class Prefs(context: Context) {
         for (i in 1..8) {
             if (getAppPackage(i) == packageName) setAppActivityClassName(i, activityClassName)
         }
-        if (clockAppPackage == packageName) clockAppClassName = activityClassName
         if (calendarAppPackage == packageName) calendarAppClassName = activityClassName
         if (appPackageSwipeLeft == packageName) appActivityClassNameSwipeLeft = activityClassName
         if (appPackageSwipeRight == packageName) appActivityClassNameRight = activityClassName

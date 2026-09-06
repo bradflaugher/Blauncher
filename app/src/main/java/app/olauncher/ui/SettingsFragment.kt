@@ -11,7 +11,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
@@ -71,8 +70,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAppThemeText()
         populateTextSize()
         populateAlignment()
-        populateStatusBar()
-        populateDateTime()
+        populateDateBold()
         populateHomeAppWeight()
         populateSmartOrdering()
         populateSwipeApps()
@@ -83,7 +81,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
     override fun onClick(view: View) {
         binding.appsNumSelectLayout.visibility = View.GONE
-        binding.dateTimeSelectLayout.visibility = View.GONE
         binding.appThemeSelectLayout.visibility = View.GONE
         binding.swipeDownSelectLayout.visibility = View.GONE
         if (view.id != R.id.textSizeMinus && view.id != R.id.textSizePlus) {
@@ -108,11 +105,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
             R.id.alignmentRight -> viewModel.updateHomeAlignment(Gravity.END)
             R.id.alignmentBottom -> updateHomeBottomAlignment()
-            R.id.statusBar -> toggleStatusBar()
-            R.id.dateTime -> binding.dateTimeSelectLayout.visibility = View.VISIBLE
-            R.id.dateTimeOn -> toggleDateTime(Constants.DateTime.ON)
-            R.id.dateTimeOff -> toggleDateTime(Constants.DateTime.OFF)
-            R.id.dateOnly -> toggleDateTime(Constants.DateTime.DATE_ONLY)
+            R.id.dateBold -> toggleDateBold()
             R.id.homeAppWeight -> cycleHomeAppWeight()
             R.id.appThemeText -> binding.appThemeSelectLayout.visibility = View.VISIBLE
             R.id.themeLight -> updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
@@ -177,11 +170,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.alignmentCenter.setOnClickListener(this)
         binding.alignmentRight.setOnClickListener(this)
         binding.alignmentBottom.setOnClickListener(this)
-        binding.statusBar.setOnClickListener(this)
-        binding.dateTime.setOnClickListener(this)
-        binding.dateTimeOn.setOnClickListener(this)
-        binding.dateTimeOff.setOnClickListener(this)
-        binding.dateOnly.setOnClickListener(this)
+        binding.dateBold.setOnClickListener(this)
         binding.homeAppWeight.setOnClickListener(this)
         binding.swipeLeftApp.setOnClickListener(this)
         binding.swipeRightApp.setOnClickListener(this)
@@ -269,25 +258,14 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
-    private fun toggleStatusBar() {
-        prefs.showStatusBar = !prefs.showStatusBar
-        populateStatusBar()
+    private fun toggleDateBold() {
+        prefs.dateBold = !prefs.dateBold
+        populateDateBold()
+        viewModel.refreshHome(false)
     }
 
-    private fun populateStatusBar() {
-        if (prefs.showStatusBar) {
-            showStatusBar()
-            binding.statusBar.text = getString(R.string.on)
-        } else {
-            hideStatusBar()
-            binding.statusBar.text = getString(R.string.off)
-        }
-    }
-
-    private fun toggleDateTime(selected: Int) {
-        prefs.dateTimeVisibility = selected
-        populateDateTime()
-        viewModel.toggleDateTime()
+    private fun populateDateBold() {
+        binding.dateBold.text = getString(if (prefs.dateBold) R.string.on else R.string.off)
     }
 
     /** Off → Emphasized (only apps emphasized in the drawer) → All → Off. */
@@ -305,24 +283,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 else -> R.string.off
             }
         )
-    }
-
-    private fun populateDateTime() {
-        binding.dateTime.text = getString(
-            when (prefs.dateTimeVisibility) {
-                Constants.DateTime.DATE_ONLY -> R.string.date
-                Constants.DateTime.ON -> R.string.on
-                else -> R.string.off
-            }
-        )
-    }
-
-    private fun showStatusBar() {
-        requireActivity().window.insetsController?.show(WindowInsets.Type.statusBars())
-    }
-
-    private fun hideStatusBar() {
-        requireActivity().window.insetsController?.hide(WindowInsets.Type.statusBars())
     }
 
     private fun showHiddenApps() {

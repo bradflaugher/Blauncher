@@ -11,20 +11,6 @@ object Constants {
         const val START = "START"
     }
 
-    object DateTime {
-        const val OFF = 0
-        const val ON = 1
-        const val DATE_ONLY = 2
-
-        fun isTimeVisible(dateTimeVisibility: Int): Boolean {
-            return dateTimeVisibility == ON
-        }
-
-        fun isDateVisible(dateTimeVisibility: Int): Boolean {
-            return dateTimeVisibility == ON || dateTimeVisibility == DATE_ONLY
-        }
-    }
-
     /** Which home-screen app names use the medium face that marks emphasized apps in the drawer. */
     object HomeAppWeight {
         const val LIGHT = 0
@@ -54,13 +40,6 @@ object Constants {
         const val HIDE = 101
     }
 
-    val CLOCK_APP_PACKAGES = arrayOf(
-        "com.google.android.deskclock", //Google Clock
-        "com.sec.android.app.clockpackage", //Samsung Clock
-        "com.oneplus.deskclock", //OnePlus Clock
-        "com.miui.clock", //Xiaomi Clock
-    )
-
     const val FLAG_LAUNCH_APP = 100
     const val FLAG_HIDDEN_APPS = 101
 
@@ -75,8 +54,7 @@ object Constants {
 
     const val FLAG_SET_SWIPE_LEFT_APP = 11
     const val FLAG_SET_SWIPE_RIGHT_APP = 12
-    const val FLAG_SET_CLOCK_APP = 13
-    const val FLAG_SET_CALENDAR_APP = 14
+    const val FLAG_SET_CALENDAR_APP = 13
 
     const val LONG_PRESS_DELAY_MS = 500L
     const val ONE_HOUR_IN_MILLIS = 3600000L
