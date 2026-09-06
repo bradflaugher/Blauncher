@@ -31,6 +31,7 @@ import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
 import app.olauncher.helper.showToast
+import app.olauncher.helper.Typefaces
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
 import java.text.SimpleDateFormat
@@ -306,6 +307,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     ): Boolean {
         // Get user handle for the app/shortcut
         val userHandle = getUserHandleFromString(requireContext(), userString)
+        applyHomeAppWeight(textView, packageName, userString, if (isShortcut) shortcutId else null)
 
         // If it's a shortcut, verify it still exists
         if (isShortcut) {
@@ -340,6 +342,17 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         textView.text = ""
         return false
+    }
+
+    /** Light by default; medium for every slot, or only for apps emphasized in the drawer. */
+    private fun applyHomeAppWeight(
+        textView: TextView,
+        packageName: String,
+        userString: String,
+        shortcutId: String?,
+    ) {
+        val emphasized = prefs.isAppEmphasized(AppModel.emphasisKeyFor(packageName, userString, shortcutId))
+        textView.typeface = Typefaces.forEmphasis(Constants.HomeAppWeight.isBold(prefs.homeAppWeight, emphasized))
     }
 
     private fun hideHomeApps() {

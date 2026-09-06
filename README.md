@@ -30,7 +30,9 @@ settings. Full details in the **[user guide](GUIDE.md)**.
   groups it is under and pick others, including several at once (search still
   dedupes). The same sheet has an **Emphasize** switch: emphasized apps go
   bold and rise to the top of their group while the rest of that group fades
-  back. Long-press an app's colored glyph to toggle emphasis in place.
+  back. Long-press an app's colored glyph to toggle emphasis in place, and
+  optionally carry the bold face onto the home screen (Settings → Home
+  screen → Bold apps: off, emphasized apps only, or all).
 - **Smart group order.** Groups follow time of day — news in the morning,
   focus during work, media in the evening — then sharpen from the apps you
   actually open (hour and weekday/weekend buckets, two-week half-life). Apps

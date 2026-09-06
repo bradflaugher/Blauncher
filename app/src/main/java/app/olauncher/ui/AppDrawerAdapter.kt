@@ -3,7 +3,6 @@ package app.olauncher.ui
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.res.ColorStateList
-import android.graphics.Typeface
 import android.os.UserHandle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,6 +24,7 @@ import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.showKeyboard
+import app.olauncher.helper.Typefaces
 import java.text.Normalizer
 
 class AppDrawerAdapter(
@@ -45,10 +45,12 @@ class AppDrawerAdapter(
         const val VIEW_TYPE_APP = 0
         const val VIEW_TYPE_PRIVATE_HEADER = 1
 
-        /** Emphasized rows use the medium face; everything else keeps the drawer's light face. */
-        private val EMPHASIZED_TYPEFACE: Typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-        private val REGULAR_TYPEFACE: Typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
-        private const val DIMMED_ALPHA = 0.5f
+        /**
+         * Dimmed rows fade to half strength. Applied through the text color and the drawable
+         * alpha, never View.alpha: the row layout animates visibility changes, and that
+         * transition drives View.alpha back to 1 whenever the title reappears after the menu.
+         */
+        private const val DIMMED_ALPHA_255 = 128
 
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
@@ -263,6 +265,10 @@ class AppDrawerAdapter(
 
     class ViewHolder(private val binding: AdapterAppDrawerBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        /** The style's color state list (keeps pressed feedback) and its half-strength twin. */
+        private val titleColors: ColorStateList = binding.appTitle.textColors
+        private val dimmedTitleColors: ColorStateList = titleColors.withAlpha(DIMMED_ALPHA_255)
+
         fun bind(
             flag: Int,
             appLabelGravity: Int,
@@ -286,8 +292,8 @@ class AppDrawerAdapter(
                 if (appModel.isNew) append(" ✦")
             }
             appTitle.gravity = appLabelGravity
-            appTitle.typeface = if (appModel.emphasized) EMPHASIZED_TYPEFACE else REGULAR_TYPEFACE
-            appTitle.alpha = if (appModel.dimmed) DIMMED_ALPHA else 1f
+            appTitle.typeface = Typefaces.forEmphasis(appModel.emphasized)
+            appTitle.setTextColor(if (appModel.dimmed) dimmedTitleColors else titleColors)
             val basePadding = (24 * appTitle.resources.displayMetrics.density).toInt()
             val markerPadding = (48 * appTitle.resources.displayMetrics.density).toInt()
             appTitle.setPaddingRelative(
@@ -301,7 +307,7 @@ class AppDrawerAdapter(
                 flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
             otherProfileIndicator.isVisible = showProfileIndicator
             categoryMarker.isVisible = showCategoryMarker
-            categoryMarker.alpha = if (appModel.dimmed) DIMMED_ALPHA else 1f
+            categoryMarker.imageAlpha = if (appModel.dimmed) DIMMED_ALPHA_255 else 255
             appModel.category?.let { category ->
                 categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName

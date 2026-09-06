@@ -21,10 +21,19 @@ sealed class AppModel : Comparable<AppModel> {
     /** Stable prefs key for per-app emphasis. Empty for rows that cannot be emphasized. */
     val emphasisKey: String
         get() = when (this) {
-            is App -> "$appPackage|$user"
-            is PinnedShortcut -> "shortcut:$shortcutId|$user"
+            is App -> emphasisKeyFor(appPackage, user.toString(), null)
+            is PinnedShortcut -> emphasisKeyFor(appPackage, user.toString(), shortcutId)
             is PrivateSpaceHeader -> ""
         }
+
+    companion object {
+        /** The emphasis key for an app or pinned shortcut stored as package + user string (home slots). */
+        fun emphasisKeyFor(appPackage: String, userString: String, shortcutId: String?): String = when {
+            appPackage.isBlank() -> ""
+            shortcutId.isNullOrBlank() -> "$appPackage|$userString"
+            else -> "shortcut:$shortcutId|$userString"
+        }
+    }
 
     fun withDimmed(dimmed: Boolean): AppModel = when (this) {
         is App -> if (this.dimmed == dimmed) this else copy(dimmed = dimmed)

@@ -13,6 +13,7 @@ class Prefs(context: Context) {
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val USER_STATE = "USER_STATE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
+    private val HOME_APP_WEIGHT = "HOME_APP_WEIGHT"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
@@ -173,6 +174,11 @@ class Prefs(context: Context) {
     var homeAppsNum: Int
         get() = prefs.getInt(HOME_APPS_NUM, 4)
         set(value) = prefs.edit { putInt(HOME_APPS_NUM, value).apply() }
+
+    /** One of [Constants.HomeAppWeight]. */
+    var homeAppWeight: Int
+        get() = prefs.getInt(HOME_APP_WEIGHT, Constants.HomeAppWeight.LIGHT)
+        set(value) = prefs.edit { putInt(HOME_APP_WEIGHT, value) }
 
     var homeAlignment: Int
         get() = prefs.getInt(HOME_ALIGNMENT, Gravity.START)

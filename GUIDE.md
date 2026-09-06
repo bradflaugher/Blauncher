@@ -61,6 +61,8 @@ back so the ones you chose stand out.
   - **Long-press the colored glyph** next to any app to toggle emphasis
     without opening the menu; a short toast confirms it. Tapping the glyph
     launches the app like the rest of the row.
+  - The same bold face can carry over to the home screen — see **Bold
+    apps** under Settings → Home screen.
   - **Hide** removes it from the drawer; find it later under Settings →
     **Hidden apps**, where the same menu shows **Show** to bring it back.
 - If your device has a **Private Space**, it appears at the bottom of the
@@ -94,7 +96,9 @@ Long-press anywhere on the home screen to get here.
 - **Smart ordering** — see above.
 - **Home screen** — number of home apps, alignment (long-press *Alignment*
   to also apply it to the app drawer), bottom alignment, status bar, date &
-  time visibility.
+  time visibility, and **Bold apps**: *Off* keeps every home app in the
+  light face, *Emphasized* uses the drawer's bold face only for home apps
+  you have emphasized there, and *All* makes every home app bold.
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row
