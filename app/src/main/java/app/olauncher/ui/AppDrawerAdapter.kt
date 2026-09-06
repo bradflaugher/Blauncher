@@ -437,14 +437,15 @@ class AppDrawerAdapter(
             val context = title.context
             if (emphasized) {
                 title.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-                title.setTextColor(context.getColorStateList(R.drawable.text_colors_default))
+                title.setTextColor(colorAttr(context, R.attr.primaryColor))
             } else {
                 title.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
-                if (groupHasEmphasis) {
-                    title.setTextColor(colorAttr(context, R.attr.primaryColorTrans50))
-                } else {
-                    title.setTextColor(context.getColorStateList(R.drawable.text_colors_default))
-                }
+                title.setTextColor(
+                    colorAttr(
+                        context,
+                        if (groupHasEmphasis) R.attr.primaryColorTrans50 else R.attr.primaryColor,
+                    )
+                )
             }
         }
 
