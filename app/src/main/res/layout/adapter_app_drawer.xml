@@ -22,6 +22,7 @@
         android:layout_height="20dp"
         android:layout_gravity="start|center_vertical"
         android:layout_marginStart="24dp"
+        android:longClickable="true"
         android:scaleType="fitCenter"
         android:visibility="gone"
         tools:src="@drawable/ic_category_ai"

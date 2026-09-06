@@ -225,6 +225,11 @@ class AppDrawerFragment : Fragment() {
                 viewModel.getAppList()
             },
             appCategoryListener = { appModel -> showCategoryChooser(appModel) },
+            appEmphasisListener = { appModel ->
+                if (appModel.emphasisKey.isBlank()) return@AppDrawerAdapter
+                prefs.toggleAppEmphasized(appModel.emphasisKey)
+                viewModel.getAppList()
+            },
             privateSpaceToggleListener = {
                 viewModel.togglePrivateSpaceLock()
             },
@@ -331,18 +336,31 @@ class AppDrawerFragment : Fragment() {
     private fun showCategoryChooser(appModel: AppModel) {
         binding.search.hideKeyboard()
         val categories = AppCategory.entries
-        val labels = categories.map { it.displayName }.toTypedArray()
+        val labels = (listOf(getString(R.string.emphasize)) + categories.map { it.displayName })
+            .toTypedArray()
         val current = prefs.getAppCategoryOverrides(appModel.appPackage).orEmpty().toMutableSet()
-        val checked = BooleanArray(categories.size) { current.contains(categories[it]) }
+        val emphasized = prefs.isAppEmphasized(appModel.emphasisKey)
+        val checked = BooleanArray(labels.size) { index ->
+            if (index == 0) emphasized else current.contains(categories[index - 1])
+        }
+        var emphasizeChecked = emphasized
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.choose_category)
             .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
-                if (isChecked) current.add(categories[which])
-                else current.remove(categories[which])
+                if (which == 0) {
+                    emphasizeChecked = isChecked
+                } else if (isChecked) {
+                    current.add(categories[which - 1])
+                } else {
+                    current.remove(categories[which - 1])
+                }
             }
             .setPositiveButton(R.string.save_groups) { dialog, _ ->
                 if (current.isEmpty()) prefs.clearAppCategoryOverride(appModel.appPackage)
                 else prefs.setAppCategoryOverrides(appModel.appPackage, current)
+                if (appModel.emphasisKey.isNotBlank()) {
+                    prefs.setAppEmphasized(appModel.emphasisKey, emphasizeChecked)
+                }
                 dialog.dismiss()
                 viewModel.getAppList()
             }

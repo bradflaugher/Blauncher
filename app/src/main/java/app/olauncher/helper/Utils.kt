@@ -79,7 +79,7 @@ suspend fun getAppsList(
                         app.applicationInfo.category,
                     )
                     val appModels = categories.map { category ->
-                        AppModel.App(
+                        val model = AppModel.App(
                             appLabel = appLabelShown,
                             key = collator.getCollationKey(app.label.toString()),
                             appPackage = app.applicationInfo.packageName,
@@ -88,6 +88,7 @@ suspend fun getAppsList(
                             user = profile,
                             category = category,
                         )
+                        model.copy(emphasized = prefs.isAppEmphasized(model.emphasisKey))
                     }
 
                     if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
@@ -156,7 +157,7 @@ private suspend fun getPinnedShortcuts(
                                         isNew = false,
                                         user = profile,
                                         category = category,
-                                    )
+                                    ).let { it.copy(emphasized = prefs.isAppEmphasized(it.emphasisKey)) }
                                 )
                             }
                         }
@@ -245,7 +246,7 @@ suspend fun getPrivateSpaceApps(
                             isNew = false,
                             user = privateSpaceHandle,
                             category = category,
-                        )
+                        ).let { it.copy(emphasized = prefs.isAppEmphasized(it.emphasisKey)) }
                     )
                 }
             }

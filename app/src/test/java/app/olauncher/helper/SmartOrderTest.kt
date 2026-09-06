@@ -155,4 +155,20 @@ class SmartOrderTest {
         // The launch at 23:00 should still be felt just after midnight.
         assertTrue(SmartOrder.usageScore(stats, AppCategory.MEDIA, 0, weekend = false) > 0.0)
     }
+
+    @Test
+    fun emphasizedAppsSortAboveTheRestOfTheSameGroup() {
+        assertTrue(
+            SmartOrder.compareDrawerRows(0, true, "WSJ", 0, false, "BBC") < 0
+        )
+        assertTrue(
+            SmartOrder.compareDrawerRows(0, false, "BBC", 0, true, "WSJ") > 0
+        )
+        assertTrue(
+            SmartOrder.compareDrawerRows(0, true, "BBC", 0, true, "WSJ") < 0
+        )
+        assertTrue(
+            SmartOrder.compareDrawerRows(0, false, "BBC", 1, true, "Maps") < 0
+        )
+    }
 }

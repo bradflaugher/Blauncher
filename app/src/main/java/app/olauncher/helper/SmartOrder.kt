@@ -89,13 +89,31 @@ object SmartOrder {
         AppCategory.OTHER to Curve(0.0, listOf()),
     )
 
-    /** Sorts the drawer: pinned groups first in the user's order, the rest by score, apps A-Z inside. */
+    /** Sorts the drawer: pinned groups first in the user's order, the rest by score, emphasized then A-Z inside. */
     fun sort(prefs: Prefs, apps: MutableList<AppModel>) {
         val order = currentOrder(prefs).withIndex().associate { it.value to it.index }
-        apps.sortWith(
-            compareBy<AppModel> { order[it.category] ?: Int.MAX_VALUE }
-                .thenBy(String.CASE_INSENSITIVE_ORDER) { it.appLabel }
-        )
+        apps.sortWith(drawerComparator(order))
+    }
+
+    /** Group rank, then emphasized apps above the rest, then A-Z. */
+    fun drawerComparator(order: Map<AppCategory, Int>): Comparator<AppModel> =
+        compareBy<AppModel> { order[it.category] ?: Int.MAX_VALUE }
+            .thenBy { if (it.emphasized) 0 else 1 }
+            .thenBy(String.CASE_INSENSITIVE_ORDER) { it.appLabel }
+
+    fun compareDrawerRows(
+        groupRankA: Int,
+        emphasizedA: Boolean,
+        labelA: String,
+        groupRankB: Int,
+        emphasizedB: Boolean,
+        labelB: String,
+    ): Int {
+        val byGroup = groupRankA.compareTo(groupRankB)
+        if (byGroup != 0) return byGroup
+        val byEmphasis = emphasizedA.not().compareTo(emphasizedB.not())
+        if (byEmphasis != 0) return byEmphasis
+        return labelA.compareTo(labelB, ignoreCase = true)
     }
 
     /** The full group order for the current moment. */

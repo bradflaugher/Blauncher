@@ -10,6 +10,15 @@ sealed class AppModel : Comparable<AppModel> {
     abstract val user: UserHandle
     abstract val isNew: Boolean
     abstract val category: AppCategory?
+    abstract val emphasized: Boolean
+
+    /** Stable prefs key for per-app emphasis. Empty for rows that cannot be emphasized. */
+    val emphasisKey: String
+        get() = when (this) {
+            is App -> "$appPackage|$user"
+            is PinnedShortcut -> "shortcut:$shortcutId|$user"
+            is PrivateSpaceHeader -> ""
+        }
 
     data class App(
         override val appLabel: String,
@@ -19,6 +28,7 @@ sealed class AppModel : Comparable<AppModel> {
         override val isNew: Boolean = false,
         override val user: UserHandle,
         override val category: AppCategory = AppCategory.OTHER,
+        override val emphasized: Boolean = false,
     ) : AppModel()
 
     data class PinnedShortcut(
@@ -29,6 +39,7 @@ sealed class AppModel : Comparable<AppModel> {
         override val isNew: Boolean = false,
         override val user: UserHandle,
         override val category: AppCategory = AppCategory.OTHER,
+        override val emphasized: Boolean = false,
     ) : AppModel()
 
     data class PrivateSpaceHeader(
@@ -40,6 +51,7 @@ sealed class AppModel : Comparable<AppModel> {
         override val appPackage: String = ""
         override val isNew: Boolean = false
         override val category: AppCategory? = null
+        override val emphasized: Boolean = false
     }
 
     override fun compareTo(other: AppModel): Int = when {

@@ -27,12 +27,16 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 - **Grouped apps.** Apps are categorized on-device into groups such as AI
   Agents, People, Focus, News, Media, and Tools, each with a small colored
   glyph. Heuristic and local. Long-press an app to recategorize it, including
-  into several groups at once (search still dedupes).
+  into several groups at once (search still dedupes). Inside a group you can
+  **emphasize** the apps you actually use — they go bold and rise to the top;
+  the rest stay light and soften to grey. Toggle it from the Group sheet or
+  by long-pressing the colored glyph.
 - **Smart group order.** Groups follow time of day — news in the morning,
   focus during work, media in the evening — then sharpen from the apps you
   actually open (hour and weekday/weekend buckets, two-week half-life). Apps
-  stay alphabetical inside each group. Pin any groups to the top; **AI Agents
-  is pinned first by default**. Reset learning in Settings.
+  stay alphabetical inside each group, with emphasized apps first. Pin any
+  groups to the top; **AI Agents is pinned first by default**. Reset learning
+  in Settings.
 - **Private by construction.** No internet permission, no usage-stats API, no
   account, sync, analytics, or launcher wallpaper. Learned weights live in
   local preferences excluded from backups. See [`SECURITY.md`](SECURITY.md).
