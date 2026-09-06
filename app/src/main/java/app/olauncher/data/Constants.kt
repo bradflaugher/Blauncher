@@ -25,6 +25,25 @@ object Constants {
         }
     }
 
+    /** Which home-screen app names use the medium face that marks emphasized apps in the drawer. */
+    object HomeAppWeight {
+        const val LIGHT = 0
+        const val EMPHASIZED = 1
+        const val BOLD = 2
+
+        fun next(current: Int): Int = when (current) {
+            LIGHT -> EMPHASIZED
+            EMPHASIZED -> BOLD
+            else -> LIGHT
+        }
+
+        fun isBold(weight: Int, emphasized: Boolean): Boolean = when (weight) {
+            BOLD -> true
+            EMPHASIZED -> emphasized
+            else -> false
+        }
+    }
+
     object SwipeDownAction {
         const val SEARCH = 1
         const val NOTIFICATIONS = 2

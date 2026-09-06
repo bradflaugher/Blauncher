@@ -73,6 +73,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAlignment()
         populateStatusBar()
         populateDateTime()
+        populateHomeAppWeight()
         populateSmartOrdering()
         populateSwipeApps()
         populateSwipeDownAction()
@@ -112,6 +113,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.dateTimeOn -> toggleDateTime(Constants.DateTime.ON)
             R.id.dateTimeOff -> toggleDateTime(Constants.DateTime.OFF)
             R.id.dateOnly -> toggleDateTime(Constants.DateTime.DATE_ONLY)
+            R.id.homeAppWeight -> cycleHomeAppWeight()
             R.id.appThemeText -> binding.appThemeSelectLayout.visibility = View.VISIBLE
             R.id.themeLight -> updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
@@ -180,6 +182,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.dateTimeOn.setOnClickListener(this)
         binding.dateTimeOff.setOnClickListener(this)
         binding.dateOnly.setOnClickListener(this)
+        binding.homeAppWeight.setOnClickListener(this)
         binding.swipeLeftApp.setOnClickListener(this)
         binding.swipeRightApp.setOnClickListener(this)
         binding.swipeDownAction.setOnClickListener(this)
@@ -285,6 +288,23 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         prefs.dateTimeVisibility = selected
         populateDateTime()
         viewModel.toggleDateTime()
+    }
+
+    /** Off → Emphasized (only apps emphasized in the drawer) → All → Off. */
+    private fun cycleHomeAppWeight() {
+        prefs.homeAppWeight = Constants.HomeAppWeight.next(prefs.homeAppWeight)
+        populateHomeAppWeight()
+        viewModel.refreshHome(false)
+    }
+
+    private fun populateHomeAppWeight() {
+        binding.homeAppWeight.text = getString(
+            when (prefs.homeAppWeight) {
+                Constants.HomeAppWeight.BOLD -> R.string.all
+                Constants.HomeAppWeight.EMPHASIZED -> R.string.emphasized
+                else -> R.string.off
+            }
+        )
     }
 
     private fun populateDateTime() {

@@ -121,6 +121,9 @@
     <string name="groups_manual_summary">Chosen by you. Automatic lets the launcher decide again.</string>
     <string name="emphasize">Emphasize</string>
     <string name="emphasize_summary">Bold and first in its group; the rest of the group fades back. Long-press an app\'s glyph to toggle this quickly.</string>
+    <string name="bold_apps">Bold apps</string>
+    <string name="emphasized">Emphasized</string>
+    <string name="all">All</string>
     <string name="emphasized_toast">%1$s emphasized</string>
     <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>
