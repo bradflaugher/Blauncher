@@ -2,7 +2,6 @@ package app.olauncher.ui
 
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.os.BatteryManager
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -25,7 +24,6 @@ import app.olauncher.databinding.FragmentHomeBinding
 import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.isPackageInstalled
-import app.olauncher.helper.openAlarmApp
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
@@ -67,15 +65,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         super.onResume()
         populateHomeScreen(false)
         viewModel.isOlauncherDefault()
-        if (prefs.showStatusBar) showStatusBar()
-        else hideStatusBar()
+        showStatusBar()
     }
 
     override fun onClick(view: View) {
         when (view.id) {
             // Home button for recents feature disabled
             // R.id.recents -> {}
-            R.id.clock -> openClockApp()
             R.id.date -> openCalendarApp()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
             else -> {
@@ -87,18 +83,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 }
             }
         }
-    }
-
-    private fun openClockApp() {
-        if (prefs.clockAppPackage.isBlank())
-            openAlarmApp(requireContext())
-        else
-            launchApp(
-                "Clock",
-                prefs.clockAppPackage,
-                prefs.clockAppClassName,
-                prefs.clockAppUser
-            )
     }
 
     private fun openCalendarApp() {
@@ -123,13 +107,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             R.id.homeApp6 -> showAppList(Constants.FLAG_SET_HOME_APP_6, prefs.appName6.isNotEmpty(), true)
             R.id.homeApp7 -> showAppList(Constants.FLAG_SET_HOME_APP_7, prefs.appName7.isNotEmpty(), true)
             R.id.homeApp8 -> showAppList(Constants.FLAG_SET_HOME_APP_8, prefs.appName8.isNotEmpty(), true)
-            R.id.clock -> {
-                showAppList(Constants.FLAG_SET_CLOCK_APP)
-                prefs.clockAppPackage = ""
-                prefs.clockAppClassName = ""
-                prefs.clockAppUser = ""
-            }
-
             R.id.date -> {
                 showAppList(Constants.FLAG_SET_CALENDAR_APP)
                 prefs.calendarAppPackage = ""
@@ -169,9 +146,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
             setHomeAlignment(it)
         }
-        viewModel.toggleDateTime.observe(viewLifecycleOwner) {
-            populateDateTime()
-        }
         // Home button for recents feature disabled
         // viewModel.showRecentApps.observe(viewLifecycleOwner) {
         //     binding.recents.performClick()
@@ -194,9 +168,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun initClickListeners() {
         // Home button for recents feature disabled
         // binding.recents.setOnClickListener(this)
-        binding.clock.setOnClickListener(this)
         binding.date.setOnClickListener(this)
-        binding.clock.setOnLongClickListener(this)
         binding.date.setOnLongClickListener(this)
         binding.setDefaultLauncher.setOnClickListener(this)
         binding.setDefaultLauncher.setOnLongClickListener(this)
@@ -205,7 +177,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun setHomeAlignment(horizontalGravity: Int = prefs.homeAlignment) {
         val verticalGravity = if (prefs.homeBottomAlignment) Gravity.BOTTOM else Gravity.CENTER_VERTICAL
         binding.homeAppsLayout.gravity = horizontalGravity or verticalGravity
-        binding.dateTimeLayout.gravity = horizontalGravity
+        binding.date.gravity = horizontalGravity
         binding.homeApp1.gravity = horizontalGravity
         binding.homeApp2.gravity = horizontalGravity
         binding.homeApp3.gravity = horizontalGravity
@@ -216,27 +188,15 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.homeApp8.gravity = horizontalGravity
     }
 
-    private fun populateDateTime() {
-        binding.dateTimeLayout.isVisible = prefs.dateTimeVisibility != Constants.DateTime.OFF
-        binding.clock.isVisible = Constants.DateTime.isTimeVisible(prefs.dateTimeVisibility)
-        binding.date.isVisible = Constants.DateTime.isDateVisible(prefs.dateTimeVisibility)
-
-//        var dateText = SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())
-        val dateFormat = SimpleDateFormat("EEE, d MMM", Locale.getDefault())
-        var dateText = dateFormat.format(Date())
-
-        if (!prefs.showStatusBar) {
-            val battery = (requireContext().getSystemService(Context.BATTERY_SERVICE) as BatteryManager)
-                .getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-            if (battery > 0)
-                dateText = getString(R.string.day_battery, dateText, battery)
-        }
+    private fun populateDate() {
+        val dateText = SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())
         binding.date.text = dateText.replace(".,", ",")
+        binding.date.typeface = Typefaces.forEmphasis(prefs.dateBold)
     }
 
     private fun populateHomeScreen(appCountUpdated: Boolean) {
         if (appCountUpdated) hideHomeApps()
-        populateDateTime()
+        populateDate()
 
         val homeAppsNum = prefs.homeAppsNum
         if (homeAppsNum == 0) return
@@ -494,10 +454,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     private fun showStatusBar() {
         requireActivity().window.insetsController?.show(WindowInsets.Type.statusBars())
-    }
-
-    private fun hideStatusBar() {
-        requireActivity().window.insetsController?.hide(WindowInsets.Type.statusBars())
     }
 
     private fun showLongPressToast() = requireContext().showToast(getString(R.string.long_press_to_select_app))

@@ -15,8 +15,9 @@ app itself deliberately doesn't give you.
 
 ## The home screen
 
-The home screen shows a clock, the date, and up to eight apps of your
-choosing. Everything else is gestures:
+The home screen shows the date and up to eight apps of your choosing, all
+at the same text size, with the notification bar always visible. Everything
+else is gestures:
 
 | Gesture | What it does |
 | --- | --- |
@@ -25,15 +26,13 @@ choosing. Everything else is gestures:
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens the camera (configurable) |
 | Swipe right | Opens the phone dialer (configurable) |
-| Tap the clock | Opens your clock app |
 | Tap the date | Opens your calendar |
 
 - **Tap** a home-screen app to launch it. **Long-press** it to put a
   different app in that slot; while choosing, type a name and tap **Rename**
   to relabel the slot.
-- **Long-press** the clock or date to choose which app they open.
-- The number of home apps (0–8), their alignment, and the status bar are all
-  in Settings.
+- **Long-press** the date to choose which app it opens.
+- The number of home apps (0–8) and their alignment are in Settings.
 
 ## The app drawer
 
@@ -95,10 +94,11 @@ Long-press anywhere on the home screen to get here.
 - **Blauncher card** — hidden apps, set/change default launcher, app info.
 - **Smart ordering** — see above.
 - **Home screen** — number of home apps, alignment (long-press *Alignment*
-  to also apply it to the app drawer), bottom alignment, status bar, date &
-  time visibility, and **Bold apps**: *Off* keeps every home app in the
-  light face, *Emphasized* uses the drawer's bold face only for home apps
-  you have emphasized there, and *All* makes every home app bold.
+  to also apply it to the app drawer), bottom alignment, **Bold date** (the
+  date is always shown, at the same size as the home apps), and **Bold
+  apps**: *Off* keeps every home app in the light face, *Emphasized* uses
+  the drawer's bold face only for home apps you have emphasized there, and
+  *All* makes every home app bold.
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row

@@ -14,7 +14,6 @@ import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.UserHandle
 import android.os.UserManager
-import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.provider.Settings
@@ -341,14 +340,6 @@ fun openCameraApp(context: Context) {
         context.startActivity(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA))
     } catch (e: Exception) {
         e.printStackTrace()
-    }
-}
-
-fun openAlarmApp(context: Context) {
-    try {
-        context.startActivity(Intent(AlarmClock.ACTION_SHOW_ALARMS))
-    } catch (e: Exception) {
-        Log.d("TAG", e.toString())
     }
 }
 

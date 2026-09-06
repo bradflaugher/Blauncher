@@ -1,6 +1,6 @@
 # Blauncher
 
-A text-only Android launcher: black screen, a clock, and your apps by name.
+A text-only Android launcher: black screen, the date, and your apps by name.
 No icons, dock, widgets, or on-screen buttons.
 
 Personal hard fork of [Olauncher](https://github.com/tanujnotes/Olauncher) — not an official release.
@@ -12,12 +12,13 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 
 | Home | App drawer | Settings |
 | :---: | :---: | :---: |
-| ![Home screen: clock, date, and a short text list of apps](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group is faded](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
+| ![Home screen: the date and a short text list of apps](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group is faded](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
 
 ## What it does
 
-- **Near-empty home.** Clock, date with battery, and up to eight apps (four by
-  default) as plain text. Gestures do the rest: swipe up for the drawer, swipe
+- **Near-empty home.** The date and up to eight apps (four by default) as
+  plain text, all at the same size, with the notification bar always on.
+  Gestures do the rest: swipe up for the drawer, swipe
   down for notifications or search, swipe left/right for two chosen apps,
   long-press for settings.
 - **Keyboard-first drawer.** The keyboard opens with the drawer. Type to
@@ -32,7 +33,8 @@ settings. Full details in the **[user guide](GUIDE.md)**.
   bold and rise to the top of their group while the rest of that group fades
   back. Long-press an app's colored glyph to toggle emphasis in place, and
   optionally carry the bold face onto the home screen (Settings → Home
-  screen → Bold apps: off, emphasized apps only, or all).
+  screen → Bold apps: off, emphasized apps only, or all). The date has its
+  own **Bold date** switch.
 - **Smart group order.** Groups follow time of day — news in the morning,
   focus during work, media in the evening — then sharpen from the apps you
   actually open (hour and weekday/weekend buckets, two-week half-life). Apps
