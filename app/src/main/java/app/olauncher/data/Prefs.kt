@@ -12,11 +12,9 @@ class Prefs(context: Context) {
     private val FIRST_OPEN = "FIRST_OPEN"
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val USER_STATE = "USER_STATE"
-    private val SHOW_CLOCK = "SHOW_CLOCK"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
-    private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
     private val DATE_BOLD = "DATE_BOLD"
     private val SWIPE_LEFT_ENABLED = "SWIPE_LEFT_ENABLED"
@@ -86,6 +84,8 @@ class Prefs(context: Context) {
             // Pinned home-screen apps were replaced by the search bar and password shortcut.
             "HOME_APPS_NUM",
             "HOME_APP_WEIGHT",
+            "HOME_BOTTOM_ALIGNMENT",
+            "SHOW_CLOCK",
             *(1..8).flatMap { slot ->
                 listOf(
                     "APP_NAME_$slot",
@@ -134,11 +134,6 @@ class Prefs(context: Context) {
         get() = prefs.getBoolean(AUTO_SHOW_KEYBOARD, true)
         set(value) = prefs.edit { putBoolean(AUTO_SHOW_KEYBOARD, value).apply() }
 
-    /** Shows the current time above the date on the home screen. */
-    var showClock: Boolean
-        get() = prefs.getBoolean(SHOW_CLOCK, true)
-        set(value) = prefs.edit { putBoolean(SHOW_CLOCK, value) }
-
     /** Unsent text in the home-screen search bar; kept until it is sent or cleared. */
     var searchDraft: String
         get() = prefs.getString(SEARCH_DRAFT, "").toString()
@@ -149,10 +144,6 @@ class Prefs(context: Context) {
     var homeAlignment: Int
         get() = prefs.getInt(HOME_ALIGNMENT, Gravity.START)
         set(value) = prefs.edit { putInt(HOME_ALIGNMENT, value).apply() }
-
-    var homeBottomAlignment: Boolean
-        get() = prefs.getBoolean(HOME_BOTTOM_ALIGNMENT, false)
-        set(value) = prefs.edit { putBoolean(HOME_BOTTOM_ALIGNMENT, value).apply() }
 
     var appLabelAlignment: Int
         get() = prefs.getInt(APP_LABEL_ALIGNMENT, Gravity.START)

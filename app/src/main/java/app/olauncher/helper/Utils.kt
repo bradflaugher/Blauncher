@@ -16,7 +16,6 @@ import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.UserHandle
 import android.os.UserManager
-import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.provider.Settings
@@ -392,14 +391,6 @@ fun detectPasswordManager(context: Context): AppModel.App? {
         )
     }
     return null
-}
-
-fun openClockApp(context: Context) {
-    try {
-        context.startActivity(Intent(AlarmClock.ACTION_SHOW_ALARMS))
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
 }
 
 @SuppressLint("WrongConstant", "PrivateApi")

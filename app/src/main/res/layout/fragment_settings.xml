@@ -161,33 +161,6 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="120dp"
                         android:paddingVertical="8dp"
-                        android:text="@string/show_clock"
-                        android:textColor="?attr/primaryColor" />
-
-                    <TextView
-                        android:id="@+id/showClock"
-                        style="@style/TextSmallBold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end|bottom"
-                        android:layout_marginEnd="4dp"
-                        android:padding="8dp"
-                        android:text="@string/on" />
-                </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:animateLayoutChanges="true">
-
-                    <TextView
-                        style="@style/TextSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="120dp"
-                        android:paddingVertical="8dp"
                         android:text="@string/bold_date"
                         android:textColor="?attr/primaryColor" />
 
@@ -256,22 +229,6 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1" />
-
-                            <TextView
-                                android:id="@+id/alignmentBottom"
-                                style="@style/TextSmallBold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
-                                android:paddingVertical="6dp"
-                                android:text="@string/bottom_off" />
-
-                            <View
-                                android:layout_width="0.5dp"
-                                android:layout_height="match_parent"
-                                android:layout_marginVertical="4dp"
-                                android:layout_marginEnd="16dp"
-                                android:background="?attr/primaryColorTrans50" />
 
                             <TextView
                                 android:id="@+id/alignmentLeft"

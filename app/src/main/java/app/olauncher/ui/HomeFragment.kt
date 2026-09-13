@@ -2,7 +2,6 @@ package app.olauncher.ui
 
 import android.content.Context
 import android.os.Bundle
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -32,7 +31,6 @@ import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
-import app.olauncher.helper.openClockApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
 import app.olauncher.helper.searchWithDefaultBrowser
@@ -44,9 +42,9 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * The home screen: clock and date on top, a search bar that hands the query to the default
- * browser's search engine, and a row of quick actions (currently the password manager).
- * Everything else is gestures on the empty space.
+ * The home screen: the date on top, and along the bottom a search bar that hands the query
+ * to the default browser's search engine next to a key glyph that opens the password
+ * manager. Everything else is gestures on the empty space.
  *
  * The search bar is a multi-line composer. Its text is treated as a draft: it survives
  * leaving the screen, the drawer, settings, rotation and a launcher restart, and is only
@@ -96,7 +94,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         when (view.id) {
             // Home button for recents feature disabled
             // R.id.recents -> {}
-            R.id.clock -> openClockApp(requireContext())
             R.id.date -> openCalendarApp()
             R.id.passwordManager -> openPasswordManager()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
@@ -147,10 +144,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             populateHomeScreen()
         }
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
-            if (it != true) {
-                prefs.homeBottomAlignment = false
-                setHomeAlignment()
-            }
             if (binding.firstRunTips.isVisible) return@Observer
             binding.setDefaultLauncher.isVisible = it.not() && prefs.hideSetDefaultLauncher.not()
         })
@@ -168,7 +161,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.mainLayout.setOnTouchListener(getSwipeGestureListener(context))
         // Tappable views route their taps through the swipe listener so a swipe that starts
         // on them still works as a gesture.
-        binding.clock.setOnTouchListener(getViewSwipeTouchListener(context, binding.clock))
         binding.date.setOnTouchListener(getViewSwipeTouchListener(context, binding.date))
         binding.passwordManager.setOnTouchListener(getViewSwipeTouchListener(context, binding.passwordManager))
     }
@@ -251,14 +243,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun setHomeAlignment(horizontalGravity: Int = prefs.homeAlignment) {
-        val verticalGravity = if (prefs.homeBottomAlignment) Gravity.BOTTOM else Gravity.CENTER_VERTICAL
-        binding.homeContent.gravity = horizontalGravity or verticalGravity
-        binding.clock.gravity = horizontalGravity
         binding.date.gravity = horizontalGravity
     }
 
     private fun populateHomeScreen() {
-        binding.clock.isVisible = prefs.showClock
         populateDate()
         populatePasswordManager()
     }
@@ -271,7 +259,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     /**
      * Keeps the password shortcut bound to an installed app: drops a binding whose app is gone,
-     * adopts a known password manager when nothing is chosen, and labels the glyph after it.
+     * adopts a known password manager when nothing is chosen, and names the glyph after it for
+     * accessibility. An unbound glyph is drawn faded as the cue to pick an app.
      */
     private fun populatePasswordManager() {
         val context = requireContext()
@@ -289,8 +278,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             }
         }
         val bound = prefs.passwordAppPackage.isNotBlank()
-        binding.passwordLabel.text = prefs.passwordAppName.ifBlank { getString(R.string.passwords) }
-        binding.passwordManager.alpha = if (bound) 1f else 0.6f
+        binding.passwordManager.contentDescription =
+            prefs.passwordAppName.ifBlank { getString(R.string.password_manager) }
+        binding.passwordManager.alpha = if (bound) 1f else 0.5f
     }
 
     private fun openPasswordManager() {

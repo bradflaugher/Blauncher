@@ -15,9 +15,10 @@ app itself deliberately doesn't give you.
 
 ## The home screen
 
-The home screen shows the time and date, a search bar, and a round key glyph
-that opens your password manager, with the notification bar always visible.
-Everything else is gestures:
+The home screen is the date at the top and, along the bottom, a search bar
+beside a round key glyph that opens your password manager. The notification
+bar is always visible and the middle of the screen is empty on purpose:
+everything else is gestures.
 
 | Gesture | What it does |
 | --- | --- |
@@ -26,7 +27,6 @@ Everything else is gestures:
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens the camera (configurable) |
 | Swipe right | Opens the phone dialer (configurable) |
-| Tap the time | Opens your clock app |
 | Tap the date | Opens your calendar |
 
 - **Search bar** — tap it and type. It is a small composer, not a one-line
@@ -42,16 +42,15 @@ Everything else is gestures:
     drawer or settings, switch apps to copy something, rotate, or the
     launcher restarts. Only a successful send or the **×** button empties
     the bar, and if no app could take the search the text stays put.
-- **Password manager** — the key glyph under the search bar launches your
-  password manager and shows its name underneath. On first run it picks a
-  known password manager already installed (Bitwarden, 1Password, Proton
-  Pass, KeePassDX, Keepass2Android, Enpass, Keeper, LastPass, Dashlane,
-  NordPass). **Long-press** the glyph, or tap it while it still reads
-  *Passwords*, to pick any other app; the same choice lives in Settings →
-  Home screen.
+- **Password manager** — the key glyph beside the search bar launches your
+  password manager. On first run it binds to a known password manager
+  already installed (Bitwarden, 1Password, Proton Pass, KeePassDX,
+  Keepass2Android, Enpass, Keeper, LastPass, Dashlane, NordPass); until one
+  is bound the glyph is drawn faded and tapping it opens the picker.
+  **Long-press** the glyph to pick any other app; the same choice lives in
+  Settings → Home screen.
 - **Long-press** the date to choose which app it opens.
-- The clock can be switched off, and the block's alignment changed, in
-  Settings.
+- The date's alignment (left, center, right) is in Settings.
 
 ## The app drawer
 
@@ -111,9 +110,8 @@ Long-press anywhere on the home screen to get here.
 - **Blauncher card** — hidden apps, set/change default launcher, app info.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
-  **Clock** (show or hide the time above the date), **Bold date**, and
-  alignment (long-press *Alignment* to also apply it to the app drawer) with
-  a bottom-alignment switch.
+  **Bold date**, and the date's alignment (long-press *Date alignment* to also
+  apply it to the app drawer).
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row

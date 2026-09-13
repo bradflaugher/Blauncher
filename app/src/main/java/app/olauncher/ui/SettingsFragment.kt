@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
@@ -70,7 +69,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateTextSize()
         populateAlignment()
         populateDateBold()
-        populateShowClock()
         populatePasswordApp()
         populateSmartOrdering()
         populateSwipeApps()
@@ -88,8 +86,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 applyTextSizeScale()
             }
         }
-        if (view.id != R.id.alignmentBottom)
-            binding.alignmentSelectLayout.visibility = View.GONE
+        binding.alignmentSelectLayout.visibility = View.GONE
 
         when (view.id) {
             R.id.hiddenApps -> showHiddenApps()
@@ -99,12 +96,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
             R.id.passwordApp -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
-            R.id.showClock -> toggleShowClock()
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
             R.id.alignmentRight -> viewModel.updateHomeAlignment(Gravity.END)
-            R.id.alignmentBottom -> updateHomeBottomAlignment()
             R.id.dateBold -> toggleDateBold()
             R.id.appThemeText -> binding.appThemeSelectLayout.visibility = View.VISIBLE
             R.id.themeLight -> updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
@@ -154,12 +149,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
         binding.passwordApp.setOnClickListener(this)
-        binding.showClock.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
         binding.alignmentCenter.setOnClickListener(this)
         binding.alignmentRight.setOnClickListener(this)
-        binding.alignmentBottom.setOnClickListener(this)
         binding.dateBold.setOnClickListener(this)
         binding.swipeLeftApp.setOnClickListener(this)
         binding.swipeRightApp.setOnClickListener(this)
@@ -244,16 +237,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         prefs.dateBold = !prefs.dateBold
         populateDateBold()
         viewModel.refreshHome()
-    }
-
-    private fun toggleShowClock() {
-        prefs.showClock = !prefs.showClock
-        populateShowClock()
-        viewModel.refreshHome()
-    }
-
-    private fun populateShowClock() {
-        binding.showClock.text = getString(if (prefs.showClock) R.string.on else R.string.off)
     }
 
     /** Names the app behind the home-screen password shortcut, or invites picking one. */
@@ -417,25 +400,12 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         else binding.autoShowKeyboard.text = getString(R.string.off)
     }
 
-    private fun updateHomeBottomAlignment() {
-        if (viewModel.isOlauncherDefault.value != true) {
-            requireContext().showToast(getString(R.string.please_set_olauncher_as_default_first), Toast.LENGTH_LONG)
-            return
-        }
-        prefs.homeBottomAlignment = !prefs.homeBottomAlignment
-        populateAlignment()
-        viewModel.updateHomeAlignment(prefs.homeAlignment)
-    }
-
     private fun populateAlignment() {
         when (prefs.homeAlignment) {
             Gravity.START -> binding.alignment.text = getString(R.string.left)
             Gravity.CENTER -> binding.alignment.text = getString(R.string.center)
             Gravity.END -> binding.alignment.text = getString(R.string.right)
         }
-        binding.alignmentBottom.text = if (prefs.homeBottomAlignment)
-            getString(R.string.bottom_on)
-        else getString(R.string.bottom_off)
     }
 
     private fun populateSwipeDownAction() {

@@ -1,7 +1,7 @@
 # Blauncher
 
-A near-empty Android launcher: black screen, the time and date, a search bar,
-and a password-manager shortcut. No app icons, dock, or widgets.
+A near-empty Android launcher: black screen, the date, and along the bottom a
+search bar and a password-manager shortcut. No app icons, dock, or widgets.
 
 Personal hard fork of [Olauncher](https://github.com/tanujnotes/Olauncher) — not an official release.
 
@@ -12,15 +12,16 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 
 | Home | App drawer | Settings |
 | :---: | :---: | :---: |
-| ![Home screen: the time and date, a search bar, and a key glyph for the password manager](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group is faded](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
+| ![Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group is faded](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
 
 The screens above are renders built from the app's layouts, strings, and
 colors rather than device captures.
 
 ## What it does
 
-- **Near-empty home.** The time and date, a search bar, and a key glyph that
-  opens your password manager, with the notification bar always on. The
+- **Near-empty home.** The date at the top, and along the bottom a search bar
+  beside a key glyph that opens your password manager, with the notification
+  bar always on. The
   search bar hands your query to the default browser, which runs it through
   whatever search engine you set there; the launcher never picks or stores
   an engine. The password shortcut binds itself to an installed password
