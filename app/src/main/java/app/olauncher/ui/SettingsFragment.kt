@@ -63,7 +63,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         } ?: throw Exception("Invalid Activity")
         viewModel.isOlauncherDefault()
 
-        binding.homeAppsNum.text = prefs.homeAppsNum.toString()
         populateKeyboardText()
         // Home button for recents feature disabled
         // populateHomeButtonRecents()
@@ -71,7 +70,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateTextSize()
         populateAlignment()
         populateDateBold()
-        populateHomeAppWeight()
+        populateShowClock()
+        populatePasswordApp()
         populateSmartOrdering()
         populateSwipeApps()
         populateSwipeDownAction()
@@ -80,7 +80,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     override fun onClick(view: View) {
-        binding.appsNumSelectLayout.visibility = View.GONE
         binding.appThemeSelectLayout.visibility = View.GONE
         binding.swipeDownSelectLayout.visibility = View.GONE
         if (view.id != R.id.textSizeMinus && view.id != R.id.textSizePlus) {
@@ -99,30 +98,20 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             // Home button for recents feature disabled
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
-            R.id.homeAppsNum -> binding.appsNumSelectLayout.visibility = View.VISIBLE
+            R.id.passwordApp -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
+            R.id.showClock -> toggleShowClock()
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
             R.id.alignmentRight -> viewModel.updateHomeAlignment(Gravity.END)
             R.id.alignmentBottom -> updateHomeBottomAlignment()
             R.id.dateBold -> toggleDateBold()
-            R.id.homeAppWeight -> cycleHomeAppWeight()
             R.id.appThemeText -> binding.appThemeSelectLayout.visibility = View.VISIBLE
             R.id.themeLight -> updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
             R.id.themeSystem -> updateTheme(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             R.id.textSizeValue -> binding.textSizesLayout.visibility = View.VISIBLE
             R.id.tvGestures -> binding.flSwipeDown.visibility = View.VISIBLE
-
-            R.id.maxApps0 -> updateHomeAppsNum(0)
-            R.id.maxApps1 -> updateHomeAppsNum(1)
-            R.id.maxApps2 -> updateHomeAppsNum(2)
-            R.id.maxApps3 -> updateHomeAppsNum(3)
-            R.id.maxApps4 -> updateHomeAppsNum(4)
-            R.id.maxApps5 -> updateHomeAppsNum(5)
-            R.id.maxApps6 -> updateHomeAppsNum(6)
-            R.id.maxApps7 -> updateHomeAppsNum(7)
-            R.id.maxApps8 -> updateHomeAppsNum(8)
 
             R.id.textSizeMinus -> adjustTextSizePreview(-0.1f)
             R.id.textSizePlus -> adjustTextSizePreview(0.1f)
@@ -164,14 +153,14 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.autoShowKeyboard.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
-        binding.homeAppsNum.setOnClickListener(this)
+        binding.passwordApp.setOnClickListener(this)
+        binding.showClock.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
         binding.alignmentCenter.setOnClickListener(this)
         binding.alignmentRight.setOnClickListener(this)
         binding.alignmentBottom.setOnClickListener(this)
         binding.dateBold.setOnClickListener(this)
-        binding.homeAppWeight.setOnClickListener(this)
         binding.swipeLeftApp.setOnClickListener(this)
         binding.swipeRightApp.setOnClickListener(this)
         binding.swipeDownAction.setOnClickListener(this)
@@ -202,16 +191,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
         binding.smartOrderSettings.pinnedGroups.setOnClickListener { showPinnedGroupsChooser() }
 
-        binding.maxApps0.setOnClickListener(this)
-        binding.maxApps1.setOnClickListener(this)
-        binding.maxApps2.setOnClickListener(this)
-        binding.maxApps3.setOnClickListener(this)
-        binding.maxApps4.setOnClickListener(this)
-        binding.maxApps5.setOnClickListener(this)
-        binding.maxApps6.setOnClickListener(this)
-        binding.maxApps7.setOnClickListener(this)
-        binding.maxApps8.setOnClickListener(this)
-
         binding.textSizeMinus.setOnClickListener(this)
         binding.textSizePlus.setOnClickListener(this)
 
@@ -233,6 +212,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
         viewModel.updateSwipeApps.observe(viewLifecycleOwner) {
             populateSwipeApps()
+        }
+        viewModel.refreshHome.observe(viewLifecycleOwner) {
+            populatePasswordApp()
         }
     }
 
@@ -261,28 +243,26 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     private fun toggleDateBold() {
         prefs.dateBold = !prefs.dateBold
         populateDateBold()
-        viewModel.refreshHome(false)
+        viewModel.refreshHome()
+    }
+
+    private fun toggleShowClock() {
+        prefs.showClock = !prefs.showClock
+        populateShowClock()
+        viewModel.refreshHome()
+    }
+
+    private fun populateShowClock() {
+        binding.showClock.text = getString(if (prefs.showClock) R.string.on else R.string.off)
+    }
+
+    /** Names the app behind the home-screen password shortcut, or invites picking one. */
+    private fun populatePasswordApp() {
+        binding.passwordApp.text = prefs.passwordAppName.ifBlank { getString(R.string.none) }
     }
 
     private fun populateDateBold() {
         binding.dateBold.text = getString(if (prefs.dateBold) R.string.on else R.string.off)
-    }
-
-    /** Off → Emphasized (only apps emphasized in the drawer) → All → Off. */
-    private fun cycleHomeAppWeight() {
-        prefs.homeAppWeight = Constants.HomeAppWeight.next(prefs.homeAppWeight)
-        populateHomeAppWeight()
-        viewModel.refreshHome(false)
-    }
-
-    private fun populateHomeAppWeight() {
-        binding.homeAppWeight.text = getString(
-            when (prefs.homeAppWeight) {
-                Constants.HomeAppWeight.BOLD -> R.string.all
-                Constants.HomeAppWeight.EMPHASIZED -> R.string.emphasized
-                else -> R.string.off
-            }
-        )
     }
 
     private fun showHiddenApps() {
@@ -307,13 +287,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             }
             .setNegativeButton(R.string.close, null)
             .show()
-    }
-
-    private fun updateHomeAppsNum(num: Int) {
-        binding.homeAppsNum.text = num.toString()
-        binding.appsNumSelectLayout.visibility = View.GONE
-        prefs.homeAppsNum = num
-        viewModel.refreshHome(true)
     }
 
     private var pendingTextSizeScale: Float = -1f
@@ -496,6 +469,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             requireContext().showToast(getString(R.string.long_press_to_enable))
             return
         }
+        showAppList(flag)
+    }
+
+    private fun showAppList(flag: Int) {
         viewModel.getAppList(true)
         findNavController().navigate(
             R.id.action_settingsFragment_to_appListFragment,

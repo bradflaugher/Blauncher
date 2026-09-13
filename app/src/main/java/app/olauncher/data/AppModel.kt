@@ -27,7 +27,7 @@ sealed class AppModel : Comparable<AppModel> {
         }
 
     companion object {
-        /** The emphasis key for an app or pinned shortcut stored as package + user string (home slots). */
+        /** The emphasis key for an app or pinned shortcut stored as package + user string. */
         fun emphasisKeyFor(appPackage: String, userString: String, shortcutId: String?): String = when {
             appPackage.isBlank() -> ""
             shortcutId.isNullOrBlank() -> "$appPackage|$userString"

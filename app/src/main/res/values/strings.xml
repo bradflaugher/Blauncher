@@ -4,15 +4,6 @@
     <!-- Home button for recents feature disabled -->
     <!-- <string name="recents_layout_description" translatable="false">recents layout description to be used a unique id to show recent apps</string> -->
     <string name="digital_minimalism" translatable="false"><u>Digital Minimalism</u></string>
-    <string name="tag_0" translatable="false">0</string>
-    <string name="tag_1" translatable="false">1</string>
-    <string name="tag_2" translatable="false">2</string>
-    <string name="tag_3" translatable="false">3</string>
-    <string name="tag_4" translatable="false">4</string>
-    <string name="tag_5" translatable="false">5</string>
-    <string name="tag_6" translatable="false">6</string>
-    <string name="tag_7" translatable="false">7</string>
-    <string name="tag_8" translatable="false">8</string>
 
     <string name="app">App</string>
     <string name="set_as_default_launcher">Set as default launcher</string>
@@ -28,22 +19,12 @@
     <string name="email">Email</string>
     <string name="donate">Donate</string>
     <string name="swipe_up_for_apps">1. Swipe up for all apps\n2. Long press anywhere for settings</string>
-    <string name="apps_on_home_screen">Apps on home screen</string>
     <string name="left">Left</string>
     <string name="right">Right</string>
     <string name="center">Center</string>
     <string name="home_layout_alignment">App alignment</string>
     <string name="swipe_left_app">Swipe left app</string>
     <string name="swipe_right_app">Swipe right app</string>
-    <string name="_0">0</string>
-    <string name="_1">1</string>
-    <string name="_2">2</string>
-    <string name="_3">3</string>
-    <string name="_4">4</string>
-    <string name="_5">5</string>
-    <string name="_6">6</string>
-    <string name="_7">7</string>
-    <string name="_8">8</string>
     <string name="app_drawer_tips">Tip: Start typing an app name to auto-launch it</string>
     <string name="okay">Okay</string>
     <string name="cool">Cool!</string>
@@ -73,12 +54,10 @@
     <string name="text_size">Text size</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="long_press_to_select_app">Long press to select app</string>
     <string name="unable_to_open_app">Unable to open app</string>
     <string name="unable_to_open_app_info">Unable to open app info</string>
     <string name="copied">Copied</string>
     <string name="system_app_cannot_delete">System app, cannot delete</string>
-    <string name="type_a_new_app_name_first">Type a new app name first</string>
     <string name="app_not_found">App not found</string>
     <string name="unable_to_launch_app">Unable to launch app</string>
     <string name="search_for_Launcher_or_home_app">Search for Launcher or Home app</string>
@@ -117,9 +96,13 @@
     <string name="emphasize">Emphasize</string>
     <string name="emphasize_summary">Bold and first in its group; the rest of the group fades back. Long-press an app\'s glyph to toggle this quickly.</string>
     <string name="bold_date">Bold date</string>
-    <string name="bold_apps">Bold apps</string>
-    <string name="emphasized">Emphasized</string>
-    <string name="all">All</string>
+    <string name="show_clock">Clock</string>
+    <string name="search_the_web">Search</string>
+    <string name="password_manager">Password manager</string>
+    <string name="passwords">Passwords</string>
+    <string name="choose_password_manager">Choose your password manager</string>
+    <string name="password_manager_needs_app">Pick an app, not a shortcut</string>
+    <string name="long_press_to_change_app">Long press to change the app</string>
     <string name="emphasized_toast">%1$s emphasized</string>
     <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>

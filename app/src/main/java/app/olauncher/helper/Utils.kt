@@ -2,18 +2,21 @@ package app.olauncher.helper
 
 import android.annotation.SuppressLint
 import android.app.SearchManager
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.UserHandle
 import android.os.UserManager
+import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.provider.Settings
@@ -313,6 +316,78 @@ fun openSearch(context: Context) {
     val intent = Intent(Intent.ACTION_WEB_SEARCH)
     intent.putExtra(SearchManager.QUERY, "")
     context.startActivity(intent)
+}
+
+/**
+ * The package the user has chosen to open web links, or null when no browser is set as
+ * default (the system resolver would show a chooser instead).
+ */
+fun defaultBrowserPackage(context: Context): String? {
+    val probe = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com"))
+        .addCategory(Intent.CATEGORY_BROWSABLE)
+    val flags = PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+    val packageName = context.packageManager.resolveActivity(probe, flags)?.activityInfo?.packageName
+    return packageName?.takeIf { it != "android" }
+}
+
+/**
+ * Sends [query] to the default browser's own search engine. Browsers answer
+ * [Intent.ACTION_WEB_SEARCH] with whatever engine the user configured inside them, so the
+ * launcher never has to know (or store) which engine that is. Falls back to the system-wide
+ * web-search handler, then to DuckDuckGo, when the browser does not take search intents.
+ */
+fun searchWithDefaultBrowser(context: Context, query: String) {
+    val trimmed = query.trim()
+    if (trimmed.isEmpty()) return
+    val webSearch = Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, trimmed)
+
+    val browser = defaultBrowserPackage(context)
+    if (browser != null) {
+        val targeted = Intent(webSearch).setPackage(browser)
+        val flags = PackageManager.ResolveInfoFlags.of(0)
+        if (context.packageManager.resolveActivity(targeted, flags) != null) {
+            try {
+                context.startActivity(targeted)
+                return
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    try {
+        context.startActivity(webSearch)
+    } catch (_: ActivityNotFoundException) {
+        context.openUrl(Constants.URL_DUCK_SEARCH + Uri.encode(trimmed))
+    }
+}
+
+/** The first installed app from [Constants.KNOWN_PASSWORD_MANAGERS] in the main profile. */
+fun detectPasswordManager(context: Context): AppModel.App? {
+    val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+    val user = android.os.Process.myUserHandle()
+    for (packageName in Constants.KNOWN_PASSWORD_MANAGERS) {
+        val activity = try {
+            launcher.getActivityList(packageName, user).firstOrNull()
+        } catch (_: Exception) {
+            null
+        } ?: continue
+        return AppModel.App(
+            appLabel = activity.label.toString(),
+            key = null,
+            appPackage = packageName,
+            activityClassName = activity.componentName.className,
+            user = user,
+        )
+    }
+    return null
+}
+
+fun openClockApp(context: Context) {
+    try {
+        context.startActivity(Intent(AlarmClock.ACTION_SHOW_ALARMS))
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 @SuppressLint("WrongConstant", "PrivateApi")

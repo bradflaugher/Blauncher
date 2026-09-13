@@ -15,9 +15,9 @@ app itself deliberately doesn't give you.
 
 ## The home screen
 
-The home screen shows the date and up to eight apps of your choosing, all
-at the same text size, with the notification bar always visible. Everything
-else is gestures:
+The home screen shows the time and date, a search bar, and a round key glyph
+that opens your password manager, with the notification bar always visible.
+Everything else is gestures:
 
 | Gesture | What it does |
 | --- | --- |
@@ -26,13 +26,25 @@ else is gestures:
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens the camera (configurable) |
 | Swipe right | Opens the phone dialer (configurable) |
+| Tap the time | Opens your clock app |
 | Tap the date | Opens your calendar |
 
-- **Tap** a home-screen app to launch it. **Long-press** it to put a
-  different app in that slot; while choosing, type a name and tap **Rename**
-  to relabel the slot.
+- **Search bar** — tap it, type, and press enter or the keyboard's search
+  key. The query goes to your **default browser**, which searches with the
+  engine you chose inside that browser (Chrome, Firefox, Brave, Edge, and
+  most others accept searches this way). If the browser cannot take a
+  search, the system web-search handler gets it instead, and failing that
+  DuckDuckGo opens in the browser. The bar clears itself after each search.
+- **Password manager** — the key glyph under the search bar launches your
+  password manager and shows its name underneath. On first run it picks a
+  known password manager already installed (Bitwarden, 1Password, Proton
+  Pass, KeePassDX, Keepass2Android, Enpass, Keeper, LastPass, Dashlane,
+  NordPass). **Long-press** the glyph, or tap it while it still reads
+  *Passwords*, to pick any other app; the same choice lives in Settings →
+  Home screen.
 - **Long-press** the date to choose which app it opens.
-- The number of home apps (0–8) and their alignment are in Settings.
+- The clock can be switched off, and the block's alignment changed, in
+  Settings.
 
 ## The app drawer
 
@@ -60,8 +72,6 @@ back so the ones you chose stand out.
   - **Long-press the colored glyph** next to any app to toggle emphasis
     without opening the menu; a short toast confirms it. Tapping the glyph
     launches the app like the rest of the row.
-  - The same bold face can carry over to the home screen — see **Bold
-    apps** under Settings → Home screen.
   - **Hide** removes it from the drawer; find it later under Settings →
     **Hidden apps**, where the same menu shows **Show** to bring it back.
 - If your device has a **Private Space**, it appears at the bottom of the
@@ -93,12 +103,10 @@ Long-press anywhere on the home screen to get here.
 
 - **Blauncher card** — hidden apps, set/change default launcher, app info.
 - **Smart ordering** — see above.
-- **Home screen** — number of home apps, alignment (long-press *Alignment*
-  to also apply it to the app drawer), bottom alignment, **Bold date** (the
-  date is always shown, at the same size as the home apps), and **Bold
-  apps**: *Off* keeps every home app in the light face, *Emphasized* uses
-  the drawer's bold face only for home apps you have emphasized there, and
-  *All* makes every home app bold.
+- **Home screen** — **Password manager** (the app the key glyph opens),
+  **Clock** (show or hide the time above the date), **Bold date**, and
+  alignment (long-press *Alignment* to also apply it to the app drawer) with
+  a bottom-alignment switch.
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row
