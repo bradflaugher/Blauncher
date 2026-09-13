@@ -15,9 +15,10 @@ app itself deliberately doesn't give you.
 
 ## The home screen
 
-The home screen shows the date and up to eight apps of your choosing, all
-at the same text size, with the notification bar always visible. Everything
-else is gestures:
+The home screen is the date at the top and, along the bottom, a search bar
+beside a round key glyph that opens your password manager. The notification
+bar is always visible and the middle of the screen is empty on purpose:
+everything else is gestures.
 
 | Gesture | What it does |
 | --- | --- |
@@ -28,11 +29,28 @@ else is gestures:
 | Swipe right | Opens the phone dialer (configurable) |
 | Tap the date | Opens your calendar |
 
-- **Tap** a home-screen app to launch it. **Long-press** it to put a
-  different app in that slot; while choosing, type a name and tap **Rename**
-  to relabel the slot.
+- **Search bar** — tap it and type. It is a small composer, not a one-line
+  field: enter starts a new line, the box grows to a few lines and then
+  scrolls, and there is no length limit, so whole paragraphs are fine. Send
+  with the **arrow** at the end of the bar (or Ctrl+Enter / Shift+Enter on a
+  hardware keyboard). The text goes to your **default browser**, which
+  searches with the engine you chose inside that browser (Chrome, Firefox,
+  Brave, Edge, and most others accept searches this way). If the browser
+  cannot take a search, the system web-search handler gets it instead, and
+  failing that DuckDuckGo opens in the browser.
+  - Unsent text is a **draft**: it stays if you tap elsewhere, open the
+    drawer or settings, switch apps to copy something, rotate, or the
+    launcher restarts. Only a successful send or the **×** button empties
+    the bar, and if no app could take the search the text stays put.
+- **Password manager** — the key glyph beside the search bar launches your
+  password manager. On first run it binds to a known password manager
+  already installed (Bitwarden, 1Password, Proton Pass, KeePassDX,
+  Keepass2Android, Enpass, Keeper, LastPass, Dashlane, NordPass); until one
+  is bound the glyph is drawn faded and tapping it opens the picker.
+  **Long-press** the glyph to pick any other app; the same choice lives in
+  Settings → Home screen.
 - **Long-press** the date to choose which app it opens.
-- The number of home apps (0–8) and their alignment are in Settings.
+- The date's alignment (left, center, right) is in Settings.
 
 ## The app drawer
 
@@ -60,8 +78,6 @@ back so the ones you chose stand out.
   - **Long-press the colored glyph** next to any app to toggle emphasis
     without opening the menu; a short toast confirms it. Tapping the glyph
     launches the app like the rest of the row.
-  - The same bold face can carry over to the home screen — see **Bold
-    apps** under Settings → Home screen.
   - **Hide** removes it from the drawer; find it later under Settings →
     **Hidden apps**, where the same menu shows **Show** to bring it back.
 - If your device has a **Private Space**, it appears at the bottom of the
@@ -93,12 +109,9 @@ Long-press anywhere on the home screen to get here.
 
 - **Blauncher card** — hidden apps, set/change default launcher, app info.
 - **Smart ordering** — see above.
-- **Home screen** — number of home apps, alignment (long-press *Alignment*
-  to also apply it to the app drawer), bottom alignment, **Bold date** (the
-  date is always shown, at the same size as the home apps), and **Bold
-  apps**: *Off* keeps every home app in the light face, *Emphasized* uses
-  the drawer's bold face only for home apps you have emphasized there, and
-  *All* makes every home app bold.
+- **Home screen** — **Password manager** (the app the key glyph opens),
+  **Bold date**, and the date's alignment (long-press *Date alignment* to also
+  apply it to the app drawer).
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row

@@ -1,16 +1,18 @@
 package app.olauncher.ui
 
 import android.content.Context
-import android.content.pm.LauncherApps
 import android.os.Bundle
-import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.widget.TextView
+import android.view.inputmethod.InputMethodManager
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -21,21 +23,33 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
+import app.olauncher.helper.Typefaces
+import app.olauncher.helper.detectPasswordManager
 import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
+import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
+import app.olauncher.helper.searchWithDefaultBrowser
 import app.olauncher.helper.showToast
-import app.olauncher.helper.Typefaces
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * The home screen: the date on top, and along the bottom a search bar that hands the query
+ * to the default browser's search engine next to a key glyph that opens the password
+ * manager. Everything else is gestures on the empty space.
+ *
+ * The search bar is a multi-line composer. Its text is treated as a draft: it survives
+ * leaving the screen, the drawer, settings, rotation and a launcher restart, and is only
+ * dropped once a browser has accepted it or the user taps clear.
+ */
 class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
     private lateinit var prefs: Prefs
@@ -59,13 +73,21 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         setHomeAlignment(prefs.homeAlignment)
         initSwipeTouchListener()
         initClickListeners()
+        initSearchBar()
     }
 
     override fun onResume() {
         super.onResume()
-        populateHomeScreen(false)
+        populateHomeScreen()
+        restoreSearchDraft()
         viewModel.isOlauncherDefault()
         showStatusBar()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveSearchDraft()
+        _binding?.searchInput?.hideKeyboard()
     }
 
     override fun onClick(view: View) {
@@ -73,15 +95,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             // Home button for recents feature disabled
             // R.id.recents -> {}
             R.id.date -> openCalendarApp()
+            R.id.passwordManager -> openPasswordManager()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
-            else -> {
-                try { // Launch app
-                    val appLocation = view.tag.toString().toInt()
-                    homeAppClicked(appLocation)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
         }
     }
 
@@ -99,14 +114,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     override fun onLongClick(view: View): Boolean {
         when (view.id) {
-            R.id.homeApp1 -> showAppList(Constants.FLAG_SET_HOME_APP_1, prefs.appName1.isNotEmpty(), true)
-            R.id.homeApp2 -> showAppList(Constants.FLAG_SET_HOME_APP_2, prefs.appName2.isNotEmpty(), true)
-            R.id.homeApp3 -> showAppList(Constants.FLAG_SET_HOME_APP_3, prefs.appName3.isNotEmpty(), true)
-            R.id.homeApp4 -> showAppList(Constants.FLAG_SET_HOME_APP_4, prefs.appName4.isNotEmpty(), true)
-            R.id.homeApp5 -> showAppList(Constants.FLAG_SET_HOME_APP_5, prefs.appName5.isNotEmpty(), true)
-            R.id.homeApp6 -> showAppList(Constants.FLAG_SET_HOME_APP_6, prefs.appName6.isNotEmpty(), true)
-            R.id.homeApp7 -> showAppList(Constants.FLAG_SET_HOME_APP_7, prefs.appName7.isNotEmpty(), true)
-            R.id.homeApp8 -> showAppList(Constants.FLAG_SET_HOME_APP_8, prefs.appName8.isNotEmpty(), true)
+            R.id.passwordManager -> showAppList(Constants.FLAG_SET_PASSWORD_APP, includeHiddenApps = true)
             R.id.date -> {
                 showAppList(Constants.FLAG_SET_CALENDAR_APP)
                 prefs.calendarAppPackage = ""
@@ -133,13 +141,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         } else binding.firstRunTips.visibility = View.GONE
 
         viewModel.refreshHome.observe(viewLifecycleOwner) {
-            populateHomeScreen(it)
+            populateHomeScreen()
         }
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
-            if (it != true) {
-                prefs.homeBottomAlignment = false
-                setHomeAlignment()
-            }
             if (binding.firstRunTips.isVisible) return@Observer
             binding.setDefaultLauncher.isVisible = it.not() && prefs.hideSetDefaultLauncher.not()
         })
@@ -155,37 +159,102 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun initSwipeTouchListener() {
         val context = requireContext()
         binding.mainLayout.setOnTouchListener(getSwipeGestureListener(context))
-        binding.homeApp1.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp1))
-        binding.homeApp2.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp2))
-        binding.homeApp3.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp3))
-        binding.homeApp4.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp4))
-        binding.homeApp5.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp5))
-        binding.homeApp6.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp6))
-        binding.homeApp7.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp7))
-        binding.homeApp8.setOnTouchListener(getViewSwipeTouchListener(context, binding.homeApp8))
+        // Tappable views route their taps through the swipe listener so a swipe that starts
+        // on them still works as a gesture.
+        binding.date.setOnTouchListener(getViewSwipeTouchListener(context, binding.date))
+        binding.passwordManager.setOnTouchListener(getViewSwipeTouchListener(context, binding.passwordManager))
     }
 
     private fun initClickListeners() {
         // Home button for recents feature disabled
         // binding.recents.setOnClickListener(this)
-        binding.date.setOnClickListener(this)
-        binding.date.setOnLongClickListener(this)
         binding.setDefaultLauncher.setOnClickListener(this)
         binding.setDefaultLauncher.setOnLongClickListener(this)
+        // Touch goes through the swipe listeners above, which consume it before the view's own
+        // click handling; these listeners serve keyboards and accessibility ACTION_CLICK instead.
+        binding.date.setOnClickListener(this)
+        binding.date.setOnLongClickListener(this)
+        binding.passwordManager.setOnClickListener(this)
+        binding.passwordManager.setOnLongClickListener(this)
+    }
+
+    private fun initSearchBar() {
+        // The keyboard would otherwise cover a bottom-aligned search bar; pad the root so the
+        // content block rises above it while typing.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainLayout) { root, insets ->
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            root.setPadding(0, 0, 0, ime.bottom)
+            insets
+        }
+        binding.searchBar.setOnClickListener { focusSearch() }
+        binding.searchIcon.setOnClickListener { focusSearch() }
+        binding.searchGo.setOnClickListener { submitSearch() }
+        binding.searchClear.setOnClickListener {
+            binding.searchInput.text?.clear()
+            prefs.searchDraft = ""
+            focusSearch()
+        }
+        binding.searchInput.doAfterTextChanged { text ->
+            val hasText = !text.isNullOrBlank()
+            binding.searchGo.isVisible = hasText
+            binding.searchClear.isVisible = hasText
+        }
+        // Enter adds a line, as in any composer. Ctrl+Enter or Shift+Enter sends, for hardware
+        // keyboards; on-screen keyboards use the arrow button.
+        binding.searchInput.setOnKeyListener { _, keyCode, event ->
+            val enter = keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
+            if (enter && event.action == KeyEvent.ACTION_DOWN && (event.isCtrlPressed || event.isShiftPressed)) {
+                submitSearch()
+                true
+            } else false
+        }
+    }
+
+    private fun focusSearch() {
+        val input = binding.searchInput
+        if (input.requestFocus()) {
+            input.setSelection(input.length())
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(input, 0)
+        }
+    }
+
+    /**
+     * Hands the composed text to the default browser's search engine. The field is emptied
+     * only after an app accepted the query, so a missing browser never eats the text.
+     */
+    private fun submitSearch() {
+        val query = binding.searchInput.text?.toString()?.trim().orEmpty()
+        if (query.isEmpty()) return
+        if (searchWithDefaultBrowser(requireContext(), query)) {
+            binding.searchInput.text?.clear()
+            prefs.searchDraft = ""
+            binding.searchInput.hideKeyboard()
+        } else {
+            requireContext().showToast(R.string.search_not_available)
+        }
+    }
+
+    private fun saveSearchDraft() {
+        val input = _binding?.searchInput ?: return
+        prefs.searchDraft = input.text?.toString().orEmpty()
+    }
+
+    /** Puts an unsent draft back into the field, cursor at the end, without raising the keyboard. */
+    private fun restoreSearchDraft() {
+        val draft = prefs.searchDraft
+        if (draft.isBlank() || binding.searchInput.text?.isNotEmpty() == true) return
+        binding.searchInput.setText(draft)
+        binding.searchInput.setSelection(draft.length)
     }
 
     private fun setHomeAlignment(horizontalGravity: Int = prefs.homeAlignment) {
-        val verticalGravity = if (prefs.homeBottomAlignment) Gravity.BOTTOM else Gravity.CENTER_VERTICAL
-        binding.homeAppsLayout.gravity = horizontalGravity or verticalGravity
         binding.date.gravity = horizontalGravity
-        binding.homeApp1.gravity = horizontalGravity
-        binding.homeApp2.gravity = horizontalGravity
-        binding.homeApp3.gravity = horizontalGravity
-        binding.homeApp4.gravity = horizontalGravity
-        binding.homeApp5.gravity = horizontalGravity
-        binding.homeApp6.gravity = horizontalGravity
-        binding.homeApp7.gravity = horizontalGravity
-        binding.homeApp8.gravity = horizontalGravity
+    }
+
+    private fun populateHomeScreen() {
+        populateDate()
+        populatePasswordManager()
     }
 
     private fun populateDate() {
@@ -194,136 +263,44 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.date.typeface = Typefaces.forEmphasis(prefs.dateBold)
     }
 
-    private fun populateHomeScreen(appCountUpdated: Boolean) {
-        if (appCountUpdated) hideHomeApps()
-        populateDate()
-
-        val homeAppsNum = prefs.homeAppsNum
-        if (homeAppsNum == 0) return
-
-        binding.homeApp1.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp1, prefs.appName1, prefs.appPackage1, prefs.appUser1, prefs.isShortcut1, prefs.shortcutId1)) {
-            prefs.appName1 = ""
-            prefs.appPackage1 = ""
+    /**
+     * Keeps the password shortcut bound to an installed app: drops a binding whose app is gone,
+     * adopts a known password manager when nothing is chosen, and names the glyph after it for
+     * accessibility. An unbound glyph is drawn faded as the cue to pick an app.
+     */
+    private fun populatePasswordManager() {
+        val context = requireContext()
+        if (prefs.passwordAppPackage.isNotBlank() &&
+            !isPackageInstalled(context, prefs.passwordAppPackage, prefs.passwordAppUser)
+        ) {
+            prefs.clearPasswordApp()
         }
-        if (homeAppsNum == 1) return
-
-        binding.homeApp2.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp2, prefs.appName2, prefs.appPackage2, prefs.appUser2, prefs.isShortcut2, prefs.shortcutId2)) {
-            prefs.appName2 = ""
-            prefs.appPackage2 = ""
-        }
-        if (homeAppsNum == 2) return
-
-        binding.homeApp3.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp3, prefs.appName3, prefs.appPackage3, prefs.appUser3, prefs.isShortcut3, prefs.shortcutId3)) {
-            prefs.appName3 = ""
-            prefs.appPackage3 = ""
-        }
-        if (homeAppsNum == 3) return
-
-        binding.homeApp4.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp4, prefs.appName4, prefs.appPackage4, prefs.appUser4, prefs.isShortcut4, prefs.shortcutId4)) {
-            prefs.appName4 = ""
-            prefs.appPackage4 = ""
-        }
-        if (homeAppsNum == 4) return
-
-        binding.homeApp5.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp5, prefs.appName5, prefs.appPackage5, prefs.appUser5, prefs.isShortcut5, prefs.shortcutId5)) {
-            prefs.appName5 = ""
-            prefs.appPackage5 = ""
-        }
-        if (homeAppsNum == 5) return
-
-        binding.homeApp6.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp6, prefs.appName6, prefs.appPackage6, prefs.appUser6, prefs.isShortcut6, prefs.shortcutId6)) {
-            prefs.appName6 = ""
-            prefs.appPackage6 = ""
-        }
-        if (homeAppsNum == 6) return
-
-        binding.homeApp7.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp7, prefs.appName7, prefs.appPackage7, prefs.appUser7, prefs.isShortcut7, prefs.shortcutId7)) {
-            prefs.appName7 = ""
-            prefs.appPackage7 = ""
-        }
-        if (homeAppsNum == 7) return
-
-        binding.homeApp8.visibility = View.VISIBLE
-        if (!setHomeAppText(binding.homeApp8, prefs.appName8, prefs.appPackage8, prefs.appUser8, prefs.isShortcut8, prefs.shortcutId8)) {
-            prefs.appName8 = ""
-            prefs.appPackage8 = ""
-        }
-    }
-
-    private fun setHomeAppText(
-        textView: TextView,
-        appName: String,
-        packageName: String,
-        userString: String,
-        isShortcut: Boolean,
-        shortcutId: String?,
-    ): Boolean {
-        // Get user handle for the app/shortcut
-        val userHandle = getUserHandleFromString(requireContext(), userString)
-        applyHomeAppWeight(textView, packageName, userString, if (isShortcut) shortcutId else null)
-
-        // If it's a shortcut, verify it still exists
-        if (isShortcut) {
-            val launcherApps = requireContext().getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-
-            // Query for the specific shortcut
-            val query = LauncherApps.ShortcutQuery().apply {
-                setPackage(packageName)
-                setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
-            }
-
-            try {
-                val shortcuts = launcherApps.getShortcuts(query, userHandle)
-                // Check if our shortcut still exists
-                if (shortcuts?.any { it.id == shortcutId } == true) {
-                    textView.text = appName
-                    return true
-                }
-                textView.text = ""
-                return false
-            } catch (e: Exception) {
-                e.printStackTrace()
-                textView.text = ""
-                return false
+        if (prefs.passwordAppPackage.isBlank()) {
+            detectPasswordManager(context)?.let { app ->
+                prefs.passwordAppName = app.appLabel
+                prefs.passwordAppPackage = app.appPackage
+                prefs.passwordAppUser = app.user.toString()
+                prefs.passwordAppClassName = app.activityClassName
             }
         }
+        val bound = prefs.passwordAppPackage.isNotBlank()
+        binding.passwordManager.contentDescription =
+            prefs.passwordAppName.ifBlank { getString(R.string.password_manager) }
+        binding.passwordManager.alpha = if (bound) 1f else 0.5f
+    }
 
-        // Regular app check
-        if (isPackageInstalled(requireContext(), packageName, userString)) {
-            textView.text = appName
-            return true
+    private fun openPasswordManager() {
+        if (prefs.passwordAppPackage.isBlank()) {
+            requireContext().showToast(R.string.choose_password_manager)
+            showAppList(Constants.FLAG_SET_PASSWORD_APP, includeHiddenApps = true)
+            return
         }
-        textView.text = ""
-        return false
-    }
-
-    /** Light by default; medium for every slot, or only for apps emphasized in the drawer. */
-    private fun applyHomeAppWeight(
-        textView: TextView,
-        packageName: String,
-        userString: String,
-        shortcutId: String?,
-    ) {
-        val emphasized = prefs.isAppEmphasized(AppModel.emphasisKeyFor(packageName, userString, shortcutId))
-        textView.typeface = Typefaces.forEmphasis(Constants.HomeAppWeight.isBold(prefs.homeAppWeight, emphasized))
-    }
-
-    private fun hideHomeApps() {
-        binding.homeApp1.visibility = View.GONE
-        binding.homeApp2.visibility = View.GONE
-        binding.homeApp3.visibility = View.GONE
-        binding.homeApp4.visibility = View.GONE
-        binding.homeApp5.visibility = View.GONE
-        binding.homeApp6.visibility = View.GONE
-        binding.homeApp7.visibility = View.GONE
-        binding.homeApp8.visibility = View.GONE
+        launchApp(
+            appName = prefs.passwordAppName,
+            packageName = prefs.passwordAppPackage,
+            activityClassName = prefs.passwordAppClassName,
+            userString = prefs.passwordAppUser
+        )
     }
 
     private fun launchAppOrShortcut(
@@ -336,7 +313,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         fallback: (() -> Unit)? = null,
     ) {
         if (appName.isEmpty()) {
-            showLongPressToast()
+            requireContext().showToast(R.string.long_press_to_change_app)
             return
         }
         if (isShortcut && !shortcutId.isNullOrEmpty()) {
@@ -386,17 +363,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
-    private fun homeAppClicked(location: Int) {
-        launchAppOrShortcut(
-            appName = prefs.getAppName(location),
-            packageName = prefs.getAppPackage(location),
-            activityClassName = prefs.getAppActivityClassName(location),
-            shortcutId = prefs.getShortcutId(location),
-            isShortcut = prefs.getIsShortcut(location),
-            userString = prefs.getAppUser(location)
-        )
-    }
-
     private fun openSwipeRightApp() {
         if (!prefs.swipeRightEnabled) return
         launchAppOrShortcut(
@@ -423,23 +389,17 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
-    private fun showAppList(flag: Int, rename: Boolean = false, includeHiddenApps: Boolean = false) {
+    private fun showAppList(flag: Int, includeHiddenApps: Boolean = false) {
         viewModel.getAppList(includeHiddenApps)
         try {
             findNavController().navigate(
                 R.id.action_mainFragment_to_appListFragment,
-                bundleOf(
-                    Constants.Key.FLAG to flag,
-                    Constants.Key.RENAME to rename
-                )
+                bundleOf(Constants.Key.FLAG to flag)
             )
         } catch (e: Exception) {
             findNavController().navigate(
                 R.id.appListFragment,
-                bundleOf(
-                    Constants.Key.FLAG to flag,
-                    Constants.Key.RENAME to rename
-                )
+                bundleOf(Constants.Key.FLAG to flag)
             )
             e.printStackTrace()
         }
@@ -455,8 +415,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun showStatusBar() {
         requireActivity().window.insetsController?.show(WindowInsets.Type.statusBars())
     }
-
-    private fun showLongPressToast() = requireContext().showToast(getString(R.string.long_press_to_select_app))
 
     private fun textOnClick(view: View) = onClick(view)
 
@@ -496,6 +454,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onClick() {
                 super.onClick()
+                // Tapping empty space only dismisses the keyboard; the draft stays put.
+                _binding?.searchInput?.hideKeyboard()
             }
         }
     }

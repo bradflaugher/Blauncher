@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Round chip behind a home-screen quick-action glyph; matches the search bar's edge. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="?attr/primaryShadeColor" />
+    <stroke
+        android:width="0.5dp"
+        android:color="?attr/primaryColorTrans50" />
+</shape>

@@ -1,1 +1,0 @@
-Blauncher: a personal, minimalist Android launcher fork with zero ads.
