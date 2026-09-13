@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.inputmethod.InputMethodManager
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -188,6 +188,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         binding.searchBar.setOnClickListener { focusSearch() }
         binding.searchIcon.setOnClickListener { focusSearch() }
+        // A tap on the field itself also goes through focusSearch(), so a keyboard that the
+        // system dismissed while the field kept focus comes back on the next tap.
+        binding.searchInput.setOnClickListener { focusSearch() }
         binding.searchSend.setOnClickListener { submitSearch() }
         binding.searchClear.setOnClickListener {
             binding.searchInput.text?.clear()
@@ -212,12 +215,20 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
+    /**
+     * Focuses the composer and raises the keyboard. The show request is posted so it runs after
+     * the input-method manager has picked up the new focus; asking synchronously right after
+     * requestFocus() is dropped often enough to feel random. The window-insets controller is the
+     * reliable entry point on current Android and does not depend on IMM's served-view state.
+     */
     private fun focusSearch() {
         val input = binding.searchInput
-        if (input.requestFocus()) {
-            input.setSelection(input.length())
-            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(input, 0)
+        if (!input.requestFocus()) return
+        input.setSelection(input.length())
+        input.post {
+            val bound = _binding ?: return@post
+            WindowCompat.getInsetsController(requireActivity().window, bound.searchInput)
+                .show(WindowInsetsCompat.Type.ime())
         }
     }
 
