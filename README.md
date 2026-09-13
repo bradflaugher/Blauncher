@@ -14,6 +14,9 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 | :---: | :---: | :---: |
 | ![Home screen: the time and date, a search bar, and a key glyph for the password manager](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group is faded](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
 
+The screens above are renders built from the app's layouts, strings, and
+colors rather than device captures.
+
 ## What it does
 
 - **Near-empty home.** The time and date, a search bar, and a key glyph that
