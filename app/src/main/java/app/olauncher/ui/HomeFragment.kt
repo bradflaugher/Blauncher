@@ -4,9 +4,12 @@ import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.view.inputmethod.InputMethodManager
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -40,6 +43,7 @@ import app.olauncher.listener.ViewSwipeTouchListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.abs
 
 /**
  * The home screen: the date on top, and along the bottom a search bar that hands the query
@@ -51,6 +55,11 @@ import java.util.Locale
  * dropped once a browser has accepted it or the user taps clear.
  */
 class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
+
+    private companion object {
+        const val MAX_KEYBOARD_ATTEMPTS = 3
+        const val KEYBOARD_RETRY_DELAY_MS = 120L
+    }
 
     private lateinit var prefs: Prefs
     private lateinit var viewModel: MainViewModel
@@ -188,9 +197,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         binding.searchBar.setOnClickListener { focusSearch() }
         binding.searchIcon.setOnClickListener { focusSearch() }
-        // A tap on the field itself also goes through focusSearch(), so a keyboard that the
-        // system dismissed while the field kept focus comes back on the next tap.
+        // Accessibility ACTION_CLICK and keyboards land here.
         binding.searchInput.setOnClickListener { focusSearch() }
+        // Every finger tap on the field lands here too, including the one that first gives it
+        // focus. On that tap Android skips performClick() and relies on its own show request,
+        // which is exactly the request that gets dropped after coming back from another app.
+        binding.searchInput.setOnTouchListener(TapListener { focusSearch() })
         binding.searchSend.setOnClickListener { submitSearch() }
         binding.searchClear.setOnClickListener {
             binding.searchInput.text?.clear()
@@ -215,20 +227,64 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
-    /**
-     * Focuses the composer and raises the keyboard. The show request is posted so it runs after
-     * the input-method manager has picked up the new focus; asking synchronously right after
-     * requestFocus() is dropped often enough to feel random. The window-insets controller is the
-     * reliable entry point on current Android and does not depend on IMM's served-view state.
-     */
+    /** Focuses the composer and raises the keyboard, verifying that it actually came up. */
     private fun focusSearch() {
         val input = binding.searchInput
-        if (!input.requestFocus()) return
+        if (!input.hasFocus() && !input.requestFocus()) return
         input.setSelection(input.length())
+        raiseKeyboard(attempt = 0)
+    }
+
+    /**
+     * Asks for the keyboard through both entry points, then checks the window's IME inset a
+     * moment later and asks again if it is still hidden. A single request is dropped often
+     * enough to feel random, most reliably on the first tap after returning from another app,
+     * when the input-method manager has not yet caught up with the field's new focus.
+     */
+    private fun raiseKeyboard(attempt: Int) {
+        val input = _binding?.searchInput ?: return
+        if (!input.hasFocus()) return
         input.post {
-            val bound = _binding ?: return@post
-            WindowCompat.getInsetsController(requireActivity().window, bound.searchInput)
+            val current = _binding?.searchInput ?: return@post
+            if (!current.hasFocus()) return@post
+            WindowCompat.getInsetsController(requireActivity().window, current)
                 .show(WindowInsetsCompat.Type.ime())
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(current, InputMethodManager.SHOW_IMPLICIT)
+            if (attempt < MAX_KEYBOARD_ATTEMPTS) {
+                current.postDelayed({
+                    if (_binding != null && !isKeyboardVisible()) raiseKeyboard(attempt + 1)
+                }, KEYBOARD_RETRY_DELAY_MS * (attempt + 1))
+            }
+        }
+    }
+
+    private fun isKeyboardVisible(): Boolean {
+        val root = _binding?.mainLayout ?: return true
+        return ViewCompat.getRootWindowInsets(root)?.isVisible(WindowInsetsCompat.Type.ime()) == true
+    }
+
+    /** Calls [onTap] on a finger-up that did not travel; never consumes the event. */
+    private inner class TapListener(private val onTap: () -> Unit) : View.OnTouchListener {
+        private var downX = 0f
+        private var downY = 0f
+        private var moved = false
+        private val slop = ViewConfiguration.get(requireContext()).scaledTouchSlop
+
+        override fun onTouch(view: View, event: MotionEvent): Boolean {
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.x
+                    downY = event.y
+                    moved = false
+                }
+
+                MotionEvent.ACTION_MOVE ->
+                    if (abs(event.x - downX) > slop || abs(event.y - downY) > slop) moved = true
+
+                MotionEvent.ACTION_UP -> if (!moved) view.post(onTap)
+            }
+            return false
         }
     }
 
