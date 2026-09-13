@@ -335,10 +335,14 @@ fun defaultBrowserPackage(context: Context): String? {
  * [Intent.ACTION_WEB_SEARCH] with whatever engine the user configured inside them, so the
  * launcher never has to know (or store) which engine that is. Falls back to the system-wide
  * web-search handler, then to DuckDuckGo, when the browser does not take search intents.
+ * The query is passed as typed, line breaks included, so multi-sentence text arrives intact.
+ *
+ * @return true once some app accepted the query; false when nothing could take it, so the
+ * caller can keep the text instead of discarding it.
  */
-fun searchWithDefaultBrowser(context: Context, query: String) {
+fun searchWithDefaultBrowser(context: Context, query: String): Boolean {
     val trimmed = query.trim()
-    if (trimmed.isEmpty()) return
+    if (trimmed.isEmpty()) return false
     val webSearch = Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, trimmed)
 
     val browser = defaultBrowserPackage(context)
@@ -348,7 +352,7 @@ fun searchWithDefaultBrowser(context: Context, query: String) {
         if (context.packageManager.resolveActivity(targeted, flags) != null) {
             try {
                 context.startActivity(targeted)
-                return
+                return true
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -356,8 +360,16 @@ fun searchWithDefaultBrowser(context: Context, query: String) {
     }
     try {
         context.startActivity(webSearch)
+        return true
     } catch (_: ActivityNotFoundException) {
+        // fall through to a plain URL
+    }
+    return try {
         context.openUrl(Constants.URL_DUCK_SEARCH + Uri.encode(trimmed))
+        true
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
     }
 }
 

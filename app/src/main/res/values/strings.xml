@@ -98,6 +98,8 @@
     <string name="bold_date">Bold date</string>
     <string name="show_clock">Clock</string>
     <string name="search_the_web">Search</string>
+    <string name="clear_search">Clear search text</string>
+    <string name="search_not_available">No browser or search app could take this search</string>
     <string name="password_manager">Password manager</string>
     <string name="passwords">Passwords</string>
     <string name="choose_password_manager">Choose your password manager</string>

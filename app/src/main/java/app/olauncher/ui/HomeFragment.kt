@@ -8,12 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -47,6 +47,10 @@ import java.util.Locale
  * The home screen: clock and date on top, a search bar that hands the query to the default
  * browser's search engine, and a row of quick actions (currently the password manager).
  * Everything else is gestures on the empty space.
+ *
+ * The search bar is a multi-line composer. Its text is treated as a draft: it survives
+ * leaving the screen, the drawer, settings, rotation and a launcher restart, and is only
+ * dropped once a browser has accepted it or the user taps clear.
  */
 class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -77,13 +81,15 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     override fun onResume() {
         super.onResume()
         populateHomeScreen()
+        restoreSearchDraft()
         viewModel.isOlauncherDefault()
         showStatusBar()
     }
 
     override fun onPause() {
         super.onPause()
-        clearSearch()
+        saveSearchDraft()
+        _binding?.searchInput?.hideKeyboard()
     }
 
     override fun onClick(view: View) {
@@ -183,9 +189,23 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             insets
         }
         binding.searchBar.setOnClickListener { focusSearch() }
-        binding.searchInput.setOnEditorActionListener { _, actionId, event ->
-            val enterPressed = event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || enterPressed) {
+        binding.searchIcon.setOnClickListener { focusSearch() }
+        binding.searchGo.setOnClickListener { submitSearch() }
+        binding.searchClear.setOnClickListener {
+            binding.searchInput.text?.clear()
+            prefs.searchDraft = ""
+            focusSearch()
+        }
+        binding.searchInput.doAfterTextChanged { text ->
+            val hasText = !text.isNullOrBlank()
+            binding.searchGo.isVisible = hasText
+            binding.searchClear.isVisible = hasText
+        }
+        // Enter adds a line, as in any composer. Ctrl+Enter or Shift+Enter sends, for hardware
+        // keyboards; on-screen keyboards use the arrow button.
+        binding.searchInput.setOnKeyListener { _, keyCode, event ->
+            val enter = keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
+            if (enter && event.action == KeyEvent.ACTION_DOWN && (event.isCtrlPressed || event.isShiftPressed)) {
                 submitSearch()
                 true
             } else false
@@ -195,23 +215,39 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun focusSearch() {
         val input = binding.searchInput
         if (input.requestFocus()) {
+            input.setSelection(input.length())
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(input, 0)
         }
     }
 
-    /** Sends the typed query to the default browser's search engine and resets the bar. */
+    /**
+     * Hands the composed text to the default browser's search engine. The field is emptied
+     * only after an app accepted the query, so a missing browser never eats the text.
+     */
     private fun submitSearch() {
         val query = binding.searchInput.text?.toString()?.trim().orEmpty()
         if (query.isEmpty()) return
-        clearSearch()
-        searchWithDefaultBrowser(requireContext(), query)
+        if (searchWithDefaultBrowser(requireContext(), query)) {
+            binding.searchInput.text?.clear()
+            prefs.searchDraft = ""
+            binding.searchInput.hideKeyboard()
+        } else {
+            requireContext().showToast(R.string.search_not_available)
+        }
     }
 
-    private fun clearSearch() {
-        val binding = _binding ?: return
-        binding.searchInput.text?.clear()
-        binding.searchInput.hideKeyboard()
+    private fun saveSearchDraft() {
+        val input = _binding?.searchInput ?: return
+        prefs.searchDraft = input.text?.toString().orEmpty()
+    }
+
+    /** Puts an unsent draft back into the field, cursor at the end, without raising the keyboard. */
+    private fun restoreSearchDraft() {
+        val draft = prefs.searchDraft
+        if (draft.isBlank() || binding.searchInput.text?.isNotEmpty() == true) return
+        binding.searchInput.setText(draft)
+        binding.searchInput.setSelection(draft.length)
     }
 
     private fun setHomeAlignment(horizontalGravity: Int = prefs.homeAlignment) {
@@ -422,7 +458,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onClick() {
                 super.onClick()
-                clearSearch()
+                // Tapping empty space only dismisses the keyboard; the draft stays put.
+                _binding?.searchInput?.hideKeyboard()
             }
         }
     }

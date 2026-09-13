@@ -13,6 +13,7 @@ class Prefs(context: Context) {
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val USER_STATE = "USER_STATE"
     private val SHOW_CLOCK = "SHOW_CLOCK"
+    private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val HOME_BOTTOM_ALIGNMENT = "HOME_BOTTOM_ALIGNMENT"
@@ -137,6 +138,13 @@ class Prefs(context: Context) {
     var showClock: Boolean
         get() = prefs.getBoolean(SHOW_CLOCK, true)
         set(value) = prefs.edit { putBoolean(SHOW_CLOCK, value) }
+
+    /** Unsent text in the home-screen search bar; kept until it is sent or cleared. */
+    var searchDraft: String
+        get() = prefs.getString(SEARCH_DRAFT, "").toString()
+        set(value) = prefs.edit {
+            if (value.isBlank()) remove(SEARCH_DRAFT) else putString(SEARCH_DRAFT, value)
+        }
 
     var homeAlignment: Int
         get() = prefs.getInt(HOME_ALIGNMENT, Gravity.START)

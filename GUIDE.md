@@ -29,12 +29,19 @@ Everything else is gestures:
 | Tap the time | Opens your clock app |
 | Tap the date | Opens your calendar |
 
-- **Search bar** — tap it, type, and press enter or the keyboard's search
-  key. The query goes to your **default browser**, which searches with the
-  engine you chose inside that browser (Chrome, Firefox, Brave, Edge, and
-  most others accept searches this way). If the browser cannot take a
-  search, the system web-search handler gets it instead, and failing that
-  DuckDuckGo opens in the browser. The bar clears itself after each search.
+- **Search bar** — tap it and type. It is a small composer, not a one-line
+  field: enter starts a new line, the box grows to a few lines and then
+  scrolls, and there is no length limit, so whole paragraphs are fine. Send
+  with the **arrow** at the end of the bar (or Ctrl+Enter / Shift+Enter on a
+  hardware keyboard). The text goes to your **default browser**, which
+  searches with the engine you chose inside that browser (Chrome, Firefox,
+  Brave, Edge, and most others accept searches this way). If the browser
+  cannot take a search, the system web-search handler gets it instead, and
+  failing that DuckDuckGo opens in the browser.
+  - Unsent text is a **draft**: it stays if you tap elsewhere, open the
+    drawer or settings, switch apps to copy something, rotate, or the
+    launcher restarts. Only a successful send or the **×** button empties
+    the bar, and if no app could take the search the text stays put.
 - **Password manager** — the key glyph under the search bar launches your
   password manager and shows its name underneath. On first run it picks a
   known password manager already installed (Bitwarden, 1Password, Proton
