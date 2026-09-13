@@ -91,7 +91,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.alignmentSelectLayout.visibility = View.GONE
 
         when (view.id) {
-            R.id.hiddenApps -> showHiddenApps()
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
             // Home button for recents feature disabled
@@ -144,7 +143,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun initClickListeners() {
-        binding.hiddenApps.setOnClickListener(this)
         binding.scrollLayout.setOnClickListener(this)
         binding.appInfo.setOnClickListener(this)
         binding.setLauncher.setOnClickListener(this)
@@ -268,18 +266,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
     private fun populateDateBold() {
         binding.dateBold.text = getString(if (prefs.dateBold) R.string.on else R.string.off)
-    }
-
-    private fun showHiddenApps() {
-        if (prefs.hiddenApps.isEmpty()) {
-            requireContext().showToast(getString(R.string.no_hidden_apps))
-            return
-        }
-        viewModel.getHiddenApps()
-        findNavController().navigate(
-            R.id.action_settingsFragment_to_appListFragment,
-            bundleOf(Constants.Key.FLAG to Constants.FLAG_HIDDEN_APPS)
-        )
     }
 
     private fun confirmSmartOrderAction(titleRes: Int, messageRes: Int, actionRes: Int, action: () -> Unit) {
@@ -465,7 +451,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun showAppList(flag: Int) {
-        viewModel.getAppList(true)
+        viewModel.getAppList()
         findNavController().navigate(
             R.id.action_settingsFragment_to_appListFragment,
             bundleOf(Constants.Key.FLAG to flag)

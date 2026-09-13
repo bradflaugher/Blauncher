@@ -64,20 +64,30 @@ everything else is gestures.
 Swipe up from the home screen. Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
 glyph, alphabetical within the group. An **emphasized** app is bold and
-sits at the top of its group; once a group has one, its other apps fade
-back so the ones you chose stand out.
+sits at the top of its group. Once a group has one, its other apps fold
+into a single faded line under the bold ones — `+5 · Gemini · Perplexity ·
+Poe…`, the count in the group's color — so the apps you chose stand out
+without a long tail below them.
+
+- **Tap the folded line** to expand the group in place; the row turns into
+  **− fewer** and tapping it again folds the group back. Expansion lasts
+  for the current visit only: the drawer always opens compact.
+- Folded apps are never out of reach: **search matches every app**, folded
+  or not, and a freshly installed app stays visible in its group until it is
+  an hour old.
+- Groups without an emphasized app list every app as before.
 
 - **Search first**: the keyboard opens automatically. Type a few letters —
   if exactly one app matches, it launches by itself. Press enter to launch
   the first match. Start with a space to browse without auto-launch.
 - No matches? Enter searches the web. Start the query with `!` to search
   DuckDuckGo directly.
-- **Long-press an app** for its menu: **Uninstall · Rename · Group · Hide ·
+- **Long-press an app** for its menu: **Uninstall · Rename · Group ·
   Info**.
   - **Group** opens a sheet named after the app, with two parts:
     - **Emphasize** (the switch at the top) makes the app bold and first
-      in its group; the other apps in that group fade back. It does not
-      change which group the app is in.
+      in its group; the other apps in that group fold into one line. It
+      does not change which group the app is in.
     - **Groups** lists every group with its glyph and shows where the app
       is now — the automatic pick is already ticked. Tick several to have
       the app appear under each, then **Save**. **Automatic** clears your
@@ -85,8 +95,6 @@ back so the ones you chose stand out.
   - **Long-press the colored glyph** next to any app to toggle emphasis
     without opening the menu; a short toast confirms it. Tapping the glyph
     launches the app like the rest of the row.
-  - **Hide** removes it from the drawer; find it later under Settings →
-    **Hidden apps**, where the same menu shows **Show** to bring it back.
 - If your device has a **Private Space**, it appears at the bottom of the
   drawer with a tap-to-unlock row.
 - Swipe down from the top of the list to close the drawer.
@@ -114,7 +122,7 @@ In **Settings → Smart ordering**:
 
 Long-press anywhere on the home screen to get here.
 
-- **Blauncher card** — hidden apps, set/change default launcher, app info.
+- **Blauncher card** — set/change default launcher, app info.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
   **Search engine** (where the search bar sends its text), **Bold date**,

@@ -123,7 +123,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     override fun onLongClick(view: View): Boolean {
         when (view.id) {
-            R.id.passwordManager -> showAppList(Constants.FLAG_SET_PASSWORD_APP, includeHiddenApps = true)
+            R.id.passwordManager -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
             R.id.date -> {
                 showAppList(Constants.FLAG_SET_CALENDAR_APP)
                 prefs.calendarAppPackage = ""
@@ -361,7 +361,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun openPasswordManager() {
         if (prefs.passwordAppPackage.isBlank()) {
             requireContext().showToast(R.string.choose_password_manager)
-            showAppList(Constants.FLAG_SET_PASSWORD_APP, includeHiddenApps = true)
+            showAppList(Constants.FLAG_SET_PASSWORD_APP)
             return
         }
         launchApp(
@@ -458,8 +458,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
-    private fun showAppList(flag: Int, includeHiddenApps: Boolean = false) {
-        viewModel.getAppList(includeHiddenApps)
+    private fun showAppList(flag: Int) {
+        viewModel.getAppList()
         try {
             findNavController().navigate(
                 R.id.action_mainFragment_to_appListFragment,
