@@ -29,10 +29,12 @@ sha256sum -c Blauncher.apk.sha256
   never used.
 - The home-screen search bar keeps unsent text as a draft in the same local
   preferences (excluded from backups) until it is sent or cleared. Sending
-  hands the text to the default browser through an `ACTION_WEB_SEARCH`
-  intent; from that point it is the browser's data, subject to that
-  browser's own search-engine and privacy settings. The launcher never
-  performs the search itself.
+  builds the results URL for the search engine chosen in Settings and opens
+  it in the default browser with an `ACTION_VIEW` intent, or, for the
+  "Browser default" option, hands the raw text over as an
+  `ACTION_WEB_SEARCH` intent. Either way the launcher itself makes no
+  network request; from the hand-off on, the text is the browser's and the
+  chosen engine's data, subject to their privacy terms.
 - CI actions are pinned to commit SHAs, the Gradle distribution is checksum
   pinned, Dependabot keeps dependencies and action pins current, and CodeQL
   scans both the Kotlin sources and the workflows.

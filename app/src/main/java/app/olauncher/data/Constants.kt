@@ -56,6 +56,5 @@ object Constants {
     const val MIN_ANIM_REFRESH_RATE = 30f
 
     const val URL_OLAUNCHER_GITHUB = "https://github.com/bradflaugher/Blauncher"
-    const val URL_DUCK_SEARCH = "https://duck.co/?q="
 
 }

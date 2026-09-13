@@ -154,6 +154,36 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="120dp"
                         android:paddingVertical="8dp"
+                        android:text="@string/search_engine"
+                        android:textColor="?attr/primaryColor" />
+
+                    <TextView
+                        android:id="@+id/searchEngine"
+                        style="@style/TextSmallBold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|bottom"
+                        android:layout_marginEnd="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:maxWidth="160dp"
+                        android:padding="8dp"
+                        tools:text="DuckDuckGo" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:animateLayoutChanges="true">
+
+                    <TextView
+                        style="@style/TextSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="120dp"
+                        android:paddingVertical="8dp"
                         android:text="@string/bold_date"
                         android:textColor="?attr/primaryColor" />
 

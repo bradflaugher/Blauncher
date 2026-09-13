@@ -31,13 +31,20 @@ everything else is gestures.
 
 - **Search bar** — tap it and type. It is a small composer, not a one-line
   field: enter starts a new line, the box grows to a few lines and then
-  scrolls, and there is no length limit, so whole paragraphs are fine. Send
-  with the **arrow** at the end of the bar (or Ctrl+Enter / Shift+Enter on a
-  hardware keyboard). The text goes to your **default browser**, which
-  searches with the engine you chose inside that browser (Chrome, Firefox,
-  Brave, Edge, and most others accept searches this way). If the browser
-  cannot take a search, the system web-search handler gets it instead, and
-  failing that DuckDuckGo opens in the browser.
+  scrolls, and there is no length limit, so whole paragraphs are fine. While
+  there is text, the key glyph beside the bar becomes a filled **send**
+  button; tap it (or Ctrl+Enter / Shift+Enter on a hardware keyboard) and
+  the results page opens in your default browser in one step. An **×** at
+  the end of the bar clears the text.
+  - The results come from the **search engine** picked in Settings → Home
+    screen: divid3 (a private search router) by default, or DuckDuckGo,
+    Google, Bing, Brave Search, Kagi, Startpage, Ecosia, Perplexity, or
+    ChatGPT. The launcher builds the
+    results URL itself and opens it, so nothing waits for a second enter.
+  - **Browser default** is also there: it hands the raw text to the browser
+    as a web search and lets the browser choose the engine. Some browsers
+    only put the text in their address bar and wait for enter, which is
+    why it is not the default. Failing everything, DuckDuckGo opens.
   - Unsent text is a **draft**: it stays if you tap elsewhere, open the
     drawer or settings, switch apps to copy something, rotate, or the
     launcher restarts. Only a successful send or the **×** button empties
@@ -110,8 +117,9 @@ Long-press anywhere on the home screen to get here.
 - **Blauncher card** — hidden apps, set/change default launcher, app info.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
-  **Bold date**, and the date's alignment (long-press *Date alignment* to also
-  apply it to the app drawer).
+  **Search engine** (where the search bar sends its text), **Bold date**,
+  and the date's alignment (long-press *Date alignment* to also apply it to
+  the app drawer).
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row
