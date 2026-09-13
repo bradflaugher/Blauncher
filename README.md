@@ -14,8 +14,9 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 | :---: | :---: | :---: |
 | ![Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group folds into one faded line](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
 
-The screens above are renders built from the app's layouts, strings, and
-colors rather than device captures.
+The Home and Settings screens are renders built from the app's layouts,
+strings, and colors; the App drawer is a device capture, status bar and
+navigation handle included.
 
 ## What it does
 
