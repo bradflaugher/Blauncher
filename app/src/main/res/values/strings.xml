@@ -23,7 +23,6 @@
     <string name="okay">Okay</string>
     <string name="cool">Cool!</string>
     <string name="auto_show_keyboard">Auto show keyboard</string>
-    <string name="hide">Hide</string>
     <string name="status_bar">Status bar on top</string>
     <string name="rename">Rename</string>
     <string name="appearance">Appearance</string>
@@ -57,10 +56,6 @@
     <string name="swipe_left_app_disabled">Swipe left app disabled</string>
     <string name="swipe_right_app_disabled">Swipe right app disabled</string>
     <string name="long_press_to_enable">Long press to enable</string>
-    <string name="no_hidden_apps">No hidden apps</string>
-    <string name="hidden_apps">Hidden apps</string>
-    <string name="adapter_show">Show</string>
-    <string name="adapter_hide">Hide</string>
     <string name="alignment_changed">Alignment changed ✅</string>
     <string name="home_screen">Home screen</string>
     <string name="private_space">Private space</string>
@@ -85,7 +80,15 @@
     <string name="groups_automatic_summary">Chosen automatically. Tick groups to choose them yourself.</string>
     <string name="groups_manual_summary">Chosen by you. Automatic lets the launcher decide again.</string>
     <string name="emphasize">Emphasize</string>
-    <string name="emphasize_summary">Bold and first in its group; the rest of the group fades back. Long-press an app\'s glyph to toggle this quickly.</string>
+    <string name="emphasize_summary">Bold and first in its group; the rest of the group folds into one line. Long-press an app\'s glyph to toggle this quickly.</string>
+    <!-- The one-line stand-in for a group's collapsed apps: "+5 · Gemini · Perplexity · Poe…". -->
+    <string name="group_collapsed_summary">+%1$d · %2$s</string>
+    <string name="group_show_fewer">− fewer</string>
+    <plurals name="group_expand_description">
+        <item quantity="one">Show %1$d more app in %2$s</item>
+        <item quantity="other">Show %1$d more apps in %2$s</item>
+    </plurals>
+    <string name="group_collapse_description">Show fewer in %1$s</string>
     <string name="bold_date">Bold date</string>
     <string name="search_the_web">Search</string>
     <string name="clear_search">Clear search text</string>

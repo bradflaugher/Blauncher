@@ -32,7 +32,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val refreshHome = MutableLiveData<Unit>()
     val updateSwipeApps = MutableLiveData<Any>()
     val appList = MutableLiveData<List<AppModel>?>()
-    val hiddenApps = MutableLiveData<List<AppModel>?>()
     val isOlauncherDefault = MutableLiveData<Boolean>()
     val launcherResetFailed = MutableLiveData<Boolean>()
     val homeAppAlignment = MutableLiveData<Int>()
@@ -61,13 +60,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            Constants.FLAG_HIDDEN_APPS -> {
-                if (appModel is AppModel.App) {
-                    SmartOrder.recordLaunch(prefs, appModel.category)
-                    launchApp(appModel.appPackage, appModel.activityClassName, appModel.user)
-                }
-            }
-
             Constants.FLAG_SET_SWIPE_LEFT_APP -> saveSwipeApp(appModel, isLeft = true)
             Constants.FLAG_SET_SWIPE_RIGHT_APP -> saveSwipeApp(appModel, isLeft = false)
             Constants.FLAG_SET_CALENDAR_APP -> saveCalendarApp(appModel)
@@ -88,7 +80,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> return
             is AppModel.App -> {
                 if (isLeft) {
                     prefs.appNameSwipeLeft = appModel.appLabel
@@ -206,19 +198,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getAppList(includeHiddenApps: Boolean = false) {
+    fun getAppList() {
         viewModelScope.launch {
-            val apps = getAppsList(appContext, prefs, includeRegularApps = true, includeHiddenApps)
-            appList.value = apps
+            appList.value = getAppsList(appContext, prefs)
         }
         getPrivateSpaceAppList()
-    }
-
-    fun getHiddenApps() {
-        viewModelScope.launch {
-            hiddenApps.value =
-                getAppsList(appContext, prefs, includeRegularApps = false, includeHiddenApps = true)
-        }
     }
 
     fun isOlauncherDefault() {

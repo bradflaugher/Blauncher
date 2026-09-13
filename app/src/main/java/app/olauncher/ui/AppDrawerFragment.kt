@@ -91,9 +91,7 @@ class AppDrawerFragment : Fragment() {
             root.setPadding(safe.left, safe.top, safe.right, maxOf(safe.bottom, ime.bottom))
             insets
         }
-        if (flag == Constants.FLAG_HIDDEN_APPS)
-            binding.search.queryHint = getString(R.string.hidden_apps)
-        else if (flag in Constants.APP_PICKER_FLAGS)
+        if (flag in Constants.APP_PICKER_FLAGS)
             binding.search.queryHint = "Please select an app"
         try {
             searchTextView = binding.search.findViewById(androidx.appcompat.R.id.search_src_text)
@@ -166,7 +164,7 @@ class AppDrawerFragment : Fragment() {
                     return@AppDrawerAdapter
                 }
                 viewModel.selectedApp(appModel, flag)
-                if (flag == Constants.FLAG_LAUNCH_APP || flag == Constants.FLAG_HIDDEN_APPS)
+                if (flag == Constants.FLAG_LAUNCH_APP)
                     findNavController().popBackStack(R.id.mainFragment, false)
                 else
                     findNavController().popBackStack()
@@ -181,7 +179,7 @@ class AppDrawerFragment : Fragment() {
             },
             appDeleteListener = { appModel ->
                 when (appModel) {
-                    is AppModel.PrivateSpaceHeader -> {}
+                    is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> {}
                     is AppModel.PinnedShortcut ->
                         requireContext().deletePinnedShortcut(
                             packageName = appModel.appPackage,
@@ -201,24 +199,6 @@ class AppDrawerFragment : Fragment() {
                     }
                 }
                 viewModel.getAppList()
-            },
-            appHideListener = { appModel, _ ->
-                if (appModel is AppModel.PinnedShortcut) {
-                    requireContext().showToast("Hiding pinned shortcuts is not supported")
-                    return@AppDrawerAdapter
-                }
-                val newSet = mutableSetOf<String>()
-                newSet.addAll(prefs.hiddenApps)
-                if (flag == Constants.FLAG_HIDDEN_APPS)
-                    newSet.remove(appModel.appPackage + "|" + appModel.user.toString())
-                else
-                    newSet.add(appModel.appPackage + "|" + appModel.user.toString())
-
-                prefs.hiddenApps = newSet
-                if (newSet.isEmpty())
-                    findNavController().popBackStack()
-                viewModel.getAppList()
-                viewModel.getHiddenApps()
             },
             appRenameListener = { appModel, renameLabel ->
                 val identifier = when (appModel) {
@@ -273,30 +253,22 @@ class AppDrawerFragment : Fragment() {
     private fun initObservers() {
         viewModel.firstOpen.observe(viewLifecycleOwner) {
         }
-        if (flag == Constants.FLAG_HIDDEN_APPS) {
-            viewModel.hiddenApps.observe(viewLifecycleOwner) {
-                it?.let {
-                    adapter.setAppList(it.toMutableList())
-                }
-            }
-        } else {
-            viewModel.appList.observe(viewLifecycleOwner) {
-                currentAppList = it
+        viewModel.appList.observe(viewLifecycleOwner) {
+            currentAppList = it
+            updateCombinedAppList()
+        }
+        if (flag == Constants.FLAG_LAUNCH_APP) {
+            viewModel.privateSpaceAvailable.observe(viewLifecycleOwner) {
+                currentPrivateSpaceAvailable = it
                 updateCombinedAppList()
             }
-            if (flag == Constants.FLAG_LAUNCH_APP) {
-                viewModel.privateSpaceAvailable.observe(viewLifecycleOwner) {
-                    currentPrivateSpaceAvailable = it
-                    updateCombinedAppList()
-                }
-                viewModel.privateSpaceLocked.observe(viewLifecycleOwner) {
-                    currentPrivateSpaceLocked = it
-                    updateCombinedAppList()
-                }
-                viewModel.privateSpaceApps.observe(viewLifecycleOwner) {
-                    currentPrivateSpaceApps = it
-                    updateCombinedAppList()
-                }
+            viewModel.privateSpaceLocked.observe(viewLifecycleOwner) {
+                currentPrivateSpaceLocked = it
+                updateCombinedAppList()
+            }
+            viewModel.privateSpaceApps.observe(viewLifecycleOwner) {
+                currentPrivateSpaceApps = it
+                updateCombinedAppList()
             }
         }
     }

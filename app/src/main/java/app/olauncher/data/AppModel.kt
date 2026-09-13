@@ -23,7 +23,7 @@ sealed class AppModel : Comparable<AppModel> {
         get() = when (this) {
             is App -> emphasisKeyFor(appPackage, user.toString(), null)
             is PinnedShortcut -> emphasisKeyFor(appPackage, user.toString(), shortcutId)
-            is PrivateSpaceHeader -> ""
+            is PrivateSpaceHeader, is GroupToggle -> ""
         }
 
     companion object {
@@ -38,7 +38,7 @@ sealed class AppModel : Comparable<AppModel> {
     fun withDimmed(dimmed: Boolean): AppModel = when (this) {
         is App -> if (this.dimmed == dimmed) this else copy(dimmed = dimmed)
         is PinnedShortcut -> if (this.dimmed == dimmed) this else copy(dimmed = dimmed)
-        is PrivateSpaceHeader -> this
+        is PrivateSpaceHeader, is GroupToggle -> this
     }
 
     data class App(
@@ -74,6 +74,28 @@ sealed class AppModel : Comparable<AppModel> {
         override val appPackage: String = ""
         override val isNew: Boolean = false
         override val category: AppCategory? = null
+        override val emphasized: Boolean = false
+        override val dimmed: Boolean = false
+    }
+
+    /**
+     * One row standing in for a group's collapsed apps: the non-emphasized rows of a group that
+     * has an emphasized one. Collapsed, it lists their names on one line; expanded, it reads
+     * "fewer" and the rows follow. Built by the drawer adapter, never stored, and skipped by
+     * search, which always matches against the full list.
+     */
+    data class GroupToggle(
+        val toggleKey: String,
+        val group: AppCategory,
+        val collapsedApps: List<AppModel>,
+        val expanded: Boolean,
+        override val user: UserHandle = android.os.Process.myUserHandle(),
+    ) : AppModel() {
+        override val appLabel: String = ""
+        override val key: CollationKey? = null
+        override val appPackage: String = ""
+        override val isNew: Boolean = false
+        override val category: AppCategory = group
         override val emphasized: Boolean = false
         override val dimmed: Boolean = false
     }

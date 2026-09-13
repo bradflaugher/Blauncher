@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One line standing in for a group's collapsed apps; indented to the app titles. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/groupToggle"
+    style="@style/TextSmall"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="@dimen/app_padding_vertical"
+    tools:text="+5 · Gemini · Perplexity · Poe · Copilot · Pi" />

@@ -20,8 +20,6 @@ class Prefs(context: Context) {
     private val DATE_BOLD = "DATE_BOLD"
     private val SWIPE_LEFT_ENABLED = "SWIPE_LEFT_ENABLED"
     private val SWIPE_RIGHT_ENABLED = "SWIPE_RIGHT_ENABLED"
-    private val HIDDEN_APPS = "HIDDEN_APPS"
-    private val HIDDEN_APPS_UPDATED = "HIDDEN_APPS_UPDATED"
     private val APP_THEME = "APP_THEME"
     private val SWIPE_DOWN_ACTION = "SWIPE_DOWN_ACTION"
     private val TEXT_SIZE_SCALE = "TEXT_SIZE_SCALE"
@@ -74,6 +72,9 @@ class Prefs(context: Context) {
             "PRO_MESSAGE_SHOWN",
             "SHOWN_ON_DAY_OF_YEAR",
             "FIRST_HIDE",
+            // Hiding apps was removed; groups with an emphasized app collapse instead.
+            "HIDDEN_APPS",
+            "HIDDEN_APPS_UPDATED",
             "ROUTINE_READING_START",
             "ROUTINE_COMMUTE_START",
             "ROUTINE_WORK_START",
@@ -209,14 +210,6 @@ class Prefs(context: Context) {
     // var homeButtonShowRecents: Boolean
     //     get() = prefs.getBoolean(HOME_BUTTON_SHOW_RECENTS, false)
     //     set(value) = prefs.edit { putBoolean(HOME_BUTTON_SHOW_RECENTS, value).apply() }
-
-    var hiddenApps: MutableSet<String>
-        get() = prefs.getStringSet(HIDDEN_APPS, mutableSetOf()) as MutableSet<String>
-        set(value) = prefs.edit { putStringSet(HIDDEN_APPS, value).apply() }
-
-    var hiddenAppsUpdated: Boolean
-        get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
-        set(value) = prefs.edit { putBoolean(HIDDEN_APPS_UPDATED, value).apply() }
 
     var swipeDownAction: Int
         get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.NOTIFICATIONS)

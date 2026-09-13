@@ -53,15 +53,11 @@ fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
 suspend fun getAppsList(
     context: Context,
     prefs: Prefs,
-    includeRegularApps: Boolean = true,
-    includeHiddenApps: Boolean = false,
 ): MutableList<AppModel> {
     return withContext(Dispatchers.IO) {
         val appList: MutableList<AppModel> = mutableListOf()
 
         try {
-            if (!prefs.hiddenAppsUpdated) upgradeHiddenApps(prefs)
-            val hiddenApps = prefs.hiddenApps
             val emphasizedApps = prefs.emphasizedApps
 
             val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
@@ -95,25 +91,17 @@ suspend fun getAppsList(
                     }
 
                     if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
-                        if (hiddenApps.contains(app.applicationInfo.packageName + "|" + profile.toString())) {
-                            if (includeHiddenApps) {
-                                appList.addAll(appModels)
-                            }
-                        } else if (includeRegularApps) {
-                            appList.addAll(appModels)
-                        }
+                        appList.addAll(appModels)
                     }
                 }
             }
 
-            if (includeRegularApps) {
-                val pinned = try {
-                    getPinnedShortcuts(context, prefs, collator, emphasizedApps)
-                } catch (_: Exception) {
-                    emptyList()
-                }
-                appList.addAll(pinned)
+            val pinned = try {
+                getPinnedShortcuts(context, prefs, collator, emphasizedApps)
+            } catch (_: Exception) {
+                emptyList()
             }
+            appList.addAll(pinned)
 
             SmartOrder.sort(prefs, appList)
             SmartOrder.applyGroupEmphasis(appList)
@@ -174,18 +162,6 @@ private suspend fun getPinnedShortcuts(
         }
         pinnedShortcuts
     }
-
-// One-time migration for installs that stored hidden apps without a user handle.
-private fun upgradeHiddenApps(prefs: Prefs) {
-    val hiddenAppsSet = prefs.hiddenApps
-    val newHiddenAppsSet = mutableSetOf<String>()
-    for (hiddenPackage in hiddenAppsSet) {
-        if (hiddenPackage.contains("|")) newHiddenAppsSet.add(hiddenPackage)
-        else newHiddenAppsSet.add(hiddenPackage + android.os.Process.myUserHandle().toString())
-    }
-    prefs.hiddenApps = newHiddenAppsSet
-    prefs.hiddenAppsUpdated = true
-}
 
 fun isPackageInstalled(context: Context, packageName: String, userString: String): Boolean {
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
