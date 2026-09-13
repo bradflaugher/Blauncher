@@ -137,10 +137,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun savePasswordApp(appModel: AppModel) {
-        if (appModel !is AppModel.App) {
-            appContext.showToast(appContext.getString(R.string.password_manager_needs_app))
-            return
-        }
+        // The picker only hands over apps; anything else is a programming error, not a user one.
+        if (appModel !is AppModel.App) return
         prefs.passwordAppName = appModel.appLabel
         prefs.passwordAppPackage = appModel.appPackage
         prefs.passwordAppUser = appModel.user.toString()

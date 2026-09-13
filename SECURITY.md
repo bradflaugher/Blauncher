@@ -27,6 +27,12 @@ sha256sum -c Blauncher.apk.sha256
 - Smart ordering learns only from launches made inside the launcher and
   stores its data in local app preferences; the system usage-stats API is
   never used.
+- The home-screen search bar keeps unsent text as a draft in the same local
+  preferences (excluded from backups) until it is sent or cleared. Sending
+  hands the text to the default browser through an `ACTION_WEB_SEARCH`
+  intent; from that point it is the browser's data, subject to that
+  browser's own search-engine and privacy settings. The launcher never
+  performs the search itself.
 - CI actions are pinned to commit SHAs, the Gradle distribution is checksum
   pinned, Dependabot keeps dependencies and action pins current, and CodeQL
   scans both the Kotlin sources and the workflows.

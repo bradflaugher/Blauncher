@@ -159,6 +159,11 @@ class AppDrawerFragment : Fragment() {
             flag,
             prefs.appLabelAlignment,
             appClickListener = { appModel ->
+                if (flag == Constants.FLAG_SET_PASSWORD_APP && appModel !is AppModel.App) {
+                    // Only a launchable app can be the password manager; stay here to pick again.
+                    requireContext().showToast(R.string.password_manager_needs_app)
+                    return@AppDrawerAdapter
+                }
                 viewModel.selectedApp(appModel, flag)
                 if (flag == Constants.FLAG_LAUNCH_APP || flag == Constants.FLAG_HIDDEN_APPS)
                     findNavController().popBackStack(R.id.mainFragment, false)

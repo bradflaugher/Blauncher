@@ -170,6 +170,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         // binding.recents.setOnClickListener(this)
         binding.setDefaultLauncher.setOnClickListener(this)
         binding.setDefaultLauncher.setOnLongClickListener(this)
+        // Touch goes through the swipe listeners above, which consume it before the view's own
+        // click handling; these listeners serve keyboards and accessibility ACTION_CLICK instead.
+        binding.date.setOnClickListener(this)
+        binding.date.setOnLongClickListener(this)
+        binding.passwordManager.setOnClickListener(this)
+        binding.passwordManager.setOnLongClickListener(this)
     }
 
     private fun initSearchBar() {
