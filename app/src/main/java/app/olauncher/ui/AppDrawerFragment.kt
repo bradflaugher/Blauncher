@@ -28,6 +28,7 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.AppCategory
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
+import app.olauncher.data.SearchEngine
 import app.olauncher.databinding.DialogAppGroupsBinding
 import app.olauncher.databinding.FragmentAppDrawerBinding
 import app.olauncher.databinding.ItemGroupChoiceBinding
@@ -106,7 +107,7 @@ class AppDrawerFragment : Fragment() {
         binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (query?.startsWith("!") == true)
-                    requireContext().openUrl(Constants.URL_DUCK_SEARCH + query.replace(" ", "%20"))
+                    requireContext().openUrl(SearchEngine.DUCKDUCKGO.searchUrl(query.trim()).orEmpty())
                 else if (adapter.itemCount == 0)
                     requireContext().openSearch(query?.trim())
                 else

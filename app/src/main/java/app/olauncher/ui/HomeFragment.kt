@@ -33,7 +33,7 @@ import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
-import app.olauncher.helper.searchWithDefaultBrowser
+import app.olauncher.helper.sendSearch
 import app.olauncher.helper.showToast
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
@@ -188,7 +188,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         binding.searchBar.setOnClickListener { focusSearch() }
         binding.searchIcon.setOnClickListener { focusSearch() }
-        binding.searchGo.setOnClickListener { submitSearch() }
+        binding.searchSend.setOnClickListener { submitSearch() }
         binding.searchClear.setOnClickListener {
             binding.searchInput.text?.clear()
             prefs.searchDraft = ""
@@ -196,11 +196,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         binding.searchInput.doAfterTextChanged { text ->
             val hasText = !text.isNullOrBlank()
-            binding.searchGo.isVisible = hasText
             binding.searchClear.isVisible = hasText
+            // While composing, the slot beside the bar becomes the send button.
+            binding.searchSend.isVisible = hasText
+            binding.passwordManager.isVisible = !hasText
         }
         // Enter adds a line, as in any composer. Ctrl+Enter or Shift+Enter sends, for hardware
-        // keyboards; on-screen keyboards use the arrow button.
+        // keyboards; on-screen keyboards use the send button beside the bar.
         binding.searchInput.setOnKeyListener { _, keyCode, event ->
             val enter = keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
             if (enter && event.action == KeyEvent.ACTION_DOWN && (event.isCtrlPressed || event.isShiftPressed)) {
@@ -220,13 +222,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     /**
-     * Hands the composed text to the default browser's search engine. The field is emptied
-     * only after an app accepted the query, so a missing browser never eats the text.
+     * Sends the composed text to the chosen search engine. The field is emptied only after an
+     * app accepted the query, so a missing browser never eats the text.
      */
     private fun submitSearch() {
         val query = binding.searchInput.text?.toString()?.trim().orEmpty()
         if (query.isEmpty()) return
-        if (searchWithDefaultBrowser(requireContext(), query)) {
+        if (sendSearch(requireContext(), prefs.searchEngine, query)) {
             binding.searchInput.text?.clear()
             prefs.searchDraft = ""
             binding.searchInput.hideKeyboard()

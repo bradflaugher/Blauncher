@@ -13,6 +13,7 @@ class Prefs(context: Context) {
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val USER_STATE = "USER_STATE"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
+    private val SEARCH_ENGINE = "SEARCH_ENGINE"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
@@ -140,6 +141,11 @@ class Prefs(context: Context) {
         set(value) = prefs.edit {
             if (value.isBlank()) remove(SEARCH_DRAFT) else putString(SEARCH_DRAFT, value)
         }
+
+    /** Where the home-screen search bar sends its text. */
+    var searchEngine: SearchEngine
+        get() = SearchEngine.fromName(prefs.getString(SEARCH_ENGINE, null))
+        set(value) = prefs.edit { putString(SEARCH_ENGINE, value.name) }
 
     var homeAlignment: Int
         get() = prefs.getInt(HOME_ALIGNMENT, Gravity.START)

@@ -28,6 +28,7 @@ import app.olauncher.R
 import app.olauncher.data.AppCategory
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
+import app.olauncher.data.SearchEngine
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.getColorFromAttr
@@ -70,6 +71,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAlignment()
         populateDateBold()
         populatePasswordApp()
+        populateSearchEngine()
         populateSmartOrdering()
         populateSwipeApps()
         populateSwipeDownAction()
@@ -96,6 +98,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
             R.id.passwordApp -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
+            R.id.searchEngine -> showSearchEngineChooser()
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
@@ -149,6 +152,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
         binding.passwordApp.setOnClickListener(this)
+        binding.searchEngine.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
         binding.alignmentCenter.setOnClickListener(this)
@@ -237,6 +241,24 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         prefs.dateBold = !prefs.dateBold
         populateDateBold()
         viewModel.refreshHome()
+    }
+
+    private fun populateSearchEngine() {
+        binding.searchEngine.text = prefs.searchEngine.displayName
+    }
+
+    private fun showSearchEngineChooser() {
+        val engines = SearchEngine.entries
+        val checked = engines.indexOf(prefs.searchEngine)
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.search_engine)
+            .setSingleChoiceItems(engines.map { it.displayName }.toTypedArray(), checked) { dialog, which ->
+                prefs.searchEngine = engines[which]
+                populateSearchEngine()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.close, null)
+            .show()
     }
 
     /** Names the app behind the home-screen password shortcut, or invites picking one. */

@@ -34,6 +34,7 @@ import app.olauncher.R
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
+import app.olauncher.data.SearchEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.Collator
@@ -330,20 +331,23 @@ fun defaultBrowserPackage(context: Context): String? {
 }
 
 /**
- * Sends [query] to the default browser's own search engine. Browsers answer
- * [Intent.ACTION_WEB_SEARCH] with whatever engine the user configured inside them, so the
- * launcher never has to know (or store) which engine that is. Falls back to the system-wide
- * web-search handler, then to DuckDuckGo, when the browser does not take search intents.
- * The query is passed as typed, line breaks included, so multi-sentence text arrives intact.
+ * Sends [query] to [engine]. For a URL engine the results page opens straight in the default
+ * browser, so one tap is enough. For [SearchEngine.BROWSER] the raw query goes to the default
+ * browser as [Intent.ACTION_WEB_SEARCH], which uses whatever engine the user configured there,
+ * falling back to the system-wide web-search handler and then to the default engine. The query is
+ * passed as typed, line breaks included, so multi-sentence text arrives intact.
  *
  * @return true once some app accepted the query; false when nothing could take it, so the
  * caller can keep the text instead of discarding it.
  */
-fun searchWithDefaultBrowser(context: Context, query: String): Boolean {
+fun sendSearch(context: Context, engine: SearchEngine, query: String): Boolean {
     val trimmed = query.trim()
     if (trimmed.isEmpty()) return false
-    val webSearch = Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, trimmed)
 
+    val url = engine.searchUrl(trimmed)
+    if (url != null) return openSearchUrl(context, url)
+
+    val webSearch = Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, trimmed)
     val browser = defaultBrowserPackage(context)
     if (browser != null) {
         val targeted = Intent(webSearch).setPackage(browser)
@@ -363,13 +367,15 @@ fun searchWithDefaultBrowser(context: Context, query: String): Boolean {
     } catch (_: ActivityNotFoundException) {
         // fall through to a plain URL
     }
-    return try {
-        context.openUrl(Constants.URL_DUCK_SEARCH + Uri.encode(trimmed))
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
+    return openSearchUrl(context, SearchEngine.DEFAULT.searchUrl(trimmed)!!)
+}
+
+private fun openSearchUrl(context: Context, url: String): Boolean = try {
+    context.openUrl(url)
+    true
+} catch (e: Exception) {
+    e.printStackTrace()
+    false
 }
 
 /** The first installed app from [Constants.KNOWN_PASSWORD_MANAGERS] in the main profile. */

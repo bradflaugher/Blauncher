@@ -21,10 +21,11 @@ colors rather than device captures.
 
 - **Near-empty home.** The date at the top, and along the bottom a search bar
   beside a key glyph that opens your password manager, with the notification
-  bar always on. The
-  search bar hands your query to the default browser, which runs it through
-  whatever search engine you set there; the launcher never picks or stores
-  an engine. The password shortcut binds itself to an installed password
+  bar always on. The search bar is a small composer; sending opens the
+  results page for your chosen engine (divid3 by default, or DuckDuckGo,
+  Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, ChatGPT) in the default
+  browser in one tap, or hands the text to the browser's own engine if you
+  prefer. The password shortcut binds itself to an installed password
   manager (Bitwarden, 1Password, Proton Pass, KeePassDX, and others) and can
   be pointed at any app. Gestures do the rest: swipe up for the drawer, swipe
   down for notifications or search, swipe left/right for two chosen apps,
