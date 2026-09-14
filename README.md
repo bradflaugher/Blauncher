@@ -10,9 +10,13 @@ settings. Full details in the **[user guide](GUIDE.md)**.
 
 ## Screens
 
-| Home | App drawer | Settings |
-| :---: | :---: | :---: |
-| ![Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager](docs/screenshots/home.png) | ![App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group folds into one faded line](docs/screenshots/drawer.png) | ![Settings: Blauncher, Smart ordering, and Home screen cards](docs/screenshots/settings.png) |
+<p align="center">
+  <img width="32%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager">
+  <img width="32%" src="docs/screenshots/drawer.png" alt="App drawer: apps listed in colored groups with a search field on top; emphasized apps are bold and first while the rest of their group folds into one faded line">
+  <img width="32%" src="docs/screenshots/settings.png" alt="Settings: Blauncher, Smart ordering, and Home screen cards">
+</p>
+
+<p align="center"><sub>Home &nbsp;·&nbsp; App drawer &nbsp;·&nbsp; Settings</sub></p>
 
 ## What it does
 
