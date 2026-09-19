@@ -65,7 +65,21 @@ class GroupCollapseTest {
             Row("Kimi", dimmed = true, isNew = true),
             Row("Poe", dimmed = true),
         )
-        assertEquals(listOf("Claude", "+0:AI_AGENTS[Gemini,Poe]", "Kimi"), collapse(rows))
+        assertEquals(listOf("Claude", "Kimi", "+0:AI_AGENTS[Gemini,Poe]"), collapse(rows))
+    }
+
+    @Test
+    fun newAppsKeepTheirPlaceWhenTheGroupIsExpanded() {
+        val rows = listOf(
+            Row("Claude"),
+            Row("Gemini", dimmed = true),
+            Row("Kimi", dimmed = true, isNew = true),
+            Row("Poe", dimmed = true),
+        )
+        assertEquals(
+            listOf("Claude", "Kimi", "-0:AI_AGENTS[Gemini,Poe]", "Gemini", "Poe"),
+            collapse(rows, expanded = setOf(GroupCollapse.toggleKey(0, AppCategory.AI_AGENTS))),
+        )
     }
 
     @Test
