@@ -9,7 +9,9 @@ import app.olauncher.data.AppCategory
  * [SmartOrder.applyGroupEmphasis]). Rather than trailing the bold rows as a long faded list,
  * they collapse into a single row that names them; tapping it expands the group in place.
  * Expansion is remembered per group only for the current drawer visit, so every fresh open
- * starts compact. Newly installed apps stay visible even while their group is collapsed.
+ * starts compact. Newly installed apps stay visible even while their group is collapsed: they
+ * sit with the group's visible rows, above the toggle, so the toggle is always the last row of
+ * its group whether it is folded or expanded.
  *
  * The algorithm is generic over the row type so it can be exercised without Android classes.
  */
@@ -28,9 +30,10 @@ object GroupCollapse {
     fun toggleKey(section: Int, group: AppCategory): String = "$section:${group.name}"
 
     /**
-     * Returns [rows] with every run of dimmed rows of one group replaced by a toggle row, followed
-     * by the run itself when its key is in [expanded]. New apps in a collapsed run are kept in
-     * place instead of folded.
+     * Returns [rows] with every run of dimmed rows of one group replaced by its new apps (kept
+     * visible, never folded), then a toggle row, then the folded apps when the toggle's key is in
+     * [expanded]. The toggle therefore closes its group in both states, and a new app does not
+     * jump when the group is toggled.
      */
     fun <T> collapse(
         rows: List<T>,
@@ -64,8 +67,9 @@ object GroupCollapse {
             } else {
                 val key = toggleKey(section, group)
                 val isExpanded = key in expanded
+                run.filterTo(result) { describe(it).isNew }
                 result.add(toggle(key, group, collapsedApps, isExpanded))
-                if (isExpanded) result.addAll(run) else run.filterTo(result) { describe(it).isNew }
+                if (isExpanded) result.addAll(collapsedApps)
             }
             index = end
         }

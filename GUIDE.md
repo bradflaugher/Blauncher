@@ -73,8 +73,9 @@ without a long tail below them.
   **− fewer** and tapping it again folds the group back. Expansion lasts
   for the current visit only: the drawer always opens compact.
 - Folded apps are never out of reach: **search matches every app**, folded
-  or not, and a freshly installed app stays visible in its group until it is
-  an hour old.
+  or not, and a freshly installed app (marked ✦) stays visible in its group
+  until it is an hour old — listed just above the folded line, never counted
+  in it.
 - Groups without an emphasized app list every app as before.
 
 - **Search first**: the keyboard opens automatically. Type a few letters —
