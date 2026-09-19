@@ -1,6 +1,6 @@
 # Agent and contributor instructions
 
-Blauncher is a text-only, gesture-driven Android launcher — a personal hard
+Blauncher is a minimal, gesture-driven Android launcher — a personal hard
 fork of Olauncher. Read `README.md` for the feature overview, `GUIDE.md` for
 how the UI behaves, and `SECURITY.md` for the privacy/security design notes.
 Keep all three in sync with any behavior you change.

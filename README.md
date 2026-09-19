@@ -1,8 +1,9 @@
 # Blauncher
 
-A text-only Android launcher that gets out of the way. The home screen is a
-black screen with the date, a search bar, and a shortcut to your password
-manager. No icons, dock, or widgets. Everything else is a gesture away.
+A minimal, gesture-driven Android launcher that gets out of the way. The
+home screen is a black screen with the date, a search bar, and a shortcut to
+your password manager. No app icons, dock, or widgets. Everything else is a
+gesture away.
 
 **Swipe up** for your apps. **Long-press** for settings. That is the whole
 interface; the **[user guide](GUIDE.md)** covers the rest.

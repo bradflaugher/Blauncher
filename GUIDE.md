@@ -1,6 +1,6 @@
 # Blauncher User Guide
 
-Blauncher is a text-only launcher with no icons, no dock, and no visible
+Blauncher is a minimal launcher with no app icons, no dock, and no visible
 buttons. Everything is a gesture or a tap on text. This page is the tour the
 app itself deliberately doesn't give you.
 
