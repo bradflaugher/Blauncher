@@ -11,7 +11,7 @@ app itself deliberately doesn't give you.
    (optionally verify it against `Blauncher.apk.sha256` — see `SECURITY.md`).
 2. Install it (you may need to allow installs from your browser or file
    manager), then open it and tap **Set as default launcher**.
-3. Requires Android 17 (API 37) or newer.
+3. Requires Android 15 (API 35) or newer.
 
 ## The home screen
 

@@ -52,12 +52,13 @@ interface; the **[user guide](GUIDE.md)** covers the rest.
   Private Space is supported with a tap-to-unlock row at the bottom of the
   drawer. Details in [`SECURITY.md`](SECURITY.md).
 
-## Latest Android only
+## Latest Android, no compatibility code
 
-Blauncher targets **only the latest public stable Android**: `minSdk`,
-`targetSdk`, and `compileSdk` are the same, current API level, and the
-toolchain tracks the latest Android Gradle Plugin and Gradle. Older Android
-is not supported. Full policy in [`AGENTS.md`](AGENTS.md).
+Blauncher targets the latest public stable Android and the toolchain tracks
+the latest Android Gradle Plugin and Gradle. It installs on Android 15 and
+up, because that is the newest API the code uses (Private Space), not
+because it carries code for older phones: there are no version checks.
+Full policy in [`AGENTS.md`](AGENTS.md).
 
 ## Install
 
@@ -67,7 +68,7 @@ is not supported. Full policy in [`AGENTS.md`](AGENTS.md).
    (see [`SECURITY.md`](SECURITY.md)).
 2. Install it, open it, and tap **Set as default launcher**.
 
-Requires the latest stable Android.
+Requires Android 15 or newer.
 
 ## Build
 
