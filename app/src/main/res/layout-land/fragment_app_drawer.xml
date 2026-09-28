@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/primaryShadeDarkColor"
@@ -33,6 +34,37 @@
             app:searchIcon="@null"
             app:theme="@style/AppSearchText" />
 
+    </LinearLayout>
+
+    <!-- First-run tip: gone for good once an app's long-press menu has been opened. -->
+    <LinearLayout
+        android:id="@+id/drawerTip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="8dp"
+        android:visibility="gone"
+        tools:ignore="UseCompoundDrawables">
+
+        <TextView
+            style="@style/TextTip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:alpha="0.8"
+            android:text="@string/tip_app_menu" />
+
+        <ImageView
+            android:id="@+id/drawerTipDismiss"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/got_it"
+            android:padding="13dp"
+            android:src="@drawable/ic_close" />
     </LinearLayout>
 
     <Space

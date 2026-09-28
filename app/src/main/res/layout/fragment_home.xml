@@ -28,128 +28,206 @@
         android:layout_marginTop="56dp"
         tools:text="Sun, 13 Sep" />
 
-    <!-- Bottom row: the search composer and the password-manager glyph, aligned to the
-         composer's bottom edge so the glyph stays put while the composer grows upward. -->
+    <!-- Everything along the bottom, stacked so the prompts ride above the search row as the
+         composer grows. -->
     <LinearLayout
-        android:id="@+id/bottomBar"
+        android:id="@+id/bottomStack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="24dp"
         android:layout_marginBottom="40dp"
-        android:gravity="bottom"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <!-- Search composer: text goes to the default browser's search engine. The draft
-             survives leaving the screen; only a successful send or the clear button empties it. -->
+        <!-- Above the bottom row: the first-run tip card, then the set-default link. The card
+             teaches one gesture at a time and retires once it has been used; tapping it performs
+             the gesture for anyone who cannot or would rather not. -->
         <LinearLayout
-            android:id="@+id/searchBar"
-            android:layout_width="0dp"
+            android:id="@+id/bottomPrompts"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/bg_search_bar"
-            android:gravity="center_vertical"
-            android:minHeight="52dp"
-            android:orientation="horizontal"
-            android:paddingStart="18dp"
-            android:paddingEnd="8dp"
-            android:paddingVertical="4dp">
+            android:animateLayoutChanges="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/searchIcon"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:alpha="0.8"
-                android:importantForAccessibility="no"
-                android:src="@drawable/ic_search" />
+            <LinearLayout
+                android:id="@+id/coachCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_coach_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:clipToOutline="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:minHeight="72dp"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp"
+                android:paddingStart="18dp"
+                android:paddingEnd="6dp"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-            <EditText
-                android:id="@+id/searchInput"
-                style="@style/TextSearchInput"
+                <ImageView
+                    android:id="@+id/coachIcon"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_swipe_up" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/coachStep"
+                        style="@style/TextTip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.7"
+                        tools:text="Welcome · 1 of 2" />
+
+                    <TextView
+                        android:id="@+id/coachTitle"
+                        style="@style/TextSmallBold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        tools:text="Swipe up for your apps" />
+
+                    <TextView
+                        android:id="@+id/coachBody"
+                        style="@style/TextTip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:alpha="0.85"
+                        tools:text="Start anywhere on the empty screen. Or tap here." />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/coachDismiss"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/tips_skip"
+                    android:padding="13dp"
+                    android:src="@drawable/ic_close" />
+            </LinearLayout>
+
+            <!-- Set default launcher -->
+            <TextView
+                android:id="@+id/setDefaultLauncher"
+                style="@style/TextMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:minHeight="48dp"
+                android:gravity="center"
+                android:text="@string/set_as_default_launcher_u"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Bottom row: the search composer and the password-manager glyph, aligned to the
+             composer's bottom edge so the glyph stays put while the composer grows upward. -->
+        <LinearLayout
+            android:id="@+id/bottomBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <!-- Search composer: text goes to the default browser's search engine. The draft
+                 survives leaving the screen; only a successful send or the clear button empties it. -->
+            <LinearLayout
+                android:id="@+id/searchBar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@null"
-                android:contentDescription="@string/search_the_web"
+                android:background="@drawable/bg_search_bar"
                 android:gravity="center_vertical"
-                android:imeOptions="flagNoExtractUi"
-                android:importantForAutofill="no"
-                android:inputType="textMultiLine|textCapSentences"
-                android:maxLines="6"
-                android:minHeight="44dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="4dp"
-                android:paddingVertical="10dp"
-                android:scrollbars="vertical"
-                tools:ignore="LabelFor" />
+                android:minHeight="52dp"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="8dp"
+                android:paddingVertical="4dp">
+
+                <ImageView
+                    android:id="@+id/searchIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:alpha="0.8"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_search" />
+
+                <EditText
+                    android:id="@+id/searchInput"
+                    style="@style/TextSearchInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:gravity="center_vertical"
+                    android:hint="@string/search_hint"
+                    android:imeOptions="flagNoExtractUi"
+                    android:importantForAutofill="no"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:maxLines="6"
+                    android:minHeight="44dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="4dp"
+                    android:paddingVertical="10dp"
+                    android:scrollbars="vertical"
+                    tools:ignore="LabelFor" />
+
+                <ImageView
+                    android:id="@+id/searchClear"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:alpha="0.8"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/clear_search"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_clear_text"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <!-- The slot beside the composer: the password manager while the bar is empty, a filled
+                 send button while there is text. Same size as the composer so the row reads as one. -->
+            <ImageView
+                android:id="@+id/passwordManager"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_quick_action"
+                android:clickable="true"
+                android:contentDescription="@string/password_manager"
+                android:focusable="true"
+                android:padding="14dp"
+                android:src="@drawable/ic_key" />
 
             <ImageView
-                android:id="@+id/searchClear"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:alpha="0.8"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/clear_search"
-                android:padding="8dp"
-                android:src="@drawable/ic_clear_text"
+                android:id="@+id/searchSend"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_send_action"
+                android:clickable="true"
+                android:contentDescription="@string/search_the_web"
+                android:focusable="true"
+                android:padding="14dp"
+                android:src="@drawable/ic_arrow_forward"
                 android:visibility="gone"
+                app:tint="?attr/primaryInverseColor"
                 tools:visibility="visible" />
         </LinearLayout>
-
-        <!-- The slot beside the composer: the password manager while the bar is empty, a filled
-             send button while there is text. Same size as the composer so the row reads as one. -->
-        <ImageView
-            android:id="@+id/passwordManager"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:background="@drawable/bg_quick_action"
-            android:clickable="true"
-            android:contentDescription="@string/password_manager"
-            android:focusable="true"
-            android:padding="14dp"
-            android:src="@drawable/ic_key" />
-
-        <ImageView
-            android:id="@+id/searchSend"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:background="@drawable/bg_send_action"
-            android:clickable="true"
-            android:contentDescription="@string/search_the_web"
-            android:focusable="true"
-            android:padding="14dp"
-            android:src="@drawable/ic_arrow_forward"
-            android:visibility="gone"
-            app:tint="?attr/primaryInverseColor"
-            tools:visibility="visible" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/firstRunTips"
-        style="@style/TextSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="120dp"
-        android:text="@string/swipe_up_for_apps"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
-    <!-- Set default launcher -->
-    <TextView
-        android:id="@+id/setDefaultLauncher"
-        style="@style/TextMedium"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="120dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:text="@string/set_as_default_launcher_u"
-        android:visibility="gone" />
 </FrameLayout>

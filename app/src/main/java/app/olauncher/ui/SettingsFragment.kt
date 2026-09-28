@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.os.Process
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.graphics.Typeface
+import android.text.style.BulletSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -93,6 +96,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         when (view.id) {
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
+            R.id.howItWorks -> showQuickGuide()
             // Home button for recents feature disabled
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
@@ -147,6 +151,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.scrollLayout.setOnClickListener(this)
         binding.appInfo.setOnClickListener(this)
         binding.setLauncher.setOnClickListener(this)
+        binding.howItWorks.setOnClickListener(this)
         binding.autoShowKeyboard.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
@@ -198,7 +203,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun initObservers() {
-        prefs.firstSettingsOpen = false
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner) {
             if (it) {
                 binding.setLauncher.text = getString(R.string.change_default_launcher)
@@ -241,6 +245,58 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         prefs.dateBold = !prefs.dateBold
         populateDateBold()
         viewModel.refreshHome()
+    }
+
+    /**
+     * Every gesture on one page, for anyone who skipped the tips or forgot one. The swipe lines
+     * name what the user has actually set, so the guide never describes a different phone.
+     */
+    private fun showQuickGuide() {
+        val off = getString(R.string.guide_gesture_off)
+        val swipeDown = getString(
+            if (prefs.swipeDownAction == Constants.SwipeDownAction.SEARCH) R.string.search
+            else R.string.notifications
+        )
+        val swipeLeft = if (prefs.swipeLeftEnabled) prefs.appNameSwipeLeft else off
+        val swipeRight = if (prefs.swipeRightEnabled) prefs.appNameSwipeRight else off
+        val guide = SpannableStringBuilder()
+        fun heading(res: Int) {
+            if (guide.isNotEmpty()) guide.append("\n\n")
+            val start = guide.length
+            guide.append(getString(res))
+            guide.setSpan(StyleSpan(Typeface.BOLD), start, guide.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        fun line(text: String) {
+            guide.append("\n")
+            val start = guide.length
+            guide.append(text)
+            guide.setSpan(BulletSpan(16), start, guide.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        heading(R.string.guide_home_heading)
+        line(getString(R.string.guide_swipe_up))
+        line(getString(R.string.guide_long_press))
+        line(getString(R.string.guide_swipe_down, swipeDown))
+        line(getString(R.string.guide_swipe_left, swipeLeft))
+        line(getString(R.string.guide_swipe_right, swipeRight))
+        line(getString(R.string.guide_date))
+        line(getString(R.string.guide_key))
+        line(getString(R.string.guide_search))
+        heading(R.string.guide_drawer_heading)
+        line(getString(R.string.guide_type))
+        line(getString(R.string.guide_enter))
+        line(getString(R.string.guide_app_menu))
+        line(getString(R.string.guide_emphasize))
+        line(getString(R.string.guide_close_drawer))
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.how_it_works_title)
+            .setMessage(guide)
+            .setPositiveButton(R.string.got_it, null)
+            .setNeutralButton(R.string.show_tips_again) { _, _ ->
+                prefs.resetTips()
+                requireContext().showToast(R.string.tips_reset)
+            }
+            .show()
     }
 
     private fun populateSearchEngine() {

@@ -13,14 +13,12 @@
     <string name="off">Off</string>
     <string name="on">On</string>
     <string name="change_default_launcher">Change default launcher</string>
-    <string name="swipe_up_for_apps">1. Swipe up for all apps\n2. Long press anywhere for settings</string>
     <string name="left">Left</string>
     <string name="right">Right</string>
     <string name="center">Center</string>
     <string name="home_layout_alignment">Date alignment</string>
     <string name="swipe_left_app">Swipe left app</string>
     <string name="swipe_right_app">Swipe right app</string>
-    <string name="app_drawer_tips">Tip: Start typing an app name to auto-launch it</string>
     <string name="okay">Okay</string>
     <string name="cool">Cool!</string>
     <string name="auto_show_keyboard">Auto show keyboard</string>
@@ -103,4 +101,40 @@
     <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>
     <string name="none">None</string>
+
+    <!-- First-run tips. -->
+    <string name="search_hint">Search the web</string>
+    <string name="tip_welcome_step">Welcome · tip %1$d of %2$d</string>
+    <string name="tip_step">Tip %1$d of %2$d</string>
+    <string name="tip_open_drawer_title">Swipe up for your apps</string>
+    <string name="tip_open_drawer_body">Start anywhere on the empty screen, or tap here.</string>
+    <string name="tip_open_drawer_action">Open apps</string>
+    <string name="tip_open_settings_title">Long-press for settings</string>
+    <string name="tip_open_settings_body">Touch and hold any empty spot, or tap here.</string>
+    <string name="tip_open_settings_action">Open settings</string>
+    <string name="tip_app_menu">Type to find an app. Long-press any app to rename, regroup, or uninstall it.</string>
+    <string name="tips_skip">Skip tips</string>
+    <string name="tips_skipped">Tips off. Settings → How it works has them all.</string>
+    <string name="how_it_works">How it works</string>
+    <string name="how_it_works_title">How Blauncher works</string>
+    <string name="got_it">Got it</string>
+    <string name="show_tips_again">Show tips again</string>
+    <string name="tips_reset">Tips are back on the home screen</string>
+    <!-- The quick guide. The swipe lines name the app or action the user has set. -->
+    <string name="guide_home_heading">Home screen</string>
+    <string name="guide_swipe_up">Swipe up: all your apps</string>
+    <string name="guide_long_press">Long-press empty space: settings</string>
+    <string name="guide_swipe_down">Swipe down: %1$s</string>
+    <string name="guide_swipe_left">Swipe left: %1$s</string>
+    <string name="guide_swipe_right">Swipe right: %1$s</string>
+    <string name="guide_gesture_off">off</string>
+    <string name="guide_date">Tap the date: calendar (long-press to change the app)</string>
+    <string name="guide_key">Key button: password manager (long-press to change the app)</string>
+    <string name="guide_search">Search bar: type, then tap the arrow to search the web</string>
+    <string name="guide_drawer_heading">App drawer</string>
+    <string name="guide_type">Type a few letters: a single match opens by itself</string>
+    <string name="guide_enter">Enter opens the first match, or searches the web if nothing matches</string>
+    <string name="guide_app_menu">Long-press an app: uninstall, rename, group, info</string>
+    <string name="guide_emphasize">Long-press a colored glyph: make that app bold and first</string>
+    <string name="guide_close_drawer">Swipe down from the top of the list, or go back, to close it</string>
 </resources>

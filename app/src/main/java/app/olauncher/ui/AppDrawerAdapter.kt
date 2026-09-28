@@ -43,6 +43,7 @@ class AppDrawerAdapter(
     private val appEmphasisListener: (AppModel) -> Unit = {},
     private val privateSpaceToggleListener: () -> Unit = {},
     private val privateSpaceSettingsListener: () -> Unit = {},
+    private val appMenuOpenedListener: () -> Unit = {},
 ) : ListAdapter<AppModel, RecyclerView.ViewHolder>(DIFF_CALLBACK), Filterable {
 
     companion object {
@@ -165,6 +166,7 @@ class AppDrawerAdapter(
                     appRenameListener,
                     appCategoryListener,
                     appEmphasisListener,
+                    appMenuOpenedListener,
                 )
             }
         } catch (e: Exception) {
@@ -393,6 +395,7 @@ class AppDrawerAdapter(
             appRenameListener: (AppModel, String) -> Unit,
             appCategoryListener: (AppModel) -> Unit,
             appEmphasisListener: (AppModel) -> Unit,
+            appMenuOpenedListener: () -> Unit,
         ) = with(binding) {
             appMenuLayout.visibility = View.GONE
             renameLayout.visibility = View.GONE
@@ -459,6 +462,7 @@ class AppDrawerAdapter(
                     appTitle.visibility = View.INVISIBLE
                     categoryMarker.visibility = View.GONE
                     appMenuLayout.visibility = View.VISIBLE
+                    appMenuOpenedListener()
                 }
                 true
             }
