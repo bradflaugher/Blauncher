@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed-icon layer: the same three lines, tinted by the system. -->
+<!--
+  Themed-icon layer: the same home screen, tinted by the system.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -7,8 +9,20 @@
     android:viewportHeight="108">
     <path
         android:fillColor="@android:color/transparent"
-        android:pathData="M36,41 L70,41 M36,54 L58,54 M36,67 L66,67"
+        android:pathData="M32,39 L56,39"
         android:strokeColor="#000000"
         android:strokeLineCap="round"
         android:strokeWidth="6" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M36,60.5 H58 A7,7 0 0 1 58,74.5 H36 A7,7 0 0 1 36,60.5 Z M74.5,60.5 A7,7 0 1 1 74.5,74.5 A7,7 0 1 1 74.5,60.5 Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="2.4" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M37.7,64.7 A2.8,2.8 0 1 1 37.7,70.3 A2.8,2.8 0 1 1 37.7,64.7 Z M39.8,69.6 L41.9,71.7 M72.1,67.8 A2.1,2.1 0 1 1 72.1,72 A2.1,2.1 0 1 1 72.1,67.8 Z M73.6,68.4 L77.6,64.4 M76.1,65.9 L77.8,67.6"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8" />
 </vector>
