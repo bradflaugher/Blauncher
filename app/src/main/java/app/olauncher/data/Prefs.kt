@@ -5,12 +5,15 @@ import android.content.SharedPreferences
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
+import app.olauncher.helper.Onboarding
+import app.olauncher.helper.Tip
 
 class Prefs(context: Context) {
     private val PREFS_FILENAME = "app.olauncher"
 
     private val FIRST_OPEN = "FIRST_OPEN"
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
+    private val LEARNED_TIPS = "LEARNED_TIPS"
     private val USER_STATE = "USER_STATE"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val SEARCH_ENGINE = "SEARCH_ENGINE"
@@ -103,6 +106,15 @@ class Prefs(context: Context) {
             prefs.edit { obsoleteKeys.forEach(::remove) }
         }
         migratePinnedCategory()
+        migrateFirstSettingsOpen()
+    }
+
+    // The single "settings opened once" flag grew into per-gesture tips. Anyone who already
+    // found settings knows their way around, so they skip the tour instead of seeing it anew.
+    private fun migrateFirstSettingsOpen() {
+        if (!prefs.contains(FIRST_SETTINGS_OPEN)) return
+        if (!prefs.getBoolean(FIRST_SETTINGS_OPEN, true)) learnAllTips()
+        prefs.edit { remove(FIRST_SETTINGS_OPEN) }
     }
 
     // The single pinned group grew into an ordered list; carry the old choice over once.
@@ -124,9 +136,25 @@ class Prefs(context: Context) {
         get() = prefs.getBoolean(FIRST_OPEN, true)
         set(value) = prefs.edit { putBoolean(FIRST_OPEN, value).apply() }
 
-    var firstSettingsOpen: Boolean
-        get() = prefs.getBoolean(FIRST_SETTINGS_OPEN, true)
-        set(value) = prefs.edit { putBoolean(FIRST_SETTINGS_OPEN, value).apply() }
+    /** First-run tips the user has already acted on (or skipped); see [Onboarding]. */
+    val learnedTips: Set<Tip>
+        get() = Onboarding.parse(prefs.getStringSet(LEARNED_TIPS, null).orEmpty())
+
+    fun isTipLearned(tip: Tip): Boolean = tip in learnedTips
+
+    fun learnTip(tip: Tip) {
+        val learned = learnedTips
+        if (tip in learned) return
+        storeLearnedTips(learned + tip)
+    }
+
+    fun learnAllTips() = storeLearnedTips(Tip.entries.toSet())
+
+    /** Brings every first-run tip back, as on a fresh install. */
+    fun resetTips() = prefs.edit { remove(LEARNED_TIPS) }
+
+    private fun storeLearnedTips(tips: Set<Tip>) =
+        prefs.edit { putStringSet(LEARNED_TIPS, tips.mapTo(mutableSetOf()) { it.name }) }
 
     var userState: String
         get() = prefs.getString(USER_STATE, Constants.UserState.START).toString()

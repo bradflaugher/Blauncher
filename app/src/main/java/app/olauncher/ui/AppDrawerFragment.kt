@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -33,6 +34,7 @@ import app.olauncher.databinding.DialogAppGroupsBinding
 import app.olauncher.databinding.FragmentAppDrawerBinding
 import app.olauncher.databinding.ItemGroupChoiceBinding
 import app.olauncher.helper.deletePinnedShortcut
+import app.olauncher.helper.Tip
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.openAppInfo
@@ -93,6 +95,9 @@ class AppDrawerFragment : Fragment() {
         }
         if (flag in Constants.APP_PICKER_FLAGS)
             binding.search.queryHint = "Please select an app"
+        // One line under the search field until the user has opened an app's menu once.
+        binding.drawerTip.isVisible = flag == Constants.FLAG_LAUNCH_APP && !prefs.isTipLearned(Tip.APP_MENU)
+        binding.drawerTipDismiss.setOnClickListener { learnAppMenuTip() }
         try {
             searchTextView = binding.search.findViewById(androidx.appcompat.R.id.search_src_text)
             searchTextView?.gravity = prefs.appLabelAlignment
@@ -227,7 +232,8 @@ class AppDrawerFragment : Fragment() {
             privateSpaceSettingsListener = {
                 viewModel.openPrivateSpaceSettings()
                 findNavController().popBackStack(R.id.mainFragment, false)
-            }
+            },
+            appMenuOpenedListener = { learnAppMenuTip() },
         )
 
         linearLayoutManager = object : LinearLayoutManager(requireContext()) {
@@ -271,6 +277,11 @@ class AppDrawerFragment : Fragment() {
                 updateCombinedAppList()
             }
         }
+    }
+
+    private fun learnAppMenuTip() {
+        prefs.learnTip(Tip.APP_MENU)
+        _binding?.drawerTip?.isVisible = false
     }
 
     private fun updateCombinedAppList() {

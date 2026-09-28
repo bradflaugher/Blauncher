@@ -1,5 +1,8 @@
 package app.olauncher.ui
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
@@ -10,14 +13,15 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import app.olauncher.MainViewModel
@@ -26,6 +30,8 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
+import app.olauncher.helper.Onboarding
+import app.olauncher.helper.Tip
 import app.olauncher.helper.Typefaces
 import app.olauncher.helper.detectPasswordManager
 import app.olauncher.helper.expandNotificationDrawer
@@ -50,6 +56,9 @@ import kotlin.math.abs
  * to the default browser's search engine next to a key glyph that opens the password
  * manager. Everything else is gestures on the empty space.
  *
+ * Until the user has found the drawer and settings, a tip card above the search bar teaches
+ * those two gestures one at a time (see [Onboarding]).
+ *
  * The search bar is a multi-line composer. Its text is treated as a draft: it survives
  * leaving the screen, the drawer, settings, rotation and a launcher restart, and is only
  * dropped once a browser has accepted it or the user taps clear.
@@ -65,6 +74,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private lateinit var viewModel: MainViewModel
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private var coachAnimator: ObjectAnimator? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -83,18 +93,22 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         initSwipeTouchListener()
         initClickListeners()
         initSearchBar()
+        initCoachCard()
+        initAccessibilityActions()
     }
 
     override fun onResume() {
         super.onResume()
         populateHomeScreen()
         restoreSearchDraft()
+        populateCoachCard()
         viewModel.isOlauncherDefault()
         showStatusBar()
     }
 
     override fun onPause() {
         super.onPause()
+        stopCoachAnimation()
         saveSearchDraft()
         _binding?.searchInput?.hideKeyboard()
     }
@@ -106,6 +120,11 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             R.id.date -> openCalendarApp()
             R.id.passwordManager -> openPasswordManager()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
+            R.id.coachCard -> when (Onboarding.nextHomeTip(prefs.learnedTips)) {
+                Tip.OPEN_DRAWER -> showAppList(Constants.FLAG_LAUNCH_APP)
+                Tip.OPEN_SETTINGS -> openSettings()
+                else -> populateCoachCard()
+            }
         }
     }
 
@@ -131,6 +150,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 prefs.calendarAppUser = ""
             }
 
+            // Holding the card is holding the empty screen it floats on.
+            R.id.coachCard -> openSettings()
+
             R.id.setDefaultLauncher -> {
                 prefs.hideSetDefaultLauncher = true
                 binding.setDefaultLauncher.visibility = View.GONE
@@ -144,18 +166,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun initObservers() {
-        if (prefs.firstSettingsOpen) {
-            binding.firstRunTips.visibility = View.VISIBLE
-            binding.setDefaultLauncher.visibility = View.GONE
-        } else binding.firstRunTips.visibility = View.GONE
-
         viewModel.refreshHome.observe(viewLifecycleOwner) {
             populateHomeScreen()
         }
-        viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
-            if (binding.firstRunTips.isVisible) return@Observer
+        viewModel.isOlauncherDefault.observe(viewLifecycleOwner) {
             binding.setDefaultLauncher.isVisible = it.not() && prefs.hideSetDefaultLauncher.not()
-        })
+        }
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
             setHomeAlignment(it)
         }
@@ -172,6 +188,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         // on them still works as a gesture.
         binding.date.setOnTouchListener(getViewSwipeTouchListener(context, binding.date))
         binding.passwordManager.setOnTouchListener(getViewSwipeTouchListener(context, binding.passwordManager))
+        // The tip card sits where a thumb naturally starts the swipe it is teaching.
+        binding.coachCard.setOnTouchListener(getViewSwipeTouchListener(context, binding.coachCard))
     }
 
     private fun initClickListeners() {
@@ -185,6 +203,106 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.date.setOnLongClickListener(this)
         binding.passwordManager.setOnClickListener(this)
         binding.passwordManager.setOnLongClickListener(this)
+        binding.coachCard.setOnClickListener(this)
+        binding.coachCard.setOnLongClickListener(this)
+    }
+
+    private fun initCoachCard() {
+        binding.coachDismiss.setOnClickListener {
+            prefs.learnAllTips()
+            populateCoachCard()
+            requireContext().showToast(R.string.tips_skipped, Toast.LENGTH_LONG)
+        }
+        // While composing a search the card would only crowd the keyboard.
+        binding.searchInput.setOnFocusChangeListener { _, _ -> populateCoachCard() }
+    }
+
+    /**
+     * Screen readers cannot perform the swipe and long-press gestures on empty space, so the
+     * home screen offers them as named actions too.
+     */
+    private fun initAccessibilityActions() {
+        ViewCompat.addAccessibilityAction(binding.mainLayout, getString(R.string.tip_open_drawer_action)) { _, _ ->
+            showAppList(Constants.FLAG_LAUNCH_APP)
+            true
+        }
+        ViewCompat.addAccessibilityAction(binding.mainLayout, getString(R.string.tip_open_settings_action)) { _, _ ->
+            openSettings()
+            true
+        }
+    }
+
+    /** Shows the next unlearned home-screen tip, or hides the card once there is none. */
+    private fun populateCoachCard() {
+        val binding = _binding ?: return
+        val tip = Onboarding.nextHomeTip(prefs.learnedTips)
+        val show = tip != null && !binding.searchInput.hasFocus()
+        binding.coachCard.isVisible = show
+        stopCoachAnimation()
+        if (!show || tip == null) return
+
+        val step = Onboarding.homeStep(tip)
+        val total = Onboarding.homeTips.size
+        binding.coachStep.text =
+            getString(if (step == 1) R.string.tip_welcome_step else R.string.tip_step, step, total)
+        val settings = tip == Tip.OPEN_SETTINGS
+        binding.coachIcon.setImageResource(if (settings) R.drawable.ic_touch_hold else R.drawable.ic_swipe_up)
+        binding.coachTitle.setText(
+            if (settings) R.string.tip_open_settings_title else R.string.tip_open_drawer_title
+        )
+        binding.coachBody.setText(
+            if (settings) R.string.tip_open_settings_body else R.string.tip_open_drawer_body
+        )
+        // TalkBack reads "double-tap to open apps" rather than a bare "double-tap to activate".
+        ViewCompat.replaceAccessibilityAction(
+            binding.coachCard,
+            AccessibilityActionCompat.ACTION_CLICK,
+            getString(if (settings) R.string.tip_open_settings_action else R.string.tip_open_drawer_action),
+            null,
+        )
+        startCoachAnimation(tip)
+    }
+
+    /** A slow nudge on the tip's glyph: a lift for the swipe, a swell for the long-press. */
+    private fun startCoachAnimation(tip: Tip) {
+        // Animations switched off in system settings leave the glyph still.
+        if (!ValueAnimator.areAnimatorsEnabled()) return
+        val icon = binding.coachIcon
+        val lift = -6f * resources.displayMetrics.density
+        coachAnimator = when (tip) {
+            Tip.OPEN_SETTINGS -> ObjectAnimator.ofPropertyValuesHolder(
+                icon,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 0.8f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 0.8f),
+            )
+
+            else -> ObjectAnimator.ofFloat(icon, View.TRANSLATION_Y, 0f, lift)
+        }.apply {
+            duration = 700L
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            start()
+        }
+    }
+
+    private fun stopCoachAnimation() {
+        coachAnimator?.cancel()
+        coachAnimator = null
+        _binding?.coachIcon?.apply {
+            translationY = 0f
+            scaleX = 1f
+            scaleY = 1f
+        }
+    }
+
+    private fun openSettings() {
+        prefs.learnTip(Tip.OPEN_SETTINGS)
+        try {
+            findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+            viewModel.firstOpen(false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun initSearchBar() {
@@ -459,6 +577,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun showAppList(flag: Int) {
+        if (flag == Constants.FLAG_LAUNCH_APP) prefs.learnTip(Tip.OPEN_DRAWER)
         viewModel.getAppList()
         try {
             findNavController().navigate(
@@ -513,12 +632,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onLongClick() {
                 super.onLongClick()
-                try {
-                    findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
-                    viewModel.firstOpen(false)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                openSettings()
             }
 
             override fun onClick() {
@@ -564,6 +678,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     override fun onDestroyView() {
+        stopCoachAnimation()
         super.onDestroyView()
         _binding = null
     }

@@ -1,8 +1,9 @@
 # Blauncher User Guide
 
 Blauncher is a minimal launcher with no app icons, no dock, and no visible
-buttons. Everything is a gesture or a tap on text. This page is the tour the
-app itself deliberately doesn't give you.
+buttons. Everything is a gesture or a tap on text. The app teaches the two
+gestures you need on first run (see [First-run tips](#first-run-tips)); this
+page is the full tour.
 
 ## Install and set up
 
@@ -12,6 +13,31 @@ app itself deliberately doesn't give you.
 2. Install it (you may need to allow installs from your browser or file
    manager), then open it and tap **Set as default launcher**.
 3. Requires Android 15 (API 35) or newer.
+
+## First-run tips
+
+A fresh install shows a small card above the search bar that teaches one
+gesture at a time:
+
+1. **Swipe up for your apps.** The arrow on the card nudges upward. Swipe up
+   anywhere (the card included), or just tap the card.
+2. **Long-press for settings.** Touch and hold any empty spot, or tap the
+   card.
+
+Each tip goes away for good once you have done what it says; nothing times
+out, so a tip is never gone before it has done its job. The first time the
+app drawer opens, one line under the search field adds: type to find an
+app, long-press an app for its menu. It goes once you open any app's menu,
+or tap its **×**.
+
+- **×** on the home card skips all the tips at once.
+- **Settings → How it works** lists every gesture on one page (with the apps
+  your swipes are actually set to) and has **Show tips again** to bring the
+  tips back.
+- Updating from a build without tips: if you had already opened settings,
+  the tips are skipped for you.
+- With TalkBack, the home screen offers **Open apps** and **Open settings**
+  as actions, and the tip card reads as a button that does what it teaches.
 
 ## The home screen
 
@@ -29,7 +55,7 @@ everything else is gestures.
 | Swipe right | Opens the phone dialer (configurable) |
 | Tap the date | Opens your calendar |
 
-- **Search bar** — tap it and type. It is a small composer, not a one-line
+- **Search bar** — the pill reading *Search the web*. Tap it and type. It is a small composer, not a one-line
   field: enter starts a new line, the box grows to a few lines and then
   scrolls, and there is no length limit, so whole paragraphs are fine. While
   there is text, the key glyph beside the bar becomes a filled **send**
@@ -123,7 +149,8 @@ In **Settings → Smart ordering**:
 
 Long-press anywhere on the home screen to get here.
 
-- **Blauncher card** — set/change default launcher, app info.
+- **Blauncher card** — set/change default launcher, app info, and **How it
+  works**: a one-page summary of every gesture, with **Show tips again**.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
   **Search engine** (where the search bar sends its text), **Bold date**,

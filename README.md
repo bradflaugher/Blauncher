@@ -6,7 +6,9 @@ your password manager. No app icons, dock, or widgets. Everything else is a
 gesture away.
 
 **Swipe up** for your apps. **Long-press** for settings. That is the whole
-interface; the **[user guide](GUIDE.md)** covers the rest.
+interface. On first run a small tip card teaches those two gestures one at a
+time and then gets out of the way; **Settings → How it works** has the rest
+on one page, and the **[user guide](GUIDE.md)** covers everything.
 
 ## Screens
 

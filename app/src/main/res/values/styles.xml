@@ -92,6 +92,11 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <!-- Secondary lines in first-run tips: a step smaller than TextSmall on every density. -->
+    <style name="TextTip" parent="TextDefault">
+        <item name="android:textSize">14sp</item>
+    </style>
+
     <style name="TextSmallLight" parent="TextSmall">
         <item name="android:textColor">@drawable/text_colors_light</item>
     </style>
