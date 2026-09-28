@@ -697,6 +697,16 @@
                     android:padding="10dp"
                     android:text="@string/github" />
 
+                <TextView
+                    android:id="@+id/privacyPolicy"
+                    style="@style/TextSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:text="@string/privacy_policy" />
+
             </LinearLayout>
 
         </LinearLayout>
