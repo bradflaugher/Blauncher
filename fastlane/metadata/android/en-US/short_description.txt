@@ -1,0 +1,1 @@
+Minimal gesture launcher. Date, search, and a key to your password manager.

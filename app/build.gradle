@@ -26,7 +26,8 @@ android {
 
     defaultConfig {
         applicationId "com.bradflaugher.blauncher"
-        minSdk 37
+        // The newest API the code uses (Private Space); see AGENTS.md.
+        minSdk 35
         targetSdk 37
         versionCode versionCodeFromEnvironment.toInteger()
         versionName System.getenv('BLAUNCHER_VERSION_NAME') ?: "1.0"

@@ -83,22 +83,28 @@ jobs:
       # BLAUNCHER_KEYSTORE_PATH) is only restored on push. Pass the remaining
       # signing variables only on push too, so pull requests configure a
       # clean unsigned build instead of failing as partially configured.
-      - name: Lint, test, and build release APK
+      - name: Lint, test, and build release APK and bundle
         env:
           BLAUNCHER_STORE_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_STORE_PASSWORD || '' }}
           BLAUNCHER_KEY_ALIAS: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_ALIAS || '' }}
           BLAUNCHER_KEY_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_PASSWORD || '' }}
-        run: ./gradlew lint test assembleRelease
+        run: ./gradlew lint test assembleRelease bundleRelease
 
-      - name: Name signed APK
+      # The APK is for sideloading; the bundle (.aab) is what Google Play takes,
+      # and the R8 mapping deobfuscates Play crash reports.
+      - name: Name signed APK, bundle and mapping
         if: github.event_name == 'push'
-        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/Blauncher.apk
+        run: |
+          mkdir -p dist
+          mv app/build/outputs/apk/release/app-release.apk dist/Blauncher.apk
+          mv app/build/outputs/bundle/release/app-release.aab dist/Blauncher.aab
+          cp app/build/outputs/mapping/release/mapping.txt dist/mapping.txt
 
       - name: Upload release APK
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: blauncher-release-${{ github.run_number }}
-          path: app/build/outputs/apk/release/*.apk
+          path: ${{ github.event_name == 'push' && 'dist/' || 'app/build/outputs/apk/release/*.apk' }}
           if-no-files-found: error
 
   release:
@@ -126,10 +132,11 @@ jobs:
             gh release delete latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY"
           fi
           gh release create latest release-apk/Blauncher.apk release-apk/Blauncher.apk.sha256 \
+            release-apk/Blauncher.aab release-apk/mapping.txt \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Blauncher latest" \
-            --notes "Latest signed build from commit ${GITHUB_SHA}."
+            --notes "Latest signed build from commit ${GITHUB_SHA}. Sideload Blauncher.apk; Blauncher.aab and mapping.txt are for Google Play."
 
           gh release list --repo "$GITHUB_REPOSITORY" --limit 100 \
             --json tagName --jq '.[] | select(.tagName | startswith("build-")) | .tagName' |

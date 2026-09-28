@@ -7,17 +7,20 @@ Keep all three in sync with any behavior you change.
 
 ## Latest-only platform policy (non-negotiable)
 
-This project always supports **only the latest public stable version of
-everything** — maximum security and freshness, zero backwards compatibility:
+This project builds with **only the latest public stable version of
+everything** and never carries code just for older devices:
 
-- `minSdk`, `targetSdk`, and `compileSdk` are always the **latest public
-  stable Android API level**, all three set to the same value
-  (`app/build.gradle`). When a new stable Android version ships, bump all
-  three together; do not leave a lower `minSdk` behind.
-- No backwards-compatibility code: no `Build.VERSION.SDK_INT` checks for
-  older releases, no `*Compat` shims kept solely for pre-latest devices, no
-  legacy code paths, no support for previous Android versions. Delete such
-  code on sight instead of extending it.
+- `targetSdk` and `compileSdk` are always the **latest public stable Android
+  API level** (`app/build.gradle`). When a new stable Android version ships,
+  bump them together.
+- `minSdk` is the newest API the code actually uses (today Android 15,
+  API 35, for Private Space), so older phones that happen to support
+  everything come free. If a feature needs a newer API, raise `minSdk` to
+  it rather than add a check.
+- No backwards-compatibility code: no `Build.VERSION.SDK_INT` checks, no
+  `*Compat` shims kept solely for older devices, no legacy code paths.
+  Delete such code on sight instead of extending it. Lint's `NewApi` error
+  keeps the code honest about `minSdk`.
 - The toolchain tracks the latest stable releases too: Android Gradle Plugin
   and all dependencies in `gradle/libs.versions.toml`, Gradle in
   `gradle/wrapper/gradle-wrapper.properties` (keep the distribution
