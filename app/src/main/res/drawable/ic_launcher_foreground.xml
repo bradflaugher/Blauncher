@@ -20,9 +20,16 @@
         android:strokeWidth="2.4" />
     <path
         android:fillColor="@android:color/transparent"
-        android:pathData="M37.7,64.7 A2.8,2.8 0 1 1 37.7,70.3 A2.8,2.8 0 1 1 37.7,64.7 Z M39.8,69.6 L41.9,71.7 M72.1,67.8 A2.1,2.1 0 1 1 72.1,72 A2.1,2.1 0 1 1 72.1,67.8 Z M73.6,68.4 L77.6,64.4 M76.1,65.9 L77.8,67.6"
+        android:pathData="M38.9,64.4 A2.5,2.5 0 1 1 38.9,69.4 A2.5,2.5 0 1 1 38.9,64.4 Z M40.7,68.7 L42.7,70.7"
+        android:strokeColor="#F2F4F8"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.8" />
+    <!-- The key sits centred in its ring with a clear gap all round. -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M72.6,67.5 A1.9,1.9 0 1 1 72.6,71.3 A1.9,1.9 0 1 1 72.6,67.5 Z M73.94,68.06 L77.6,64.4 M76.7,65.3 L77.62,66.22 M75.5,66.5 L76.2,67.2"
         android:strokeColor="#F2F4F8"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:strokeWidth="1.8" />
+        android:strokeWidth="1.5" />
 </vector>
