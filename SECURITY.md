@@ -21,6 +21,9 @@ sha256sum -c Blauncher.apk.sha256
 ## Design notes
 
 - The app requests no `INTERNET` permission; nothing is sent off the device.
+- The app does not hold `QUERY_ALL_PACKAGES`. It sees only launchable apps
+  (what the drawer lists), the home app, and the default browser and
+  web-search handler, declared as `<queries>` in the manifest.
 - Auto backup and data-extraction rules are intentionally empty, so app data
   (including locally learned launch weights) is never included in device
   backups.

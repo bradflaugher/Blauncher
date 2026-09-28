@@ -38,6 +38,10 @@ Never regress these without an explicit request from the maintainer:
 
 - **No `INTERNET` permission.** The app never touches the network; web
   searches are handed to other apps via intents.
+- **No `QUERY_ALL_PACKAGES`.** Package visibility comes only from the
+  `<queries>` intents in the manifest (launchable apps, the home app, the
+  default browser and web search). Add an intent there rather than the
+  permission.
 - **No usage-stats access.** Smart ordering learns only from launches made
   inside the launcher and stores its data in local app preferences.
 - **No backups of app data.** Auto-backup and data-extraction rules stay
