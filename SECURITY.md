@@ -24,9 +24,10 @@ sha256sum -c Blauncher.apk.sha256
 - The app does not hold `QUERY_ALL_PACKAGES`. It sees only launchable apps
   (what the drawer lists), the home app, and the default browser and
   web-search handler, declared as `<queries>` in the manifest.
-- Auto backup and data-extraction rules are intentionally empty, so app data
-  (including locally learned launch weights) is never included in device
-  backups.
+- Backups are off: `android:allowBackup="false"`, and the data-extraction
+  rules exclude every domain from both cloud backup and device-to-device
+  transfer (which ignores `allowBackup`), so app data (including locally
+  learned launch weights) is never included in a backup or device migration.
 - Smart ordering learns only from launches made inside the launcher and
   stores its data in local app preferences; the system usage-stats API is
   never used.
