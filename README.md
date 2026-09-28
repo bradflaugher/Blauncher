@@ -78,7 +78,8 @@ Toolchain versions are pinned in Gradle.
 
 ```sh
 ./gradlew lint test assembleDebug   # what CI runs on every PR
-./gradlew assembleRelease           # unsigned release
+./gradlew assembleRelease           # unsigned release APK
+./gradlew bundleRelease             # unsigned release bundle (.aab) for Google Play
 ```
 
 CI passes the version in through the environment:
@@ -105,12 +106,45 @@ export BLAUNCHER_KEY_PASSWORD=key-password
 ### CI
 
 Every push to `main` runs lint and tests, builds a signed release, and
-replaces the `latest` release with `Blauncher.apk` and `Blauncher.apk.sha256`.
-Pull requests run the same checks and build an unsigned APK without
-publishing. CodeQL scans Kotlin and the workflows on every push and weekly.
+replaces the `latest` release with `Blauncher.apk`, `Blauncher.apk.sha256`,
+`Blauncher.aab` (for Google Play), and `mapping.txt` (R8 deobfuscation for
+Play crash reports). Pull requests run the same checks and build unsigned
+artifacts without publishing. The version code is the workflow run number,
+so it only goes up; renaming or recreating the workflow would reset it, and
+Play rejects any upload whose version code is not higher than the last. CodeQL scans Kotlin and the workflows on every push and weekly.
 
 Secrets: `BLAUNCHER_KEYSTORE_BASE64`, `BLAUNCHER_STORE_PASSWORD`,
 `BLAUNCHER_KEY_ALIAS`, `BLAUNCHER_KEY_PASSWORD`.
+
+## Google Play
+
+The store listing (title, descriptions, icon, feature graphic, screenshots,
+release notes) lives in `fastlane/metadata/android/en-US` in the layout
+`fastlane supply` reads.
+
+1. **Upload.** Take `Blauncher.aab` from the `latest` release and upload it
+   to a testing track, with `mapping.txt` as its deobfuscation file (or
+   `fastlane supply --aab Blauncher.aab --track internal`). Use Play App
+   Signing; to keep Play and sideloaded installs updating each other, enrol
+   the existing `BLAUNCHER_*` key as the app signing key and use a separate
+   upload key.
+2. **App content.**
+   - Privacy policy: <https://bradflaugher.com/privacy/blauncher/> (also
+     linked from Settings).
+   - Data safety: no data collected or shared. The app has no `INTERNET`
+     permission, backups and device transfer are disabled, and web searches
+     are handed to another app by intent.
+   - Ads: none. App access: no login; set Blauncher as the default home app
+     to review it.
+   - Target audience: not directed at children. Category: Personalization.
+3. **Permissions.** `ACCESS_HIDDEN_PROFILES` shows and unlocks Private Space
+   in the drawer (only granted to the default home app); expect a
+   justification prompt and attach a short video of unlocking it.
+   `REQUEST_DELETE_PACKAGES` backs the drawer's Uninstall action, which
+   always goes through the system confirmation. `EXPAND_STATUS_BAR` backs
+   the swipe-down-for-notifications gesture.
+4. **Screenshots** must be 9:16 or 16:9 PNG or JPEG without alpha. Tablet
+   screenshots must be real tablet captures.
 
 ## Docs
 
