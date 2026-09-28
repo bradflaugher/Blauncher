@@ -3,14 +3,35 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
-    <uses-permission
-        android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!--Used only for opening alarm app-->
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <!--Private Space support-->
     <uses-permission android:name="android.permission.ACCESS_HIDDEN_PROFILES" />
+
+    <!--
+      Package visibility: only what a launcher needs, instead of QUERY_ALL_PACKAGES.
+      Launchable apps (the drawer, Private Space, the password-manager key), the current
+      home app (default-launcher check), and the default browser and web-search handler.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.WEB_SEARCH" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
