@@ -120,6 +120,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.search -> updateSwipeDownAction(Constants.SwipeDownAction.SEARCH)
 
             R.id.github -> requireContext().openUrl(Constants.URL_OLAUNCHER_GITHUB)
+            R.id.privacyPolicy -> requireContext().openUrl(Constants.URL_PRIVACY_POLICY)
         }
     }
 
@@ -167,6 +168,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.themeSystem.setOnClickListener(this)
         binding.textSizeValue.setOnClickListener(this)
         binding.github.setOnClickListener(this)
+        binding.privacyPolicy.setOnClickListener(this)
 
         binding.smartOrderSettings.refreshCategories.setOnClickListener {
             confirmSmartOrderAction(R.string.app_groups, R.string.confirm_refresh_categories, R.string.recategorize) {
