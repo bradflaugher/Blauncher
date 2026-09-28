@@ -1,10 +1,10 @@
 [versions]
-agp = "9.3.2"
+agp = "9.4.1"
 appcompat = "1.8.0"
-coreKtx = "1.19.0"
+coreKtx = "1.19.1"
 lifecycleViewmodelKtx = "2.11.0"
 material = "1.14.0"
-navigationFragmentKtx = "2.10.0"
+navigationFragmentKtx = "2.10.2"
 recyclerview = "1.4.0"
 junit = "4.13.2"
 
