@@ -5,6 +5,7 @@ import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -50,6 +51,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * The home screen: the date on top, and along the bottom a search bar that hands the query
@@ -75,6 +77,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private var coachAnimator: ObjectAnimator? = null
+    private val accessibilityActionIds = mutableListOf<Int>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -91,10 +94,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         initObservers()
         setHomeAlignment(prefs.homeAlignment)
         initSwipeTouchListener()
+        initPointerAndKeyInput()
         initClickListeners()
         initSearchBar()
         initCoachCard()
-        initAccessibilityActions()
     }
 
     override fun onResume() {
@@ -102,6 +105,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         populateHomeScreen()
         restoreSearchDraft()
         populateCoachCard()
+        updateAccessibilityActions()
         viewModel.isOlauncherDefault()
         showStatusBar()
     }
@@ -193,6 +197,66 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.coachCard.setOnTouchListener(getViewSwipeTouchListener(context, binding.coachCard))
     }
 
+    /**
+     * Keyboard and mouse on Home (ChromeOS, desktop windowing): the wheel opens the drawer like a
+     * swipe up, a right-click opens settings like a long press, and a letter, up or Enter key
+     * opens the drawer while nothing else has focus.
+     */
+    private fun initPointerAndKeyInput() {
+        binding.mainLayout.setOnGenericMotionListener { _, event ->
+            if (event.actionMasked == MotionEvent.ACTION_SCROLL &&
+                event.isFromSource(InputDevice.SOURCE_CLASS_POINTER) &&
+                event.getAxisValue(MotionEvent.AXIS_VSCROLL) != 0f
+            ) {
+                showAppList(Constants.FLAG_LAUNCH_APP)
+                true
+            } else false
+        }
+        binding.mainLayout.setOnContextClickListener {
+            openSettings()
+            true
+        }
+        binding.mainLayout.setOnKeyListener { _, keyCode, event ->
+            val opensDrawer = keyCode in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z ||
+                    keyCode == KeyEvent.KEYCODE_DPAD_UP ||
+                    keyCode == KeyEvent.KEYCODE_ENTER ||
+                    keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
+            if (!opensDrawer || event.isCtrlPressed || event.isAltPressed || event.isMetaPressed)
+                return@setOnKeyListener false
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0)
+                showAppList(Constants.FLAG_LAUNCH_APP)
+            true
+        }
+    }
+
+    /**
+     * TalkBack users cannot swipe on the empty space, so every Home gesture is also offered as a
+     * custom action on the root. Rebuilt on resume since the gesture settings may have changed.
+     */
+    private fun updateAccessibilityActions() {
+        val root = binding.mainLayout
+        accessibilityActionIds.forEach { ViewCompat.removeAccessibilityAction(root, it) }
+        accessibilityActionIds.clear()
+        fun add(label: String, action: () -> Unit) {
+            accessibilityActionIds += ViewCompat.addAccessibilityAction(root, label) { _, _ ->
+                action()
+                true
+            }
+        }
+        add(getString(R.string.tip_open_drawer_action)) { showAppList(Constants.FLAG_LAUNCH_APP) }
+        add(getString(R.string.tip_open_settings_action)) { openSettings() }
+        if (prefs.swipeLeftEnabled)
+            add(swipeAppLabel(prefs.appNameSwipeLeft, R.string.swipe_left_app)) { openSwipeLeftApp() }
+        if (prefs.swipeRightEnabled)
+            add(swipeAppLabel(prefs.appNameSwipeRight, R.string.swipe_right_app)) { openSwipeRightApp() }
+        val swipeDownLabel =
+            if (prefs.swipeDownAction == Constants.SwipeDownAction.SEARCH) R.string.search else R.string.notifications
+        add(getString(swipeDownLabel)) { swipeDownAction() }
+    }
+
+    private fun swipeAppLabel(appName: String, fallback: Int): String =
+        if (appName.isBlank()) getString(fallback) else getString(R.string.open_app_named, appName)
+
     private fun initClickListeners() {
         // Home button for recents feature disabled
         // binding.recents.setOnClickListener(this)
@@ -206,6 +270,15 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.passwordManager.setOnLongClickListener(this)
         binding.coachCard.setOnClickListener(this)
         binding.coachCard.setOnLongClickListener(this)
+        // Name what a long press does instead of TalkBack's generic "long press".
+        ViewCompat.replaceAccessibilityAction(
+            binding.date, AccessibilityActionCompat.ACTION_LONG_CLICK,
+            getString(R.string.choose_calendar_app), null
+        )
+        ViewCompat.replaceAccessibilityAction(
+            binding.passwordManager, AccessibilityActionCompat.ACTION_LONG_CLICK,
+            getString(R.string.choose_password_manager), null
+        )
     }
 
     private fun initCoachCard() {
@@ -216,21 +289,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         // While composing a search the card would only crowd the keyboard.
         binding.searchInput.setOnFocusChangeListener { _, _ -> populateCoachCard() }
-    }
-
-    /**
-     * Screen readers cannot perform the swipe and long-press gestures on empty space, so the
-     * home screen offers them as named actions too.
-     */
-    private fun initAccessibilityActions() {
-        ViewCompat.addAccessibilityAction(binding.mainLayout, getString(R.string.tip_open_drawer_action)) { _, _ ->
-            showAppList(Constants.FLAG_LAUNCH_APP)
-            true
-        }
-        ViewCompat.addAccessibilityAction(binding.mainLayout, getString(R.string.tip_open_settings_action)) { _, _ ->
-            openSettings()
-            true
-        }
     }
 
     /** Shows the next unlearned home-screen tip, or hides the card once there is none. */
@@ -309,11 +367,14 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun initSearchBar() {
-        // The keyboard would otherwise cover a bottom-aligned search bar; pad the root so the
-        // content block rises above it while typing.
+        // The window is edge to edge: pad the root clear of the system bars and display cutout,
+        // and at the bottom clear of the keyboard too, so the search bar rises above it while typing.
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainLayout) { root, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
-            root.setPadding(0, 0, 0, ime.bottom)
+            root.setPadding(bars.left, bars.top, bars.right, max(bars.bottom, ime.bottom))
             insets
         }
         binding.searchBar.setOnClickListener { focusSearch() }
@@ -684,6 +745,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     override fun onDestroyView() {
         stopCoachAnimation()
         super.onDestroyView()
+        accessibilityActionIds.clear()
         _binding = null
     }
 }

@@ -39,6 +39,10 @@ sha256sum -c Blauncher.apk.sha256
   `ACTION_WEB_SEARCH` intent. Either way the launcher itself makes no
   network request; from the hand-off on, the text is the browser's and the
   chosen engine's data, subject to their privacy terms.
+- The swipe-down notifications gesture calls the hidden
+  `StatusBarManager.expandNotificationsPanel()` method by reflection (there
+  is no public equivalent) under the `EXPAND_STATUS_BAR` permission. If a
+  future Android blocks that method, the gesture silently does nothing.
 - CI actions are pinned to commit SHAs, the Gradle distribution is checksum
   pinned, Dependabot keeps dependencies and action pins current, and CodeQL
   scans both the Kotlin sources and the workflows.

@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:contentDescription="@string/home_screen"
     android:focusable="true"
     android:focusableInTouchMode="true"
     tools:context=".ui.HomeFragment">
@@ -25,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="24dp"
         tools:text="Sun, 13 Sep" />
 
     <!-- Everything along the bottom, stacked so the prompts ride above the search row as the
@@ -36,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="16dp"
         android:orientation="vertical">
 
         <!-- Above the bottom row: the first-run tip card, then the set-default link. The card

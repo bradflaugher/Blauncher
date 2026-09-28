@@ -137,4 +137,8 @@
     <string name="guide_app_menu">Long-press an app: uninstall, rename, group, info</string>
     <string name="guide_emphasize">Long-press a colored glyph: make that app bold and first</string>
     <string name="guide_close_drawer">Swipe down from the top of the list, or go back, to close it</string>
+    <!-- Home and window -->
+    <string name="open_app_named">Open %1$s</string>
+    <string name="choose_calendar_app">Choose calendar app</string>
+    <string name="no_app_for_link">No app can open this link</string>
 </resources>

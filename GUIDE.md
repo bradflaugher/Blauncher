@@ -84,6 +84,14 @@ everything else is gestures.
   Settings → Home screen.
 - **Long-press** the date to choose which app it opens.
 - The date's alignment (left, center, right) is in Settings.
+- **Keyboard and mouse** (Chromebooks, desktop windows): scroll the mouse
+  wheel or type a letter, the up arrow or Enter to open the app drawer;
+  right-click empty space for Settings.
+- **TalkBack**: every home gesture — all apps, Settings, the swipe-left and
+  swipe-right apps (when enabled) and the swipe-down action — is also in the
+  home screen's custom actions menu.
+- Back does nothing on the home screen, as in any launcher. Phones stay in
+  portrait; tablets, unfolded foldables and desktop windows rotate freely.
 
 ## The app drawer
 
@@ -157,7 +165,8 @@ Long-press anywhere on the home screen to get here.
   and the date's alignment (long-press *Date alignment* to also apply it to
   the app drawer).
 - **Appearance** — theme (long-press *Theme* for the System option) and
-  text size.
+  text size, which scales on top of the system font size rather than
+  replacing it.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row
   to disable that gesture) and what swipe-down does (notifications or
   search).

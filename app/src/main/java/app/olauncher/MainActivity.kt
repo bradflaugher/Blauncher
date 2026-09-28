@@ -13,7 +13,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -50,9 +49,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun attachBaseContext(context: Context) {
-        val newConfig = Configuration(context.resources.configuration)
-        newConfig.fontScale = Prefs(context).textSizeScale
-        applyOverrideConfiguration(newConfig)
+        // Scales on top of the system font size rather than replacing it.
+        applyOverrideConfiguration(Configuration().apply {
+            fontScale = context.resources.configuration.fontScale * Prefs(context).textSizeScale
+        })
         super.attachBaseContext(context)
     }
 
@@ -63,18 +63,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         navController = this.findNavController(R.id.nav_host_fragment)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (navController.currentDestination?.id != R.id.mainFragment) {
-                    navController.popBackStack()
-                }
-            }
-        })
+        // Back does nothing on Home, like any launcher. Elsewhere the callback is disabled so the
+        // NavHostFragment pops the stack itself and the system can animate predictive back.
+        val swallowBackOnHome = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {}
+        }
+        onBackPressedDispatcher.addCallback(this, swallowBackOnHome)
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            swallowBackOnHome.isEnabled = destination.id == R.id.mainFragment
+        }
 
         if (prefs.firstOpen) {
             viewModel.firstOpen(true)
@@ -115,7 +116,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         isResumed = false
-        backToHomeScreen()
+        // A rotation, fold or window resize recreates the activity; keep the user where they are.
+        if (!isChangingConfigurations) backToHomeScreen()
         super.onStop()
     }
 
@@ -148,9 +150,9 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SourceLockedOrientationActivity")
     private fun setupOrientation() {
-        // Large screens ignore orientation locks under targetSdk 37; phones stay portrait.
-        if (isTablet(this)) return
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        // Phones stay portrait; large screens (tablets, unfolded foldables, desktop windows) rotate freely.
+        requestedOrientation = if (isTablet(this)) ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
 
     private fun backToHomeScreen() {
