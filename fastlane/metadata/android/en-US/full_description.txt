@@ -1,0 +1,30 @@
+A black screen, the date, and almost nothing else.
+
+Blauncher is a minimal, gesture-driven Android launcher. The home screen is the date up top and, along the bottom, a search bar beside a key glyph that opens your password manager. No app icons, no dock, and no widgets. Swipe up for your apps. Long-press empty space for settings.
+
+HOME SCREEN
+• Tap the date for your calendar, or long-press it to choose another app. Place the date left, center, or right.
+• The search bar grows to a few lines, then scrolls, and unsent text stays as a draft. Send opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. The launcher builds that results link itself. Choose Browser default and it hands the text over for the browser to search. The launcher makes no network request.
+• The key beside the search bar opens your password manager. It binds to one you already have installed (Bitwarden, 1Password, Proton Pass, KeePassDX, and others), and you can point it at any app.
+• Swipe down for notifications, or for search. Swipe left and swipe right open two apps you choose.
+
+THE APP DRAWER
+• The keyboard is already open. One matching app launches itself. Enter launches the first. Start with a space to look around without launching.
+• No match? Enter searches the web. Start with ! for DuckDuckGo.
+• Apps are grouped on the device, such as AI Agents, People, Focus, News, Media, and Tools. Each group has a small colored glyph. Apps stay alphabetical inside the group, with emphasized ones first.
+• Long-press an app to rename it, set its groups (more than one, if you like), or emphasize it. Emphasized apps go bold and first. The rest of that group folds into a single line that opens when you tap it. Search still reaches the folded apps.
+• A Private Space, when the device has one, sits at the bottom of the drawer behind a tap to unlock.
+
+THROUGH THE DAY
+• Groups shift with the time of day: news in the morning, focus apps during work hours, media in the evening, then sharpen from the apps you actually open.
+• Learning stays on this device. It uses only launches made inside the launcher, never the system usage-stats API, and fades after a couple of weeks.
+• Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
+
+PRIVATE BY CONSTRUCTION
+• No internet permission. Nothing is sent off the device. No usage-stats access, no accounts, no sync, no analytics, no tracking, no accessibility service, and no launcher-managed wallpaper.
+• What it learns, and any unsent search draft, stays in local preferences and is excluded from device backups.
+
+NO NONSENSE
+Blauncher is free. No ads. No network permission. No tracking. It requires the latest stable Android: Android 17 (API 37) or newer.
+
+Blauncher began as a fork of the open-source Olauncher by Tanuj Notes and is released under GPL-3.0.
