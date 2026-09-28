@@ -108,9 +108,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     override fun onPause() {
         super.onPause()
-        stopCoachAnimation()
         saveSearchDraft()
+        // Clearing focus re-runs populateCoachCard(), so stop the glyph only after it.
         _binding?.searchInput?.hideKeyboard()
+        stopCoachAnimation()
     }
 
     override fun onClick(view: View) {
@@ -260,7 +261,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             getString(if (settings) R.string.tip_open_settings_action else R.string.tip_open_drawer_action),
             null,
         )
-        startCoachAnimation(tip)
+        // Focus changes can land here while paused; the glyph only moves on a visible screen.
+        if (isResumed) startCoachAnimation(tip)
     }
 
     /** A slow nudge on the tip's glyph: a lift for the swipe, a swell for the long-press. */
@@ -296,9 +298,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun openSettings() {
-        prefs.learnTip(Tip.OPEN_SETTINGS)
         try {
             findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+            // A tip counts as learned only once its screen has actually opened.
+            prefs.learnTip(Tip.OPEN_SETTINGS)
             viewModel.firstOpen(false)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -577,7 +580,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun showAppList(flag: Int) {
-        if (flag == Constants.FLAG_LAUNCH_APP) prefs.learnTip(Tip.OPEN_DRAWER)
         viewModel.getAppList()
         try {
             findNavController().navigate(
@@ -591,6 +593,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             )
             e.printStackTrace()
         }
+        // Reached only once one of the navigations above opened the drawer.
+        if (flag == Constants.FLAG_LAUNCH_APP) prefs.learnTip(Tip.OPEN_DRAWER)
     }
 
     private fun swipeDownAction() {
