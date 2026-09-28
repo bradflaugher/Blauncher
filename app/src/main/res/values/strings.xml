@@ -55,7 +55,7 @@
     <string name="swipe_left_app_disabled">Swipe left app disabled</string>
     <string name="swipe_right_app_disabled">Swipe right app disabled</string>
     <string name="long_press_to_enable">Long press to enable</string>
-    <string name="alignment_changed">Alignment changed ✅</string>
+    <string name="alignment_changed">Alignment changed</string>
     <string name="home_screen">Home screen</string>
     <string name="private_space">Private space</string>
     <string name="recategorize">Refresh</string>
@@ -137,4 +137,32 @@
     <string name="guide_app_menu">Long-press an app: uninstall, rename, group, info</string>
     <string name="guide_emphasize">Long-press a colored glyph: make that app bold and first</string>
     <string name="guide_close_drawer">Swipe down from the top of the list, or go back, to close it</string>
+    <!-- Home and window -->
+    <string name="open_app_named">Open %1$s</string>
+    <string name="choose_calendar_app">Choose calendar app</string>
+    <string name="no_app_for_link">No app can open this link</string>
+    <!-- Accessibility: drawer and settings -->
+    <string name="app_info">App info</string>
+    <string name="decrease_text_size">Decrease text size</string>
+    <string name="increase_text_size">Increase text size</string>
+    <!-- A setting read aloud with its current value: "Text size, 1.0". -->
+    <string name="setting_value">%1$s, %2$s</string>
+    <string name="pinned">Pinned</string>
+    <string name="not_pinned">Not pinned</string>
+    <!-- A pinned group in the pin chooser, with its position: "1 · People". -->
+    <string name="pinned_group_order">%1$d · %2$s</string>
+    <string name="search_apps">Search apps</string>
+    <string name="select_an_app">Please select an app</string>
+    <string name="app_new">New</string>
+    <string name="work_profile">Work profile</string>
+    <string name="locked">Locked</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="unemphasize">Remove emphasis</string>
+    <string name="browser_default">Browser default</string>
+    <string name="pin_invalid_request">Invalid pin request</string>
+    <string name="pin_widgets_not_supported">Widgets are not supported</string>
+    <string name="pin_unknown_request">Unknown action not supported</string>
+    <string name="pin_shortcut_pinned">Shortcut pinned successfully</string>
+    <string name="pin_shortcut_failed">Failed to pin shortcut</string>
+    <string name="pin_invalid_shortcut">Invalid shortcut info</string>
 </resources>

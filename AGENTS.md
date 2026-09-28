@@ -44,8 +44,10 @@ Never regress these without an explicit request from the maintainer:
   permission.
 - **No usage-stats access.** Smart ordering learns only from launches made
   inside the launcher and stores its data in local app preferences.
-- **No backups of app data.** Auto-backup and data-extraction rules stay
-  empty so nothing (including learned weights) leaves the device.
+- **No backups of app data.** `allowBackup` stays `false` and the
+  data-extraction rules exclude every domain for both cloud backup and
+  device-to-device transfer, so nothing (including learned weights) leaves
+  the device. (An empty rules section would mean "back up everything".)
 - **No accounts, sync, analytics, accessibility service, or
   launcher-managed wallpaper.**
 - CI actions stay pinned to commit SHAs; CodeQL scans Kotlin and workflows.

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.SearchManager
 import android.app.role.RoleManager
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -15,9 +16,11 @@ import android.os.UserHandle
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.view.View
+import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import app.olauncher.BuildConfig
+import app.olauncher.R
 import app.olauncher.data.Constants
 import java.util.Locale
 
@@ -30,10 +33,7 @@ fun View.hideKeyboard() {
 fun View.showKeyboard(show: Boolean = true) {
     if (show.not()) return
     if (this.requestFocus())
-        postDelayed({
-            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
-        }, 100)
+        postDelayed({ windowInsetsController?.show(WindowInsets.Type.ime()) }, 100)
 }
 
 fun Activity.showLauncherSelector(launcher: ActivityResultLauncher<Intent>) {
@@ -81,7 +81,11 @@ fun Context.resetLauncherViaFakeActivity() {
 fun Context.openSearch(query: String? = null) {
     val intent = Intent(Intent.ACTION_WEB_SEARCH)
     intent.putExtra(SearchManager.QUERY, query ?: "")
-    startActivity(intent)
+    try {
+        startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        showToast(R.string.search_not_available)
+    }
 }
 
 fun Context.isEinkDisplay(): Boolean {

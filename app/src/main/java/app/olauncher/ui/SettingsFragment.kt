@@ -16,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
@@ -39,6 +40,7 @@ import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.showToast
+import java.util.Locale
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -221,24 +223,35 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
     private fun toggleSwipeLeft() {
         prefs.swipeLeftEnabled = !prefs.swipeLeftEnabled
-        if (prefs.swipeLeftEnabled) {
-            binding.swipeLeftApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColor))
-            requireContext().showToast(getString(R.string.swipe_left_app_enabled))
-        } else {
-            binding.swipeLeftApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
-            requireContext().showToast(getString(R.string.swipe_left_app_disabled))
-        }
+        showSwipeAppState(binding.swipeLeftApp, prefs.swipeLeftEnabled)
+        requireContext().showToast(
+            getString(if (prefs.swipeLeftEnabled) R.string.swipe_left_app_enabled else R.string.swipe_left_app_disabled)
+        )
     }
 
     private fun toggleSwipeRight() {
         prefs.swipeRightEnabled = !prefs.swipeRightEnabled
-        if (prefs.swipeRightEnabled) {
-            binding.swipeRightApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColor))
-            requireContext().showToast(getString(R.string.swipe_right_app_enabled))
-        } else {
-            binding.swipeRightApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
-            requireContext().showToast(getString(R.string.swipe_right_app_disabled))
-        }
+        showSwipeAppState(binding.swipeRightApp, prefs.swipeRightEnabled)
+        requireContext().showToast(
+            getString(if (prefs.swipeRightEnabled) R.string.swipe_right_app_enabled else R.string.swipe_right_app_disabled)
+        )
+    }
+
+    /** A disabled swipe app is faded; the state is also spoken, so it is not shown by color alone. */
+    private fun showSwipeAppState(view: TextView, enabled: Boolean) {
+        view.setTextColor(
+            requireContext().getColorFromAttr(if (enabled) R.attr.primaryColor else R.attr.primaryColorTrans50)
+        )
+        describeSwipeAppState(view, enabled)
+    }
+
+    private fun describeSwipeAppState(view: TextView, enabled: Boolean) {
+        ViewCompat.setStateDescription(view, getString(if (enabled) R.string.enabled else R.string.disabled))
+    }
+
+    /** Reads a value view as "Label, value" so TalkBack names the setting it belongs to. */
+    private fun TextView.describeAs(@StringRes label: Int) {
+        contentDescription = getString(R.string.setting_value, getString(label), text)
     }
 
     private fun toggleDateBold() {
@@ -300,7 +313,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateSearchEngine() {
-        binding.searchEngine.text = prefs.searchEngine.displayName
+        binding.searchEngine.text = prefs.searchEngine.displayName(requireContext())
+        binding.searchEngine.describeAs(R.string.search_engine)
     }
 
     private fun showSearchEngineChooser() {
@@ -308,7 +322,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         val checked = engines.indexOf(prefs.searchEngine)
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.search_engine)
-            .setSingleChoiceItems(engines.map { it.displayName }.toTypedArray(), checked) { dialog, which ->
+            .setSingleChoiceItems(engines.map { it.displayName(requireContext()) }.toTypedArray(), checked) { dialog, which ->
                 prefs.searchEngine = engines[which]
                 populateSearchEngine()
                 dialog.dismiss()
@@ -320,10 +334,12 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     /** Names the app behind the home-screen password shortcut, or invites picking one. */
     private fun populatePasswordApp() {
         binding.passwordApp.text = prefs.passwordAppName.ifBlank { getString(R.string.none) }
+        binding.passwordApp.describeAs(R.string.password_manager)
     }
 
     private fun populateDateBold() {
         binding.dateBold.text = getString(if (prefs.dateBold) R.string.on else R.string.off)
+        binding.dateBold.describeAs(R.string.bold_date)
     }
 
     private fun confirmSmartOrderAction(titleRes: Int, messageRes: Int, actionRes: Int, action: () -> Unit) {
@@ -347,8 +363,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         val clamped = newScale.coerceIn(0.5f, maxScale)
         if (clamped == current) return
         pendingTextSizeScale = clamped
-        val formatted = String.format("%.1f", clamped)
+        val formatted = String.format(Locale.getDefault(), "%.1f", clamped)
         binding.textSizeValue.text = formatted
+        binding.textSizeValue.describeAs(R.string.text_size)
         binding.textSizeCurrent.text = formatted
     }
 
@@ -385,11 +402,13 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             AppCompatDelegate.MODE_NIGHT_NO -> binding.appThemeText.text = getString(R.string.light)
             else -> binding.appThemeText.text = getString(R.string.system_default)
         }
+        binding.appThemeText.describeAs(R.string.theme_mode)
     }
 
     private fun populateTextSize() {
-        val formatted = String.format("%.1f", prefs.textSizeScale)
+        val formatted = String.format(Locale.getDefault(), "%.1f", prefs.textSizeScale)
         binding.textSizeValue.text = formatted
+        binding.textSizeValue.describeAs(R.string.text_size)
         binding.textSizeCurrent.text = formatted
     }
 
@@ -401,6 +420,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             pinned.size == 1 -> pinned.first().displayName
             else -> getString(R.string.pinned_count, pinned.size)
         }
+        pinnedGroups.describeAs(R.string.pinned_groups)
+        refreshCategories.describeAs(R.string.app_groups)
+        resetLearning.describeAs(R.string.usage_learning)
         // What the model would surface right now, past the pins,
         // each group name tinted with its category color.
         val preview = SpannableStringBuilder(getString(R.string.up_next_label)).append(' ')
@@ -412,7 +434,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 val start = preview.length
                 preview.append(category.displayName)
                 preview.setSpan(
-                    ForegroundColorSpan(category.color),
+                    ForegroundColorSpan(category.colorFor(requireContext())),
                     start,
                     preview.length,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
@@ -436,9 +458,13 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 val category = categories[position]
                 val index = pinned.indexOf(category)
                 (view as TextView).text =
-                    if (index >= 0) "${index + 1} · ${category.displayName}"
+                    if (index >= 0) getString(R.string.pinned_group_order, index + 1, category.displayName)
                     else category.displayName
                 view.alpha = if (index >= 0) 1f else 0.5f
+                ViewCompat.setStateDescription(
+                    view,
+                    getString(if (index >= 0) R.string.pinned else R.string.not_pinned),
+                )
                 return view
             }
         }
@@ -464,6 +490,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     private fun populateKeyboardText() {
         if (prefs.autoShowKeyboard) binding.autoShowKeyboard.text = getString(R.string.on)
         else binding.autoShowKeyboard.text = getString(R.string.off)
+        binding.autoShowKeyboard.describeAs(R.string.auto_show_keyboard)
     }
 
     private fun populateAlignment() {
@@ -472,6 +499,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             Gravity.CENTER -> binding.alignment.text = getString(R.string.center)
             Gravity.END -> binding.alignment.text = getString(R.string.right)
         }
+        binding.alignment.describeAs(R.string.home_layout_alignment)
     }
 
     private fun populateSwipeDownAction() {
@@ -479,6 +507,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             Constants.SwipeDownAction.NOTIFICATIONS -> getString(R.string.notifications)
             else -> getString(R.string.search)
         }
+        binding.swipeDownAction.describeAs(R.string.swipe_down_for)
     }
 
     private fun updateSwipeDownAction(swipeDownFor: Int) {
@@ -490,10 +519,13 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     private fun populateSwipeApps() {
         binding.swipeLeftApp.text = prefs.appNameSwipeLeft
         binding.swipeRightApp.text = prefs.appNameSwipeRight
-        if (!prefs.swipeLeftEnabled)
-            binding.swipeLeftApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
-        if (!prefs.swipeRightEnabled)
-            binding.swipeRightApp.setTextColor(requireContext().getColorFromAttr(R.attr.primaryColorTrans50))
+        binding.swipeLeftApp.describeAs(R.string.swipe_left_app)
+        binding.swipeRightApp.describeAs(R.string.swipe_right_app)
+        // Enabled keeps the style's own colors; only a disabled app is recolored (faded).
+        if (!prefs.swipeLeftEnabled) showSwipeAppState(binding.swipeLeftApp, false)
+        else describeSwipeAppState(binding.swipeLeftApp, true)
+        if (!prefs.swipeRightEnabled) showSwipeAppState(binding.swipeRightApp, false)
+        else describeSwipeAppState(binding.swipeRightApp, true)
     }
 
     private fun showAppListIfEnabled(flag: Int) {

@@ -84,12 +84,21 @@ everything else is gestures.
   Settings → Home screen.
 - **Long-press** the date to choose which app it opens.
 - The date's alignment (left, center, right) is in Settings.
+- **Keyboard and mouse** (Chromebooks, desktop windows): scroll the mouse
+  wheel or type a letter, the up arrow or Enter to open the app drawer;
+  right-click empty space for Settings.
+- **TalkBack**: every home gesture — all apps, Settings, the swipe-left and
+  swipe-right apps (when enabled) and the swipe-down action — is also in the
+  home screen's custom actions menu.
+- Back does nothing on the home screen, as in any launcher. Phones stay in
+  portrait; tablets, unfolded foldables and desktop windows rotate freely.
 
 ## The app drawer
 
 Swipe up from the home screen. Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
-glyph, alphabetical within the group. An **emphasized** app is bold and
+glyph (a deeper shade of the same color in the light theme, so it stays
+legible), alphabetical within the group. An **emphasized** app is bold and
 sits at the top of its group. Once a group has one, its other apps fold
 into a single faded line under the bold ones — `+5 · Gemini · Perplexity ·
 Poe…`, the count in the group's color — so the apps you chose stand out
@@ -122,6 +131,9 @@ without a long tail below them.
   - **Long-press the colored glyph** next to any app to toggle emphasis
     without opening the menu; a short toast confirms it. Tapping the glyph
     launches the app like the rest of the row.
+- With **TalkBack**, each app reads its name with its group and whether it
+  is new, in a work profile, or in Private Space. The menu items and the
+  emphasis toggle are offered as actions on the app, no long-press needed.
 - If your device has a **Private Space**, it appears at the bottom of the
   drawer with a tap-to-unlock row.
 - Swipe down from the top of the list to close the drawer.
@@ -157,7 +169,8 @@ Long-press anywhere on the home screen to get here.
   and the date's alignment (long-press *Date alignment* to also apply it to
   the app drawer).
 - **Appearance** — theme (long-press *Theme* for the System option) and
-  text size.
+  text size, which scales on top of the system font size rather than
+  replacing it.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row
   to disable that gesture) and what swipe-down does (notifications or
   search).

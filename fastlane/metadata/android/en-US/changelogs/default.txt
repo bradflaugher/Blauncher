@@ -1,0 +1,4 @@
+- Works better on tablets, foldables and ChromeOS: rotating or unfolding keeps your place, and the home screen stays clear of the navigation bar and taskbar.
+- Respects your system font size; the in-app text size now scales on top of it.
+- Better TalkBack support and larger touch targets throughout.
+- Backups and device transfer are now fully disabled, so nothing the launcher learns leaves your phone.

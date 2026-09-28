@@ -11,6 +11,7 @@
         style="@style/TextLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
         android:maxLines="1"
         android:paddingHorizontal="24dp"
         android:paddingVertical="@dimen/app_padding_vertical"
@@ -23,6 +24,7 @@
         android:layout_width="48dp"
         android:layout_height="match_parent"
         android:layout_gravity="start|center_vertical"
+        android:importantForAccessibility="no"
         android:paddingStart="24dp"
         android:paddingEnd="4dp"
         android:scaleType="fitCenter"
@@ -39,6 +41,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="1dp"
         android:gravity="center"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_rounded"
         app:tint="?attr/primaryColor" />
 

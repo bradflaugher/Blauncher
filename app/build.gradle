@@ -21,53 +21,61 @@ if (!configuredSigningVariables.isEmpty() && configuredSigningVariables.size() !
 def releaseSigningEnabled = configuredSigningVariables.size() == signingEnvironmentVariables.size()
 
 android {
-    namespace 'app.olauncher'
-    compileSdk 37
+    namespace = 'app.olauncher'
+    compileSdk = 37
+    buildToolsVersion = '37.0.0'
 
     defaultConfig {
-        applicationId "com.bradflaugher.blauncher"
+        applicationId = "com.bradflaugher.blauncher"
         // The newest API the code uses (Private Space); see AGENTS.md.
-        minSdk 35
-        targetSdk 37
-        versionCode versionCodeFromEnvironment.toInteger()
-        versionName System.getenv('BLAUNCHER_VERSION_NAME') ?: "1.0"
+        minSdk = 35
+        targetSdk = 37
+        versionCode = versionCodeFromEnvironment.toInteger()
+        versionName = System.getenv('BLAUNCHER_VERSION_NAME') ?: "1.0"
         resValue "string", "app_name", "Blauncher"
 
         resourceConfigurations += ["en"]
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
     }
 
     signingConfigs {
         if (releaseSigningEnabled) {
             release {
-                storeFile file(System.getenv('BLAUNCHER_KEYSTORE_PATH'))
-                storePassword System.getenv('BLAUNCHER_STORE_PASSWORD')
-                keyAlias System.getenv('BLAUNCHER_KEY_ALIAS')
-                keyPassword System.getenv('BLAUNCHER_KEY_PASSWORD')
+                storeFile = file(System.getenv('BLAUNCHER_KEYSTORE_PATH'))
+                storePassword = System.getenv('BLAUNCHER_STORE_PASSWORD')
+                keyAlias = System.getenv('BLAUNCHER_KEY_ALIAS')
+                keyPassword = System.getenv('BLAUNCHER_KEY_PASSWORD')
             }
         }
     }
 
     buildTypes {
         release {
-            debuggable false
-            minifyEnabled true
+            debuggable = false
+            minifyEnabled = true
+            shrinkResources = true
             if (releaseSigningEnabled) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            debuggable true
-            minifyEnabled false
-            applicationIdSuffix ".debug"
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable = true
+            minifyEnabled = false
+            applicationIdSuffix = ".debug"
         }
+    }
+
+    // The encrypted dependency report is for Play; keep it out of the
+    // sideloaded APK so that build stays reproducible.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = true
     }
 
     buildFeatures {

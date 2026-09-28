@@ -29,6 +29,7 @@ import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.net.toUri
 import app.olauncher.BuildConfig
 import app.olauncher.R
 import app.olauncher.data.AppModel
@@ -38,8 +39,6 @@ import app.olauncher.data.SearchEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.Collator
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 fun Context.showToast(message: String?, duration: Int = Toast.LENGTH_SHORT) {
     if (message.isNullOrBlank()) return
@@ -291,7 +290,11 @@ fun openAppInfo(context: Context, userHandle: UserHandle, packageName: String) {
 fun openSearch(context: Context) {
     val intent = Intent(Intent.ACTION_WEB_SEARCH)
     intent.putExtra(SearchManager.QUERY, "")
-    context.startActivity(intent)
+    try {
+        context.startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        context.showToast(R.string.search_not_available)
+    }
 }
 
 /**
@@ -347,7 +350,7 @@ fun sendSearch(context: Context, engine: SearchEngine, query: String): Boolean {
 }
 
 private fun openSearchUrl(context: Context, url: String): Boolean = try {
-    context.openUrl(url)
+    context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     true
 } catch (e: Exception) {
     e.printStackTrace()
@@ -375,6 +378,7 @@ fun detectPasswordManager(context: Context): AppModel.App? {
     return null
 }
 
+// Hidden StatusBarManager API with no public equivalent; if a future Android blocks it, the gesture does nothing.
 @SuppressLint("WrongConstant", "PrivateApi")
 fun expandNotificationDrawer(context: Context) {
     try {
@@ -382,8 +386,8 @@ fun expandNotificationDrawer(context: Context) {
         val statusBarManager = Class.forName("android.app.StatusBarManager")
         val method = statusBarManager.getMethod("expandNotificationsPanel")
         method.invoke(statusBarService)
-    } catch (e: Exception) {
-        e.printStackTrace()
+    } catch (_: ReflectiveOperationException) {
+    } catch (_: SecurityException) {
     }
 }
 
@@ -422,12 +426,11 @@ fun openCalendar(context: Context) {
     }
 }
 
+/** A large screen (tablet, unfolded foldable, desktop window): smallest width of at least 600dp. */
 fun isTablet(context: Context): Boolean {
-    val metrics = context.resources.displayMetrics
-    val widthInches = metrics.widthPixels / metrics.xdpi
-    val heightInches = metrics.heightPixels / metrics.ydpi
-    val diagonalInches = sqrt(widthInches.toDouble().pow(2.0) + heightInches.toDouble().pow(2.0))
-    return diagonalInches >= 7.0
+    val metrics = context.getSystemService(WindowManager::class.java).maximumWindowMetrics
+    val bounds = metrics.bounds
+    return minOf(bounds.width(), bounds.height()) / metrics.density >= 600f
 }
 
 fun Context.isDarkThemeOn(): Boolean {
@@ -444,9 +447,11 @@ fun Context.copyToClipboard(text: String) {
 
 fun Context.openUrl(url: String) {
     if (url.isEmpty()) return
-    val intent = Intent(Intent.ACTION_VIEW)
-    intent.data = Uri.parse(url)
-    startActivity(intent)
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+    } catch (_: ActivityNotFoundException) {
+        showToast(R.string.no_app_for_link)
+    }
 }
 
 fun Context.isSystemApp(packageName: String, user: UserHandle? = null): Boolean {
@@ -521,6 +526,5 @@ fun Context.deletePinnedShortcut(packageName: String, shortcutIdToDelete: String
 
 fun Context.primaryDisplayRefreshRate(): Float {
     val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    return displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.refreshRate
-        ?: (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.refreshRate
+    return displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.refreshRate ?: 60f
 }

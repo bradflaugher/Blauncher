@@ -3,6 +3,7 @@ package app.olauncher.listener
 import android.content.Context
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -22,11 +23,13 @@ Source: https://www.tutorialspoint.com/how-to-handle-swipe-gestures-in-kotlin
 
 internal open class OnSwipeTouchListener(c: Context?) : OnTouchListener {
     private var longPressOn = false
+    private var touchedView: View? = null
 
     //    private var doubleTapOn = false
     private val gestureDetector: GestureDetector
 
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+        touchedView = view
         if (motionEvent.action == MotionEvent.ACTION_UP)
             longPressOn = false
         return gestureDetector.onTouchEvent(motionEvent)
@@ -66,8 +69,10 @@ internal open class OnSwipeTouchListener(c: Context?) : OnTouchListener {
             GlobalScope.launch {
                 delay(Constants.LONG_PRESS_DELAY_MS)
                 withContext(Dispatchers.Main) {
-                    if (isActive && longPressOn)
+                    if (isActive && longPressOn) {
+                        touchedView?.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         onLongClick()
+                    }
                 }
             }
             super.onLongPress(e)

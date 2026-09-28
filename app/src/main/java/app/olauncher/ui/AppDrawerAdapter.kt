@@ -1,20 +1,21 @@
 package app.olauncher.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.res.ColorStateList
 import android.os.UserHandle
-import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.EditorInfo
 import android.widget.Filter
 import android.widget.Filterable
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -27,6 +28,7 @@ import app.olauncher.databinding.AdapterGroupToggleBinding
 import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
 import app.olauncher.helper.GroupCollapse
 import app.olauncher.helper.hideKeyboard
+import app.olauncher.helper.isPrivateSpaceProfile
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.showKeyboard
 import app.olauncher.helper.Typefaces
@@ -52,11 +54,12 @@ class AppDrawerAdapter(
         const val VIEW_TYPE_GROUP_TOGGLE = 2
 
         /**
-         * Dimmed rows fade to half strength. Applied through the text color and the drawable
-         * alpha, never View.alpha: the row layout animates visibility changes, and that
-         * transition drives View.alpha back to 1 whenever the title reappears after the menu.
+         * Dimmed rows fade to about two-thirds strength, light enough to recede yet still
+         * readable. Applied through the text color and the drawable alpha, never View.alpha:
+         * the row layout animates visibility changes, and that transition drives View.alpha
+         * back to 1 whenever the title reappears after the menu.
          */
-        private const val DIMMED_ALPHA_255 = 128
+        private const val DIMMED_ALPHA_255 = 166
 
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
@@ -96,6 +99,18 @@ class AppDrawerAdapter(
     private val separatorsRegex = Regex("[-_+,.`'\\s\\p{Z}]")
     private val appFilter = createAppFilter()
     private val myUserHandle = android.os.Process.myUserHandle()
+
+    /** Spoken name of each other profile ("Work profile" / "Private space"), looked up once. */
+    private val profileLabels = mutableMapOf<UserHandle, String>()
+
+    private fun profileLabel(context: Context, user: UserHandle): String? {
+        if (user == myUserHandle) return null
+        return profileLabels.getOrPut(user) {
+            context.getString(
+                if (isPrivateSpaceProfile(context, user)) R.string.private_space else R.string.work_profile
+            )
+        }
+    }
 
     var appsList: MutableList<AppModel> = mutableListOf()
     var appFilteredList: MutableList<AppModel> = mutableListOf()
@@ -144,6 +159,7 @@ class AppDrawerAdapter(
                 is PrivateSpaceHeaderViewHolder -> {
                     holder.bind(
                         appLabelGravity,
+                        (appModel as? AppModel.PrivateSpaceHeader)?.isLocked ?: true,
                         privateSpaceToggleListener,
                         privateSpaceSettingsListener,
                     )
@@ -159,6 +175,7 @@ class AppDrawerAdapter(
                     flag,
                     appLabelGravity,
                     myUserHandle,
+                    profileLabel(holder.itemView.context, appModel.user),
                     appModel,
                     appClickListener,
                     appDeleteListener,
@@ -345,7 +362,7 @@ class AppDrawerAdapter(
                 SpannableString(summary).apply {
                     val start = summary.indexOf(countLabel)
                     if (start >= 0) setSpan(
-                        ForegroundColorSpan(toggle.group.color),
+                        ForegroundColorSpan(toggle.group.colorFor(context)),
                         start,
                         start + countLabel.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
@@ -366,10 +383,15 @@ class AppDrawerAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(
             appLabelGravity: Int,
+            isLocked: Boolean,
             toggleListener: () -> Unit,
             settingsListener: () -> Unit,
         ) = with(binding) {
             privateSpaceTitle.gravity = appLabelGravity
+            ViewCompat.setStateDescription(
+                privateSpaceTitle,
+                privateSpaceTitle.context.getString(if (isLocked) R.string.locked else R.string.unlocked),
+            )
             privateSpaceTitle.setOnClickListener { toggleListener() }
             privateSpaceTitle.setOnLongClickListener {
                 settingsListener()
@@ -384,10 +406,14 @@ class AppDrawerAdapter(
         private val titleColors: ColorStateList = binding.appTitle.textColors
         private val dimmedTitleColors: ColorStateList = titleColors.withAlpha(DIMMED_ALPHA_255)
 
+        /** TalkBack actions standing in for the long-press menu; replaced on every bind. */
+        private val accessibilityActionIds = mutableListOf<Int>()
+
         fun bind(
             flag: Int,
             appLabelGravity: Int,
             myUserHandle: UserHandle,
+            profileLabel: String?,
             appModel: AppModel,
             clickListener: (AppModel) -> Unit,
             appDeleteListener: (AppModel) -> Unit,
@@ -426,8 +452,20 @@ class AppDrawerAdapter(
             appModel.category?.let { category ->
                 categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName
-                categoryMarker.imageTintList = ColorStateList.valueOf(category.color)
+                categoryMarker.imageTintList = ColorStateList.valueOf(category.colorFor(root.context))
             }
+            // The glyph and profile dot are hidden from TalkBack; the title speaks for them.
+            val context = root.context
+            appTitle.contentDescription = listOfNotNull(
+                appModel.appLabel,
+                appModel.category?.displayName?.takeIf { showCategoryMarker },
+                context.getString(R.string.app_new).takeIf { appModel.isNew },
+                profileLabel?.takeIf { showProfileIndicator },
+            ).joinToString(", ")
+            // The empty bottom-padding row has nothing to announce.
+            appTitle.importantForAccessibility =
+                if (appModel.appPackage.isEmpty()) View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
             // The glyph sits on top of the title, so it must keep behaving like the row on tap.
             // Long-press is the quick emphasis toggle.
             if (showCategoryMarker) {
@@ -453,51 +491,41 @@ class AppDrawerAdapter(
 
             appTitle.setOnLongClickListener {
                 if (appModel.appPackage.isNotEmpty()) {
-                    appDelete.alpha = when (
-                        appModel is AppModel.PinnedShortcut || !root.context.isSystemApp(appModel.appPackage, appModel.user)
-                    ) {
-                        true -> 1.0f
-                        false -> 0.5f
-                    }
+                    val canDelete = appModel is AppModel.PinnedShortcut ||
+                        !root.context.isSystemApp(appModel.appPackage, appModel.user)
+                    appDelete.alpha = if (canDelete) 1.0f else 0.5f
+                    // Stays enabled: tapping it still explains why and opens App info.
+                    ViewCompat.setStateDescription(
+                        appDelete,
+                        if (canDelete) null else root.context.getString(R.string.system_app_cannot_delete),
+                    )
                     appTitle.visibility = View.INVISIBLE
                     categoryMarker.visibility = View.GONE
                     appMenuLayout.visibility = View.VISIBLE
                     appMenuOpenedListener()
+                    moveAccessibilityFocus(appDelete)
                 }
                 true
             }
 
             // Configure rename behavior
-            appRename.setOnClickListener {
+            fun openRenameEditor() {
                 if (appModel.appPackage.isNotEmpty()) {
                     etAppRename.hint = getAppName(etAppRename.context, appModel.appPackage, appModel.user)
                     etAppRename.setText(appModel.appLabel)
                     etAppRename.setSelectAllOnFocus(true)
                     renameLayout.visibility = View.VISIBLE
                     appMenuLayout.visibility = View.GONE
+                    appTitle.visibility = View.INVISIBLE
                     categoryMarker.visibility = View.GONE
                     otherProfileIndicator.visibility = View.GONE
                     etAppRename.showKeyboard()
                     etAppRename.imeOptions = EditorInfo.IME_ACTION_DONE
                 }
             }
-            etAppRename.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    etAppRename.hint = getAppName(etAppRename.context, appModel.appPackage, appModel.user)
-                }
-
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int,
-                ) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    etAppRename.hint = ""
-                }
-            })
+            // The hint (the app's original name) only shows while the field is empty and is
+            // also the field's accessible label, so it stays set while typing.
+            appRename.setOnClickListener { openRenameEditor() }
             etAppRename.setOnEditorActionListener { _, actionCode, _ ->
                 if (actionCode == EditorInfo.IME_ACTION_DONE) {
                     val renameLabel = etAppRename.text.toString().trim()
@@ -533,6 +561,38 @@ class AppDrawerAdapter(
             appRenameClose.setOnClickListener {
                 closeRenameEditor()
             }
+
+            // TalkBack users get the long-press menu (and the glyph's emphasis toggle) as actions.
+            accessibilityActionIds.forEach { ViewCompat.removeAccessibilityAction(appTitle, it) }
+            accessibilityActionIds.clear()
+            if (appModel.appPackage.isNotEmpty()) {
+                fun addAction(label: Int, action: () -> Unit) {
+                    accessibilityActionIds += ViewCompat.addAccessibilityAction(
+                        appTitle, context.getString(label)
+                    ) { _, _ ->
+                        action()
+                        true
+                    }
+                }
+                addAction(R.string.delete) { appDeleteListener(appModel) }
+                addAction(R.string.rename) { openRenameEditor() }
+                addAction(R.string.category) { appCategoryListener(appModel) }
+                addAction(R.string.info) { appInfoListener(appModel) }
+                if (showCategoryMarker && appModel.emphasisKey.isNotBlank()) {
+                    addAction(if (appModel.emphasized) R.string.unemphasize else R.string.emphasize) {
+                        appEmphasisListener(appModel)
+                    }
+                }
+            }
+        }
+
+        /**
+         * The long-pressed title is hidden behind the menu, so a screen reader would be left
+         * focused on nothing; hand its focus to the menu's first button instead.
+         */
+        @SuppressLint("AccessibilityFocus")
+        private fun moveAccessibilityFocus(view: View) {
+            view.post { view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null) }
         }
 
         private fun getAppName(context: Context, appPackage: String, user: UserHandle): String {

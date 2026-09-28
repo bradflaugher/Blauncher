@@ -3,6 +3,7 @@ package app.olauncher.listener
 import android.content.Context
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -54,8 +55,10 @@ internal open class ViewSwipeTouchListener(c: Context?, v: View) : OnTouchListen
             GlobalScope.launch {
                 delay(Constants.LONG_PRESS_DELAY_MS)
                 withContext(Dispatchers.Main) {
-                    if (isActive && longPressOn)
+                    if (isActive && longPressOn) {
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         onLongClick(view)
+                    }
                 }
             }
             super.onLongPress(e)
