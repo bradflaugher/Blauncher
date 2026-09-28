@@ -13,9 +13,11 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -93,14 +95,25 @@ class AppDrawerFragment : Fragment() {
             root.setPadding(safe.left, safe.top, safe.right, maxOf(safe.bottom, ime.bottom))
             insets
         }
-        if (flag in Constants.APP_PICKER_FLAGS)
-            binding.search.queryHint = "Please select an app"
+        val isPicker = flag in Constants.APP_PICKER_FLAGS
+        if (isPicker)
+            binding.search.queryHint = getString(R.string.select_an_app)
         // One line under the search field until the user has opened an app's menu once.
         binding.drawerTip.isVisible = flag == Constants.FLAG_LAUNCH_APP && !prefs.isTipLearned(Tip.APP_MENU)
         binding.drawerTipDismiss.setOnClickListener { learnAppMenuTip() }
         try {
             searchTextView = binding.search.findViewById(androidx.appcompat.R.id.search_src_text)
             searchTextView?.gravity = prefs.appLabelAlignment
+            // The drawer's visual hint is a bare underline; give TalkBack a real one instead.
+            val spokenHint = getString(if (isPicker) R.string.select_an_app else R.string.search_apps)
+            searchTextView?.let {
+                ViewCompat.setAccessibilityDelegate(it, object : AccessibilityDelegateCompat() {
+                    override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                        super.onInitializeAccessibilityNodeInfo(host, info)
+                        info.hintText = spokenHint
+                    }
+                })
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -332,7 +345,7 @@ class AppDrawerFragment : Fragment() {
             row.text = category.displayName
             row.isChecked = category in checked
             row.setCompoundDrawablesRelativeWithIntrinsicBounds(category.iconRes, 0, 0, 0)
-            TextViewCompat.setCompoundDrawableTintList(row, ColorStateList.valueOf(category.color))
+            TextViewCompat.setCompoundDrawableTintList(row, ColorStateList.valueOf(category.colorFor(builder.context)))
             row.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) checked.add(category) else checked.remove(category)
             }

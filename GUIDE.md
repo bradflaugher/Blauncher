@@ -97,7 +97,8 @@ everything else is gestures.
 
 Swipe up from the home screen. Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
-glyph, alphabetical within the group. An **emphasized** app is bold and
+glyph (a deeper shade of the same color in the light theme, so it stays
+legible), alphabetical within the group. An **emphasized** app is bold and
 sits at the top of its group. Once a group has one, its other apps fold
 into a single faded line under the bold ones — `+5 · Gemini · Perplexity ·
 Poe…`, the count in the group's color — so the apps you chose stand out
@@ -130,6 +131,9 @@ without a long tail below them.
   - **Long-press the colored glyph** next to any app to toggle emphasis
     without opening the menu; a short toast confirms it. Tapping the glyph
     launches the app like the rest of the row.
+- With **TalkBack**, each app reads its name with its group and whether it
+  is new, in a work profile, or in Private Space. The menu items and the
+  emphasis toggle are offered as actions on the app, no long-press needed.
 - If your device has a **Private Space**, it appears at the bottom of the
   drawer with a tap-to-unlock row.
 - Swipe down from the top of the list to close the drawer.

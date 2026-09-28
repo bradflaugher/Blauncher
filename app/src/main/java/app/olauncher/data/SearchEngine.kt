@@ -1,6 +1,9 @@
 package app.olauncher.data
 
+import android.content.Context
 import android.net.Uri
+import androidx.annotation.StringRes
+import app.olauncher.R
 
 /**
  * Where the home-screen search bar sends its text. Every engine but [BROWSER] is a results
@@ -9,7 +12,11 @@ import android.net.Uri
  * browser pick the engine; some browsers only fill their address bar with it and wait for a
  * second enter, which is why it is not the default.
  */
-enum class SearchEngine(val displayName: String, val urlTemplate: String?) {
+enum class SearchEngine(
+    private val brandName: String,
+    val urlTemplate: String?,
+    @StringRes private val labelRes: Int? = null,
+) {
     DIVID3("divid3", "https://divid3.com/?q="),
     DUCKDUCKGO("DuckDuckGo", "https://duckduckgo.com/?q="),
     GOOGLE("Google", "https://www.google.com/search?q="),
@@ -20,7 +27,10 @@ enum class SearchEngine(val displayName: String, val urlTemplate: String?) {
     ECOSIA("Ecosia", "https://www.ecosia.org/search?q="),
     PERPLEXITY("Perplexity", "https://www.perplexity.ai/search?q="),
     CHATGPT("ChatGPT", "https://chatgpt.com/?q="),
-    BROWSER("Browser default", null);
+    BROWSER("", null, R.string.browser_default);
+
+    /** The name shown in Settings: the brand, or a translatable label for [BROWSER]. */
+    fun displayName(context: Context): String = labelRes?.let(context::getString) ?: brandName
 
     /** The results page for [query], or null for [BROWSER], which has no URL of its own. */
     fun searchUrl(query: String): String? = urlTemplate?.let { it + Uri.encode(query) }
