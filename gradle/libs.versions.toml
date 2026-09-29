@@ -7,6 +7,8 @@ material = "1.14.0"
 navigationFragmentKtx = "2.10.2"
 recyclerview = "1.4.0"
 junit = "4.13.2"
+robolectric = "4.17"
+testCore = "1.7.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -19,3 +21,5 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 junit = { module = "junit:junit", version.ref = "junit" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+test-core = { module = "androidx.test:core-ktx", version.ref = "testCore" }

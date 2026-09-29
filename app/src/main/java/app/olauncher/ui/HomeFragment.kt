@@ -163,7 +163,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 binding.setDefaultLauncher.visibility = View.GONE
                 if (viewModel.isOlauncherDefault.value != true) {
                     requireContext().showToast(R.string.set_as_default_launcher)
-                    findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+                    navigateFromHome(R.id.action_mainFragment_to_settingsFragment)
                 }
             }
         }
@@ -356,14 +356,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun openSettings() {
-        try {
-            findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
-            // A tip counts as learned only once its screen has actually opened.
-            prefs.learnTip(Tip.OPEN_SETTINGS)
-            viewModel.firstOpen(false)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        if (!navigateFromHome(R.id.action_mainFragment_to_settingsFragment)) return
+        // A tip counts as learned only once its screen has actually opened.
+        prefs.learnTip(Tip.OPEN_SETTINGS)
+        viewModel.firstOpen(false)
     }
 
     private fun initSearchBar() {
@@ -641,21 +637,29 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun showAppList(flag: Int) {
+        if (!navigateFromHome(R.id.action_mainFragment_to_appListFragment, bundleOf(Constants.Key.FLAG to flag)))
+            return
         viewModel.getAppList()
-        try {
-            findNavController().navigate(
-                R.id.action_mainFragment_to_appListFragment,
-                bundleOf(Constants.Key.FLAG to flag)
-            )
-        } catch (e: Exception) {
-            findNavController().navigate(
-                R.id.appListFragment,
-                bundleOf(Constants.Key.FLAG to flag)
-            )
-            e.printStackTrace()
-        }
-        // Reached only once one of the navigations above opened the drawer.
+        // Reached only once the drawer has actually opened.
         if (flag == Constants.FLAG_LAUNCH_APP) prefs.learnTip(Tip.OPEN_DRAWER)
+    }
+
+    /**
+     * Follows one of Home's own actions, but only while Home is still the current destination.
+     * Input arrives in bursts (a single wheel flick sends several scroll events, a swipe can end
+     * on a tap target), and once the first event has left Home the rest must not open another
+     * copy of the drawer or settings on top of it. Returns whether it navigated.
+     */
+    private fun navigateFromHome(actionId: Int, args: Bundle? = null): Boolean {
+        val navController = findNavController()
+        if (navController.currentDestination?.id != R.id.mainFragment) return false
+        return try {
+            navController.navigate(actionId, args)
+            true
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+            false
+        }
     }
 
     private fun swipeDownAction() {
