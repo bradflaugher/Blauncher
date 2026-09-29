@@ -197,7 +197,9 @@ class AppDrawerAdapter(
         return object : Filter() {
             override fun performFiltering(charSearch: CharSequence?): FilterResults {
                 isBangSearch = charSearch?.startsWith("!") ?: false
-                autoLaunch = allowAutoLaunch && (charSearch?.startsWith(" ")?.not() ?: true)
+                // Only a typed query launches its lone match; merely opening the drawer on a
+                // profile with a single app must not launch it.
+                autoLaunch = allowAutoLaunch && !charSearch.isNullOrBlank() && !charSearch.startsWith(" ")
 
                 val appFilteredList = if (charSearch.isNullOrBlank()) {
                     displayRows()
