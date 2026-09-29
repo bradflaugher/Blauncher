@@ -90,8 +90,11 @@ everything else is gestures.
 - **TalkBack**: every home gesture — all apps, Settings, the swipe-left and
   swipe-right apps (when enabled) and the swipe-down action — is also in the
   home screen's custom actions menu.
-- Back does nothing on the home screen, as in any launcher. Phones stay in
-  portrait; tablets, unfolded foldables and desktop windows rotate freely.
+- Back does nothing on the home screen, as in any launcher. Everywhere
+  else it is predictive back: start the back swipe and the screen behind
+  peeks through before you let go. Phones stay in portrait; tablets,
+  unfolded foldables and desktop windows rotate freely, and rotating,
+  folding or resizing keeps you on the screen you were on.
 
 ## The app drawer
 
@@ -136,7 +139,7 @@ without a long tail below them.
   emphasis toggle are offered as actions on the app, no long-press needed.
 - If your device has a **Private Space**, it appears at the bottom of the
   drawer with a tap-to-unlock row.
-- Swipe down from the top of the list to close the drawer.
+- Swipe down from the top of the list, or go back, to close the drawer.
 
 ## Smart ordering
 

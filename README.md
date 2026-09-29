@@ -13,12 +13,13 @@ on one page, and the **[user guide](GUIDE.md)** covers everything.
 ## Screens
 
 <p align="center">
-  <img width="32%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager">
-  <img width="32%" src="docs/screenshots/drawer.png" alt="App drawer: apps listed under an empty search field, each group marked by its own colored icon; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
-  <img width="32%" src="docs/screenshots/settings.png" alt="Settings: Blauncher, Smart ordering, and Home screen cards">
+  <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 2, Swipe up for your apps">
+  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar reading Search the web beside a round key glyph for the password manager">
+  <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: a one-line tip under the search field, then apps in groups, each marked by its own colored glyph; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
+  <img width="24%" src="docs/screenshots/settings.png" alt="Settings: Blauncher, Smart ordering, and Home screen cards">
 </p>
 
-<p align="center"><sub>Home &nbsp;·&nbsp; App drawer &nbsp;·&nbsp; Settings</sub></p>
+<p align="center"><sub>First run &nbsp;·&nbsp; Home &nbsp;·&nbsp; App drawer &nbsp;·&nbsp; Settings</sub></p>
 
 ## What it does
 
@@ -51,8 +52,15 @@ on one page, and the **[user guide](GUIDE.md)** covers everything.
 - **Private by construction.** No internet permission, no usage-stats access,
   no accounts, sync, analytics, accessibility service, or launcher-managed
   wallpaper. What it learns lives in local preferences excluded from backups.
-  Private Space is supported with a tap-to-unlock row at the bottom of the
-  drawer. Details in [`SECURITY.md`](SECURITY.md).
+  It does not ask to see every installed app (`QUERY_ALL_PACKAGES`), only
+  the launchable ones it lists. Private Space is supported with a
+  tap-to-unlock row at the bottom of the drawer. Details in
+  [`SECURITY.md`](SECURITY.md).
+- **Phones, tablets, foldables and Chromebooks.** Phones stay in portrait;
+  larger screens rotate freely and keep your place when they do. With a
+  keyboard or mouse, the wheel, a letter key, the up arrow or Enter opens
+  the drawer and right-click opens Settings. Back is predictive everywhere
+  but Home, and TalkBack gets every gesture as an action.
 
 ## Latest Android, no compatibility code
 
@@ -74,7 +82,10 @@ Requires Android 15 or newer.
 
 ## Build
 
-Toolchain versions are pinned in Gradle.
+Toolchain versions are pinned in Gradle. Building needs a JDK at least as
+new as the Java version `compileOptions` targets in `app/build.gradle` (CI
+installs the one named in `.github/workflows/build-release.yml`), and an
+Android SDK with the platform and build tools named there.
 
 ```sh
 ./gradlew lint test assembleDebug   # what CI runs on every PR
@@ -144,7 +155,19 @@ release notes) lives in `fastlane/metadata/android/en-US` in the layout
    always goes through the system confirmation. `EXPAND_STATUS_BAR` backs
    the swipe-down-for-notifications gesture.
 4. **Screenshots** must be 9:16 or 16:9 PNG or JPEG without alpha. Tablet
-   screenshots must be real tablet captures.
+   screenshots must be real tablet captures. The ones in `images/` are
+   captures of a debug build on the Android emulator (Pixel 8, Nexus 7 and
+   Pixel Tablet images) on a fresh install, so the first-run tips show:
+   - Size the screen to 9:16 first:
+     `adb shell wm size 1080x1920 && adb shell wm density 420` for the
+     phone, `1080x1920` at `280` for 7-inch, `1620x2880` at `320` for
+     10-inch (swap the numbers for landscape).
+   - Make Blauncher the home app
+     (`adb shell cmd role add-role-holder android.app.role.HOME com.bradflaugher.blauncher.debug`),
+     black out the wallpaper (`adb shell cmd wallpaper set-dim-amount 1`),
+     and tidy the status bar with System UI demo mode.
+   - Capture with `adb exec-out screencap -p > shot.png`, then drop the
+     alpha channel (`magick shot.png -alpha off PNG24:shot.png`).
 
 ## Docs
 

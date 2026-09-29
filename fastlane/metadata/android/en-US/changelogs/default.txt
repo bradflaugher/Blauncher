@@ -1,4 +1,7 @@
-- Works better on tablets, foldables and ChromeOS: rotating or unfolding keeps your place, and the home screen stays clear of the navigation bar and taskbar.
-- Respects your system font size; the in-app text size now scales on top of it.
-- Better TalkBack support and larger touch targets throughout.
-- Backups and device transfer are now fully disabled, so nothing the launcher learns leaves your phone.
+- First-run tips teach swipe up and long-press, then go; Settings > How it works lists every gesture.
+- Keyboard and mouse: wheel, letters or Enter open your apps; right-click opens Settings.
+- Predictive back, and tablets, foldables and ChromeOS keep your place on rotate or resize.
+- Home clears the nav bar and taskbar; text size scales with the system font.
+- Better TalkBack and bigger touch targets.
+- Backups and device transfer are off.
+- Fixes stacked screens from fast taps or scrolling.

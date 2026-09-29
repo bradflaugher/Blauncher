@@ -134,8 +134,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         when (view.id) {
             R.id.alignment -> {
                 prefs.appLabelAlignment = prefs.homeAlignment
-                findNavController().navigate(R.id.action_settingsFragment_to_appListFragment)
-                requireContext().showToast(getString(R.string.alignment_changed))
+                if (navigateFromSettings(R.id.action_settingsFragment_to_appListFragment))
+                    requireContext().showToast(getString(R.string.alignment_changed))
             }
 
             R.id.appThemeText -> {
@@ -541,11 +541,20 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun showAppList(flag: Int) {
-        viewModel.getAppList()
-        findNavController().navigate(
-            R.id.action_settingsFragment_to_appListFragment,
-            bundleOf(Constants.Key.FLAG to flag)
-        )
+        if (navigateFromSettings(R.id.action_settingsFragment_to_appListFragment, bundleOf(Constants.Key.FLAG to flag)))
+            viewModel.getAppList()
+    }
+
+    /**
+     * Follows one of Settings' own actions only while Settings is still on screen. A second tap
+     * that lands before the drawer has replaced it would otherwise ask the drawer for an action
+     * it does not have, which throws.
+     */
+    private fun navigateFromSettings(actionId: Int, args: Bundle? = null): Boolean {
+        val navController = findNavController()
+        if (navController.currentDestination?.id != R.id.settingsFragment) return false
+        navController.navigate(actionId, args)
+        return true
     }
 
     override fun onDestroyView() {
