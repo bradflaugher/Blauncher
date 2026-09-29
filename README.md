@@ -82,9 +82,10 @@ Requires Android 15 or newer.
 
 ## Build
 
-Toolchain versions are pinned in Gradle. Building needs JDK 24 or newer
-(CI uses JDK 25) and an Android SDK with the platform and build tools named
-in `app/build.gradle`.
+Toolchain versions are pinned in Gradle. Building needs a JDK at least as
+new as the Java version `compileOptions` targets in `app/build.gradle` (CI
+installs the one named in `.github/workflows/build-release.yml`), and an
+Android SDK with the platform and build tools named there.
 
 ```sh
 ./gradlew lint test assembleDebug   # what CI runs on every PR

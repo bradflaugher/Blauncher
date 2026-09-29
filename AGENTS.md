@@ -62,7 +62,8 @@ Toolchain versions live in Gradle — `app/build.gradle`,
 ./gradlew lint test assembleDebug   # CI runs lint test assembleRelease bundleRelease
 ```
 
-Building needs JDK 24 or newer. Run this before pushing. Unit tests live in
+Building needs a JDK at least as new as the Java version `compileOptions`
+targets in `app/build.gradle`. Run this before pushing. Unit tests live in
 `app/src/test/`; Robolectric tests there drive the real activity, fragments
 and navigation graph.
 
