@@ -185,7 +185,7 @@ class AppDrawerFragment : Fragment() {
                 if (flag == Constants.FLAG_LAUNCH_APP)
                     findNavController().popBackStack(R.id.mainFragment, false)
                 else
-                    findNavController().popBackStack()
+                    leaveDrawer()
             },
             appInfoListener = {
                 openAppInfo(
@@ -418,8 +418,16 @@ class AppDrawerFragment : Fragment() {
         }
     }
 
-    private fun checkMessageAndExit() {
-        findNavController().popBackStack()
+    private fun checkMessageAndExit() = leaveDrawer()
+
+    /**
+     * Pops the drawer, once. Every overscrolled move of a pull-down lands in [checkMessageAndExit]
+     * and a quick double tap picks twice; without the check the extra pops would also close the
+     * screen underneath (Settings, or even Home itself, leaving an empty window).
+     */
+    private fun leaveDrawer() {
+        val navController = findNavController()
+        if (navController.currentDestination?.id == R.id.appListFragment) navController.popBackStack()
     }
 
     override fun onStart() {

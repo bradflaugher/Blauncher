@@ -62,6 +62,25 @@ class NavigationBurstTest {
         assertEquals(listOf(R.id.mainFragment, R.id.settingsFragment), navController.stackIds())
     }
 
+    @Test
+    fun aDoubleTapInSettingsOpensOnePicker() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
+        activity.findViewById<View>(R.id.mainLayout).performContextClick()
+        idle()
+
+        // The second tap lands before the first has been drawn; it used to throw.
+        val swipeLeftApp = activity.findViewById<View>(R.id.swipeLeftApp)
+        swipeLeftApp.performClick()
+        swipeLeftApp.performClick()
+        idle()
+
+        val navController = activity.findNavController(R.id.nav_host_fragment)
+        assertEquals(
+            listOf(R.id.mainFragment, R.id.settingsFragment, R.id.appListFragment),
+            navController.stackIds(),
+        )
+    }
+
     private fun idle() = shadowOf(Looper.getMainLooper()).idle()
 
     private fun NavController.stackIds(): List<Int> =
