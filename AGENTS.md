@@ -59,10 +59,12 @@ Toolchain versions live in Gradle — `app/build.gradle`,
 `gradle/wrapper/gradle-wrapper.properties`.
 
 ```sh
-./gradlew lint test assembleDebug   # what CI runs on every PR (plus assembleRelease)
+./gradlew lint test assembleDebug   # CI runs lint test assembleRelease bundleRelease
 ```
 
-Run this before pushing. Unit tests live in `app/src/test/`.
+Building needs JDK 24 or newer. Run this before pushing. Unit tests live in
+`app/src/test/`; Robolectric tests there drive the real activity, fragments
+and navigation graph.
 
 ## Conventions
 

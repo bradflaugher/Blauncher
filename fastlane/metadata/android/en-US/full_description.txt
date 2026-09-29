@@ -20,6 +20,12 @@ THROUGH THE DAY
 • Learning stays on this device. It uses only launches made inside the launcher, never the system usage-stats API, and fades after a couple of weeks.
 • Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
 
+EASY TO LEARN, ANYWHERE
+• On first run a small card teaches the two gestures, one at a time, and goes away once you have used them. Settings > How it works lists every gesture on one page.
+• Phones stay in portrait. Tablets, foldables and Chromebooks rotate freely and keep your place when you rotate, fold or resize.
+• With a keyboard or mouse, the wheel, a letter key or Enter opens your apps, and right-click opens settings.
+• TalkBack gets every gesture as an action, and back is predictive.
+
 PRIVATE BY CONSTRUCTION
 • No internet permission. Nothing is sent off the device. No usage-stats access, no accounts, no sync, no analytics, no tracking, no accessibility service, and no launcher-managed wallpaper.
 • What it learns, and any unsent search draft, stays in local preferences and is excluded from device backups.

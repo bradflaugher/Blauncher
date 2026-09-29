@@ -1,7 +1,8 @@
 # Security
 
 Blauncher is a personal hard fork of Olauncher, distributed as a signed APK
-from this repository's GitHub Releases.
+from this repository's GitHub Releases. The Google Play build is the
+`Blauncher.aab` from the same CI run.
 
 ## Reporting a vulnerability
 
