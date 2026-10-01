@@ -139,7 +139,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          sha256sum release-apk/Blauncher.apk | tee release-apk/Blauncher.apk.sha256
+          # Hash from inside the folder so the file names Blauncher.apk, not
+          # release-apk/Blauncher.apk, and `sha256sum -c` works next to a download.
+          (cd release-apk && sha256sum Blauncher.apk | tee Blauncher.apk.sha256)
 
           if gh release view latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release delete latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY"
