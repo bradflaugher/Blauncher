@@ -1,7 +1,6 @@
-- First-run tips teach swipe up and long-press, then go; Settings > How it works lists every gesture.
-- Keyboard and mouse: wheel, letters or Enter open your apps; right-click opens Settings.
-- Predictive back, and tablets, foldables and ChromeOS keep your place on rotate or resize.
-- Home clears the nav bar and taskbar; text size scales with the system font.
-- Better TalkBack and bigger touch targets.
-- Backups and device transfer are off.
-- Fixes stacked screens from fast taps or scrolling.
+- No more crashes opening a pinned shortcut, uninstalling or opening App info.
+- Two apps with the same shortcut ID no longer launch each other's shortcut. Renamed shortcuts may need renaming once.
+- A cancelled long-press no longer opens Settings.
+- Your password manager choice stays put while a work profile is paused.
+- Clearing a rename brings back the original name, and Done saves it.
+- A double tap in the drawer opens an app only once.
