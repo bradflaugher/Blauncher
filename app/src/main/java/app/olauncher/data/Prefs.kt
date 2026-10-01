@@ -342,26 +342,20 @@ class Prefs(context: Context) {
     }
 
     /**
-     * Shortcut emphasis and renames used to be keyed by shortcut id alone, which two apps can
-     * share. Moves a shortcut's old entries onto its package-qualified [AppModel.emphasisKey],
-     * which is also its rename key from now on; the first shortcut to claim an old entry keeps
-     * it. Returns whether an old emphasis was carried over.
+     * Shortcut emphasis used to be keyed by shortcut id alone, which two apps can share. Moves a
+     * shortcut's old entry onto its package-qualified [AppModel.emphasisKey]; the first shortcut
+     * to claim an old entry keeps it. Returns whether an old emphasis was carried over.
+     *
+     * Old shortcut renames are not carried over: they sat under the bare id, in the same file as
+     * every other setting, so an id that happens to equal another key (a setting, or an app's
+     * rename) cannot be told apart from a real rename. Those shortcuts show their own label again.
      */
     fun migrateShortcutKeys(shortcut: AppModel.PinnedShortcut): Boolean {
-        val key = shortcut.emphasisKey
         val legacyEmphasis = AppModel.legacyShortcutKey(shortcut.shortcutId, shortcut.user.toString())
         val emphasized = emphasizedApps
-        val carriedEmphasis = legacyEmphasis in emphasized
-        if (carriedEmphasis) emphasizedApps = emphasized - legacyEmphasis + key
-        // Old renames sat under the bare id, in the same file as every other setting.
-        val legacyRename = prefs.all[shortcut.shortcutId] as? String
-        if (!legacyRename.isNullOrBlank() && !prefs.contains(key)) {
-            prefs.edit {
-                putString(key, legacyRename)
-                remove(shortcut.shortcutId)
-            }
-        }
-        return carriedEmphasis
+        if (legacyEmphasis !in emphasized) return false
+        emphasizedApps = emphasized - legacyEmphasis + shortcut.emphasisKey
+        return true
     }
 
     fun getAppCategoryOverrides(appPackage: String): List<AppCategory>? {

@@ -48,18 +48,24 @@ class PrefsTest {
     }
 
     @Test
-    fun oldShortcutSettingsMoveToTheQualifiedKey() {
+    fun oldShortcutEmphasisMovesToTheQualifiedKey() {
         val mail = shortcut("com.example.mail", "compose")
-        val legacyEmphasis = AppModel.legacyShortcutKey("compose", user.toString())
-        prefs.emphasizedApps = setOf(legacyEmphasis)
-        prefs.setAppRenameLabel("compose", "Write")
+        prefs.emphasizedApps = setOf(AppModel.legacyShortcutKey("compose", user.toString()))
 
         assertTrue(prefs.migrateShortcutKeys(mail))
 
         assertEquals(setOf(mail.emphasisKey), prefs.emphasizedApps)
-        assertEquals("Write", prefs.getAppRenameLabel(mail.emphasisKey))
-        assertEquals("", prefs.getAppRenameLabel("compose"))
         // A second shortcut with the same id finds nothing left to claim.
         assertFalse(prefs.migrateShortcutKeys(shortcut("com.example.maps", "compose")))
+    }
+
+    @Test
+    fun aShortcutIdNamedLikeASettingLeavesTheSettingAlone() {
+        prefs.searchDraft = "half-written query"
+
+        prefs.migrateShortcutKeys(shortcut("com.example.notes", "SEARCH_DRAFT"))
+
+        assertEquals("half-written query", prefs.searchDraft)
+        assertEquals("", prefs.getAppRenameLabel(shortcut("com.example.notes", "SEARCH_DRAFT").emphasisKey))
     }
 }
