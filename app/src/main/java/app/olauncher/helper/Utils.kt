@@ -128,7 +128,10 @@ private suspend fun getPinnedShortcuts(
                 if (isPrivateSpaceProfile(context, profile)) return@forEach
                 try {
                     shortcuts.getShortcuts(query, profile)?.forEach { shortcut ->
-                        if (shortcut.isPinned && pinnedShortcuts.none { it.shortcutId == shortcut.id }) {
+                        val listed = pinnedShortcuts.any {
+                            it.shortcutId == shortcut.id && it.appPackage == shortcut.`package`
+                        }
+                        if (shortcut.isPinned && !listed) {
                             val label = prefs.getAppRenameLabel(shortcut.id)
                                 .takeIf { it.isNotBlank() }
                                 ?: shortcut.shortLabel?.toString()
@@ -166,6 +169,20 @@ fun isPackageInstalled(context: Context, packageName: String, userString: String
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     val activityInfo = launcher.getActivityList(packageName, getUserHandleFromString(context, userString))
     return activityInfo.isNotEmpty()
+}
+
+/**
+ * False while the profile behind [userString] is paused or locked (a work profile switched off,
+ * a locked Private Space): its apps cannot be listed then, so their absence proves nothing.
+ */
+fun isProfileAvailable(context: Context, userString: String): Boolean {
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val user = getUserHandleFromString(context, userString)
+    return try {
+        !userManager.isQuietModeEnabled(user) && userManager.isUserUnlocked(user)
+    } catch (_: Exception) {
+        false
+    }
 }
 
 fun isPrivateSpaceProfile(context: Context, userHandle: UserHandle): Boolean {
@@ -280,11 +297,17 @@ fun getChangedAppTheme(context: Context, currentAppTheme: Int): Int {
 
 fun openAppInfo(context: Context, userHandle: UserHandle, packageName: String) {
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-    val component = launcher.getActivityList(packageName, userHandle).firstOrNull()?.componentName
-    if (component != null)
-        launcher.startAppDetailsActivity(component, userHandle, null, null)
-    else
-        context.showToast(context.getString(R.string.unable_to_open_app_info))
+    try {
+        val component = launcher.getActivityList(packageName, userHandle).firstOrNull()?.componentName
+        if (component != null) {
+            launcher.startAppDetailsActivity(component, userHandle, null, null)
+            return
+        }
+    } catch (e: Exception) {
+        // A profile that is paused or being removed refuses the request.
+        e.printStackTrace()
+    }
+    context.showToast(context.getString(R.string.unable_to_open_app_info))
 }
 
 fun openSearch(context: Context) {
@@ -478,7 +501,11 @@ fun Context.isSystemApp(packageName: String, user: UserHandle? = null): Boolean 
 fun Context.uninstall(packageName: String) {
     val intent = Intent(Intent.ACTION_DELETE)
     intent.data = Uri.parse("package:$packageName")
-    startActivity(intent)
+    try {
+        startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        showToast(R.string.unable_to_open_app)
+    }
 }
 
 @ColorInt

@@ -39,6 +39,7 @@ import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
+import app.olauncher.helper.isProfileAvailable
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
@@ -148,8 +149,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     override fun onLongClick(view: View): Boolean {
         when (view.id) {
             R.id.passwordManager -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
-            R.id.date -> {
-                showAppList(Constants.FLAG_SET_CALENDAR_APP)
+            R.id.date -> if (showAppList(Constants.FLAG_SET_CALENDAR_APP)) {
                 prefs.calendarAppPackage = ""
                 prefs.calendarAppClassName = ""
                 prefs.calendarAppUser = ""
@@ -511,13 +511,15 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     /**
-     * Keeps the password shortcut bound to an installed app: drops a binding whose app is gone,
-     * adopts a known password manager when nothing is chosen, and names the glyph after it for
-     * accessibility. An unbound glyph is drawn faded as the cue to pick an app.
+     * Keeps the password shortcut bound to an installed app: drops a binding whose app is gone
+     * (not one whose profile is merely paused or locked), adopts a known password manager when
+     * nothing is chosen, and names the glyph after it for accessibility. An unbound glyph is
+     * drawn faded as the cue to pick an app.
      */
     private fun populatePasswordManager() {
         val context = requireContext()
         if (prefs.passwordAppPackage.isNotBlank() &&
+            isProfileAvailable(context, prefs.passwordAppUser) &&
             !isPackageInstalled(context, prefs.passwordAppPackage, prefs.passwordAppUser)
         ) {
             prefs.clearPasswordApp()
@@ -636,12 +638,14 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
-    private fun showAppList(flag: Int) {
+    /** Opens the drawer for [flag]; returns whether it actually opened. */
+    private fun showAppList(flag: Int): Boolean {
         if (!navigateFromHome(R.id.action_mainFragment_to_appListFragment, bundleOf(Constants.Key.FLAG to flag)))
-            return
+            return false
         viewModel.getAppList()
         // Reached only once the drawer has actually opened.
         if (flag == Constants.FLAG_LAUNCH_APP) prefs.learnTip(Tip.OPEN_DRAWER)
+        return true
     }
 
     /**

@@ -69,13 +69,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun launchShortcut(appModel: AppModel.PinnedShortcut) {
         val launcher = appContext.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+        // Shortcut ids are only unique within their app, so match the package too.
         val query = LauncherApps.ShortcutQuery().apply {
+            setPackage(appModel.appPackage)
             setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
         }
-        launcher.getShortcuts(query, appModel.user)?.find { it.id == appModel.shortcutId }
-            ?.let { shortcut ->
-                launcher.startShortcut(shortcut, null, null)
+        try {
+            val shortcut = launcher.getShortcuts(query, appModel.user)
+                ?.find { it.id == appModel.shortcutId }
+            if (shortcut == null) {
+                appContext.showToast(appContext.getString(R.string.app_not_found))
+                return
             }
+            launcher.startShortcut(shortcut, null, null)
+        } catch (e: Exception) {
+            // A paused profile, a disabled shortcut or a missing target activity all throw here.
+            e.printStackTrace()
+            appContext.showToast(appContext.getString(R.string.unable_to_open_app))
+        }
     }
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {

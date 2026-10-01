@@ -81,7 +81,8 @@ everything else is gestures.
   Keepass2Android, Enpass, Keeper, LastPass, Dashlane, NordPass); until one
   is bound the glyph is drawn faded and tapping it opens the picker.
   **Long-press** the glyph to pick any other app; the same choice lives in
-  Settings → Home screen.
+  Settings → Home screen. A password manager in a paused work profile or a
+  locked Private Space stays bound until the app is actually uninstalled.
 - **Long-press** the date to choose which app it opens.
 - The date's alignment (left, center, right) is in Settings.
 - **Keyboard and mouse** (Chromebooks, desktop windows): scroll the mouse
@@ -122,7 +123,7 @@ without a long tail below them.
 - No matches? Enter searches the web. Start the query with `!` to search
   DuckDuckGo directly.
 - **Long-press an app** for its menu: **Uninstall · Rename · Group ·
-  Info**.
+  Info**. Saving an empty name in **Rename** brings back the original one.
   - **Group** opens a sheet named after the app, with two parts:
     - **Emphasize** (the switch at the top) makes the app bold and first
       in its group; the other apps in that group fold into one line. It

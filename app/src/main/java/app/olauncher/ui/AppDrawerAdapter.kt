@@ -70,6 +70,7 @@ class AppDrawerAdapter(
 
                 oldItem is AppModel.PinnedShortcut && newItem is AppModel.PinnedShortcut ->
                     oldItem.shortcutId == newItem.shortcutId &&
+                        oldItem.appPackage == newItem.appPackage &&
                         oldItem.user == newItem.user &&
                         oldItem.category == newItem.category
 
@@ -287,7 +288,7 @@ class AppDrawerAdapter(
         for (app in apps) {
             val key = when (app) {
                 is AppModel.App -> "app:${app.appPackage}|${app.user}"
-                is AppModel.PinnedShortcut -> "shortcut:${app.shortcutId}|${app.user}"
+                is AppModel.PinnedShortcut -> "shortcut:${app.appPackage}/${app.shortcutId}|${app.user}"
                 is AppModel.PrivateSpaceHeader -> "private-space"
                 is AppModel.GroupToggle -> "toggle:${app.toggleKey}"
             }
@@ -528,30 +529,21 @@ class AppDrawerAdapter(
             // The hint (the app's original name) only shows while the field is empty and is
             // also the field's accessible label, so it stays set while typing.
             appRename.setOnClickListener { openRenameEditor() }
-            etAppRename.setOnEditorActionListener { _, actionCode, _ ->
-                if (actionCode == EditorInfo.IME_ACTION_DONE) {
-                    val renameLabel = etAppRename.text.toString().trim()
-                    if (renameLabel.isNotBlank() && appModel.appPackage.isNotBlank()) {
-                        appRenameListener(appModel, renameLabel)
-                        closeRenameEditor()
-                    }
-                    true
-                }
-                false
-            }
-            tvSaveRename.setOnClickListener {
+            // A blank name drops the rename, so the row goes back to the app's (or the
+            // shortcut's) own label rather than borrowing the parent app's name.
+            fun saveRename() {
                 etAppRename.hideKeyboard()
-                val renameLabel = etAppRename.text.toString().trim()
-                if (renameLabel.isNotBlank() && appModel.appPackage.isNotBlank()) {
-                    appRenameListener(appModel, renameLabel)
-                } else {
-                    appRenameListener(
-                        appModel,
-                        getAppName(etAppRename.context, appModel.appPackage, appModel.user)
-                    )
-                }
+                if (appModel.appPackage.isNotBlank())
+                    appRenameListener(appModel, etAppRename.text.toString().trim())
                 closeRenameEditor()
             }
+            etAppRename.setOnEditorActionListener { _, actionCode, _ ->
+                if (actionCode == EditorInfo.IME_ACTION_DONE) {
+                    saveRename()
+                    true
+                } else false
+            }
+            tvSaveRename.setOnClickListener { saveRename() }
             appInfo.setOnClickListener { appInfoListener(appModel) }
             appCategory.setOnClickListener { appCategoryListener(appModel) }
             appDelete.setOnClickListener { appDeleteListener(appModel) }

@@ -336,7 +336,10 @@ class Prefs(context: Context) {
 
     fun getAppRenameLabel(appPackage: String): String = prefs.getString(appPackage, "").toString()
 
-    fun setAppRenameLabel(appPackage: String, renameLabel: String) = prefs.edit { putString(appPackage, renameLabel) }
+    /** A blank [renameLabel] drops the rename so the original label shows again. */
+    fun setAppRenameLabel(appPackage: String, renameLabel: String) = prefs.edit {
+        if (renameLabel.isBlank()) remove(appPackage) else putString(appPackage, renameLabel)
+    }
 
     fun getAppCategoryOverrides(appPackage: String): List<AppCategory>? {
         val raw = prefs.getString(APP_CATEGORY_OVERRIDE_PREFIX + appPackage, null) ?: return null

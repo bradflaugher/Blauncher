@@ -8,13 +8,9 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.net.Uri
-import android.os.UserHandle
 import android.provider.Settings
-import android.telephony.TelephonyManager
 import android.view.View
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
@@ -22,7 +18,6 @@ import androidx.activity.result.ActivityResultLauncher
 import app.olauncher.BuildConfig
 import app.olauncher.R
 import app.olauncher.data.Constants
-import java.util.Locale
 
 fun View.hideKeyboard() {
     this.clearFocus()
@@ -95,40 +90,6 @@ fun Context.isEinkDisplay(): Boolean {
         e.printStackTrace()
         false
     }
-}
-
-fun Context.searchOnPlayStore(query: String? = null): Boolean {
-    return try {
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("https://play.google.com/store/search?q=$query&c=apps")
-            ).addFlags(
-                Intent.FLAG_ACTIVITY_NO_HISTORY or
-                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT or
-                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-            )
-        )
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
-}
-
-fun Context.isPackageInstalled(packageName: String, userHandle: UserHandle = android.os.Process.myUserHandle()): Boolean {
-    val launcher = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-    val activityInfo = launcher.getActivityList(packageName, userHandle)
-    return activityInfo.isNotEmpty()
-}
-
-fun Context.isCountryIn(): Boolean {
-    val country = runCatching {
-        val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
-        telephonyManager?.simCountryIso?.takeIf { it.isNotBlank() }
-            ?: telephonyManager?.networkCountryIso?.takeIf { it.isNotBlank() }
-    }.getOrNull() ?: Locale.getDefault().country
-    return country.equals("IN", ignoreCase = true)
 }
 
 fun Long.hasBeenHours(hours: Int): Boolean =
