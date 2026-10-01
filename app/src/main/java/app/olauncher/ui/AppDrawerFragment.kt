@@ -224,7 +224,8 @@ class AppDrawerFragment : Fragment() {
             },
             appRenameListener = { appModel, renameLabel ->
                 val identifier = when (appModel) {
-                    is AppModel.PinnedShortcut -> appModel.shortcutId
+                    // Package-qualified: two apps may pin shortcuts with the same id.
+                    is AppModel.PinnedShortcut -> appModel.emphasisKey
                     is AppModel.App -> appModel.appPackage
                     else -> return@AppDrawerAdapter
                 }

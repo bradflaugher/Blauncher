@@ -132,7 +132,15 @@ private suspend fun getPinnedShortcuts(
                             it.shortcutId == shortcut.id && it.appPackage == shortcut.`package`
                         }
                         if (shortcut.isPinned && !listed) {
-                            val label = prefs.getAppRenameLabel(shortcut.id)
+                            val identity = AppModel.PinnedShortcut(
+                                appLabel = "",
+                                key = null,
+                                appPackage = shortcut.`package`,
+                                shortcutId = shortcut.id,
+                                user = profile,
+                            )
+                            val carriedEmphasis = prefs.migrateShortcutKeys(identity)
+                            val label = prefs.getAppRenameLabel(identity.emphasisKey)
                                 .takeIf { it.isNotBlank() }
                                 ?: shortcut.shortLabel?.toString()
                                 ?: shortcut.longLabel?.toString().orEmpty()
@@ -152,7 +160,9 @@ private suspend fun getPinnedShortcuts(
                                         isNew = false,
                                         user = profile,
                                         category = category,
-                                    ).let { it.copy(emphasized = it.emphasisKey in emphasizedApps) }
+                                    ).let {
+                                        it.copy(emphasized = carriedEmphasis || it.emphasisKey in emphasizedApps)
+                                    }
                                 )
                             }
                         }

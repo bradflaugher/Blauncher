@@ -27,12 +27,20 @@ sealed class AppModel : Comparable<AppModel> {
         }
 
     companion object {
-        /** The emphasis key for an app or pinned shortcut stored as package + user string. */
+        /**
+         * The emphasis key for an app or pinned shortcut stored as package + user string. A
+         * shortcut's key also names its package, since shortcut ids are only unique per app;
+         * it doubles as the shortcut's rename key.
+         */
         fun emphasisKeyFor(appPackage: String, userString: String, shortcutId: String?): String = when {
             appPackage.isBlank() -> ""
             shortcutId.isNullOrBlank() -> "$appPackage|$userString"
-            else -> "shortcut:$shortcutId|$userString"
+            else -> "shortcut:$appPackage/$shortcutId|$userString"
         }
+
+        /** The package-less shortcut emphasis key older versions stored; see [Prefs.migrateShortcutKeys]. */
+        fun legacyShortcutKey(shortcutId: String, userString: String): String =
+            "shortcut:$shortcutId|$userString"
     }
 
     fun withDimmed(dimmed: Boolean): AppModel = when (this) {
