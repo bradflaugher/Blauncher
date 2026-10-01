@@ -19,6 +19,13 @@ published alongside a `Blauncher.apk.sha256` checksum. Verify a download with:
 sha256sum -c Blauncher.apk.sha256
 ```
 
+Each APK and bundle also carries a signed build provenance attestation,
+which proves it was built by this repository's CI from a specific commit:
+
+```sh
+gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher
+```
+
 ## Design notes
 
 - The app requests no `INTERNET` permission; nothing is sent off the device.
