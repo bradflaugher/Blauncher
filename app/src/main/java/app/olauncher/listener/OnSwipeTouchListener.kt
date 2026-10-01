@@ -30,7 +30,8 @@ internal open class OnSwipeTouchListener(c: Context?) : OnTouchListener {
 
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         touchedView = view
-        if (motionEvent.action == MotionEvent.ACTION_UP)
+        // A release, or the system taking the gesture over, cancels the pending long press.
+        if (motionEvent.action == MotionEvent.ACTION_UP || motionEvent.action == MotionEvent.ACTION_CANCEL)
             longPressOn = false
         return gestureDetector.onTouchEvent(motionEvent)
     }

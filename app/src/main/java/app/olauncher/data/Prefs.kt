@@ -336,7 +336,27 @@ class Prefs(context: Context) {
 
     fun getAppRenameLabel(appPackage: String): String = prefs.getString(appPackage, "").toString()
 
-    fun setAppRenameLabel(appPackage: String, renameLabel: String) = prefs.edit { putString(appPackage, renameLabel) }
+    /** A blank [renameLabel] drops the rename so the original label shows again. */
+    fun setAppRenameLabel(appPackage: String, renameLabel: String) = prefs.edit {
+        if (renameLabel.isBlank()) remove(appPackage) else putString(appPackage, renameLabel)
+    }
+
+    /**
+     * Shortcut emphasis used to be keyed by shortcut id alone, which two apps can share. Moves a
+     * shortcut's old entry onto its package-qualified [AppModel.emphasisKey]; the first shortcut
+     * to claim an old entry keeps it. Returns whether an old emphasis was carried over.
+     *
+     * Old shortcut renames are not carried over: they sat under the bare id, in the same file as
+     * every other setting, so an id that happens to equal another key (a setting, or an app's
+     * rename) cannot be told apart from a real rename. Those shortcuts show their own label again.
+     */
+    fun migrateShortcutKeys(shortcut: AppModel.PinnedShortcut): Boolean {
+        val legacyEmphasis = AppModel.legacyShortcutKey(shortcut.shortcutId, shortcut.user.toString())
+        val emphasized = emphasizedApps
+        if (legacyEmphasis !in emphasized) return false
+        emphasizedApps = emphasized - legacyEmphasis + shortcut.emphasisKey
+        return true
+    }
 
     fun getAppCategoryOverrides(appPackage: String): List<AppCategory>? {
         val raw = prefs.getString(APP_CATEGORY_OVERRIDE_PREFIX + appPackage, null) ?: return null

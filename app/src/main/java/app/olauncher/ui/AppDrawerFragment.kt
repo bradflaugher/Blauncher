@@ -176,6 +176,9 @@ class AppDrawerFragment : Fragment() {
             flag,
             prefs.appLabelAlignment,
             appClickListener = { appModel ->
+                // A double tap (or a typed match auto-launching under a tap) lands here twice;
+                // only the first, while the drawer is still current, may act.
+                if (!isDrawerCurrent()) return@AppDrawerAdapter
                 if (flag == Constants.FLAG_SET_PASSWORD_APP && appModel !is AppModel.App) {
                     // Only a launchable app can be the password manager; stay here to pick again.
                     requireContext().showToast(R.string.password_manager_needs_app)
@@ -188,6 +191,7 @@ class AppDrawerFragment : Fragment() {
                     leaveDrawer()
             },
             appInfoListener = {
+                if (!isDrawerCurrent()) return@AppDrawerAdapter
                 openAppInfo(
                     requireContext(),
                     it.user,
@@ -220,7 +224,8 @@ class AppDrawerFragment : Fragment() {
             },
             appRenameListener = { appModel, renameLabel ->
                 val identifier = when (appModel) {
-                    is AppModel.PinnedShortcut -> appModel.shortcutId
+                    // Package-qualified: two apps may pin shortcuts with the same id.
+                    is AppModel.PinnedShortcut -> appModel.emphasisKey
                     is AppModel.App -> appModel.appPackage
                     else -> return@AppDrawerAdapter
                 }
@@ -243,6 +248,7 @@ class AppDrawerFragment : Fragment() {
                 viewModel.togglePrivateSpaceLock()
             },
             privateSpaceSettingsListener = {
+                if (!isDrawerCurrent()) return@AppDrawerAdapter
                 viewModel.openPrivateSpaceSettings()
                 findNavController().popBackStack(R.id.mainFragment, false)
             },
@@ -426,9 +432,11 @@ class AppDrawerFragment : Fragment() {
      * screen underneath (Settings, or even Home itself, leaving an empty window).
      */
     private fun leaveDrawer() {
-        val navController = findNavController()
-        if (navController.currentDestination?.id == R.id.appListFragment) navController.popBackStack()
+        if (isDrawerCurrent()) findNavController().popBackStack()
     }
+
+    private fun isDrawerCurrent(): Boolean =
+        findNavController().currentDestination?.id == R.id.appListFragment
 
     override fun onStart() {
         super.onStart()
