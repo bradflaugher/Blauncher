@@ -487,6 +487,18 @@ fun Context.openUrl(url: String) {
     }
 }
 
+/**
+ * Opens Blauncher's Play listing so it can be rated: in the Play Store app when there is one,
+ * else the web page in the browser. Only ever on a tap; the launcher never asks for a rating.
+ */
+fun Context.rateApp() {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, Constants.URL_PLAY_STORE_APP.toUri()))
+    } catch (_: ActivityNotFoundException) {
+        openUrl(Constants.URL_PLAY_STORE)
+    }
+}
+
 /** Opens the system share sheet with a line about Blauncher and its store link. */
 fun Context.shareApp() {
     val send = Intent(Intent.ACTION_SEND)
