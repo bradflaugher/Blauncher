@@ -14,6 +14,8 @@ class Prefs(context: Context) {
     private val FIRST_OPEN = "FIRST_OPEN"
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val LEARNED_TIPS = "LEARNED_TIPS"
+    private val TIPS_REVISION = "TIPS_REVISION"
+    private val CURRENT_TIPS_REVISION = 2
     private val USER_STATE = "USER_STATE"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val SEARCH_ENGINE = "SEARCH_ENGINE"
@@ -107,6 +109,7 @@ class Prefs(context: Context) {
         }
         migratePinnedCategory()
         migrateFirstSettingsOpen()
+        migrateTipsRevision()
     }
 
     // The single "settings opened once" flag grew into per-gesture tips. Anyone who already
@@ -115,6 +118,13 @@ class Prefs(context: Context) {
         if (!prefs.contains(FIRST_SETTINGS_OPEN)) return
         if (!prefs.getBoolean(FIRST_SETTINGS_OPEN, true)) learnAllTips()
         prefs.edit { remove(FIRST_SETTINGS_OPEN) }
+    }
+
+    // The home tour grew a third tip (the date and the key). Whoever finished the old tour skips it.
+    private fun migrateTipsRevision() {
+        if (prefs.getInt(TIPS_REVISION, 1) >= CURRENT_TIPS_REVISION) return
+        if (prefs.contains(LEARNED_TIPS)) storeLearnedTips(Onboarding.tipsLearnedOnUpgrade(learnedTips))
+        prefs.edit { putInt(TIPS_REVISION, CURRENT_TIPS_REVISION) }
     }
 
     // The single pinned group grew into an ordered list; carry the old choice over once.

@@ -487,6 +487,18 @@ fun Context.openUrl(url: String) {
     }
 }
 
+/** Opens the system share sheet with a line about Blauncher and its store link. */
+fun Context.shareApp() {
+    val send = Intent(Intent.ACTION_SEND)
+        .setType("text/plain")
+        .putExtra(Intent.EXTRA_TEXT, getString(R.string.share_app_text, Constants.URL_PLAY_STORE))
+    try {
+        startActivity(Intent.createChooser(send, getString(R.string.share_app)))
+    } catch (_: ActivityNotFoundException) {
+        showToast(R.string.nothing_to_share_with)
+    }
+}
+
 fun Context.isSystemApp(packageName: String, user: UserHandle? = null): Boolean {
     if (packageName.isBlank()) return true
     return try {

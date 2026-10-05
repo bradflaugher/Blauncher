@@ -6,17 +6,19 @@ your password manager. No app icons, dock, or widgets. Everything else is a
 gesture away.
 
 **Swipe up** for your apps. **Long-press** for settings. That is the whole
-interface. On first run a small tip card teaches those two gestures one at a
-time and then gets out of the way; **Settings → How it works** has the rest
-on one page, and the **[user guide](GUIDE.md)** covers everything.
+interface. On first run a small tip card teaches those two gestures, then
+what the date and the key do, one at a time, and gets out of the way;
+**Settings → Help and FAQ** has the rest on one page, and the
+**[user guide](GUIDE.md)** covers everything. Settings also has **Send
+feedback** (a new GitHub issue) and **Share Blauncher**.
 
 ## Screens
 
 <p align="center">
-  <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 2, Swipe up for your apps">
+  <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Swipe up for your apps">
   <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar reading Search the web beside a round key glyph for the password manager">
   <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: a one-line tip under the search field, then apps in groups, each marked by its own colored glyph; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
-  <img width="24%" src="docs/screenshots/settings.png" alt="Settings: Blauncher, Smart ordering, and Home screen cards">
+  <img width="24%" src="docs/screenshots/settings.png" alt="Settings: the Blauncher card with Help and FAQ, Send feedback and Share Blauncher, then Smart ordering">
 </p>
 
 <p align="center"><sub>First run &nbsp;·&nbsp; Home &nbsp;·&nbsp; App drawer &nbsp;·&nbsp; Settings</sub></p>
@@ -156,18 +158,23 @@ release notes) lives in `fastlane/metadata/android/en-US` in the layout
    the swipe-down-for-notifications gesture.
 4. **Screenshots** must be 9:16 or 16:9 PNG or JPEG without alpha. Tablet
    screenshots must be real tablet captures. The ones in `images/` are
-   captures of a debug build on the Android emulator (Pixel 8, Nexus 7 and
-   Pixel Tablet images) on a fresh install, so the first-run tips show:
-   - Size the screen to 9:16 first:
-     `adb shell wm size 1080x1920 && adb shell wm density 420` for the
-     phone, `1080x1920` at `280` for 7-inch, `1620x2880` at `320` for
-     10-inch (swap the numbers for landscape).
-   - Make Blauncher the home app
-     (`adb shell cmd role add-role-holder android.app.role.HOME com.bradflaugher.blauncher.debug`),
-     black out the wallpaper (`adb shell cmd wallpaper set-dim-amount 1`),
-     and tidy the status bar with System UI demo mode.
-   - Capture with `adb exec-out screencap -p > shot.png`, then drop the
-     alpha channel (`magick shot.png -alpha off PNG24:shot.png`).
+   captioned captures of a debug build on the Android emulator (Pixel 8,
+   Nexus 7 and Pixel Tablet images), made with the scripts in
+   `tools/screenshots/`:
+   - `prepare-device.sh <serial> phone|seven|ten [landscape]` sizes the
+     screen to 9:16 or 16:9, installs the debug APK, makes it the home app,
+     blacks out the wallpaper, sets dark mode and System UI demo mode, and
+     brings the first-run tips back (the debug build takes
+     `--ez reset_tips true` and `--ez skip_tips true` on its launch intent,
+     for screenshot and test runs).
+   - `capture.sh <serial> tools/screenshots/raw/<device>/<name>.png` saves
+     the current screen as RGB.
+   - `caption.py` (`uv run --with pillow tools/screenshots/caption.py`)
+     adds the headline and subline from `captions.tsv` in Roboto Light on
+     black, and writes every listed shot into `images/`. Pull the font once
+     with `adb pull /system/fonts/Roboto-Regular.ttf tools/screenshots/Roboto.ttf`.
+   - The README images in `docs/screenshots` are the raw captures, without
+     captions.
 
 ## Docs
 

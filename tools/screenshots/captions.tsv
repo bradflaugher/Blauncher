@@ -1,0 +1,17 @@
+device	raw	output	headline	subline
+phone	1_home_tip.png	1_home.png	Almost nothing on it	The date, a search bar, and a key to your passwords. A small tip shows the way.
+phone	2_drawer.png	2_drawer.png	Your apps, in groups	Bold the ones you use. The rest fold into one line.
+phone	6_search.png	3_search.png	Search from home	Your engine, your browser. Blauncher itself never goes online.
+phone	3_home_tip3.png	4_date_and_key.png	Date and key, one tap away	Your calendar and your password manager. Hold either to pick the app.
+phone	4_settings.png	5_settings.png	Long-press for settings	Help, feedback, and an order that learns on your phone only.
+phone	5_help.png	6_help.png	Every gesture on one page	Plus answers to the usual questions.
+ten	1_home_tip.png	1_home.png	Almost nothing on it	The date, a search bar, and a key to your passwords. A small tip shows the way.
+ten	2_drawer.png	2_drawer.png	Your apps, in groups	Bold the ones you use. The rest fold into one line.
+ten	3_settings.png	3_settings.png	Long-press for settings	Help, feedback, and an order that learns on your tablet only.
+ten	4_landscape_home_tip3.png	4_landscape_home.png	Turns with your tablet	Landscape, foldables and Chromebooks keep your place.
+ten	5_landscape_help.png	5_landscape_help.png	Every gesture on one page	Plus answers to the usual questions.
+seven	1_home_tip.png	1_home.png	Almost nothing on it	The date, a search bar, and a key to your passwords. A small tip shows the way.
+seven	2_drawer.png	2_drawer.png	Your apps, in groups	Bold the ones you use. The rest fold into one line.
+seven	5_home_tip3.png	3_date_and_key.png	Date and key, one tap away	Your calendar and your password manager. Hold either to pick the app.
+seven	3_settings.png	4_settings.png	Long-press for settings	Help, feedback, and an order that learns on your tablet only.
+seven	4_landscape_home_tip2.png	5_landscape_home.png	Turns with your tablet	Landscape, foldables and Chromebooks keep your place.

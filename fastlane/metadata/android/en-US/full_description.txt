@@ -1,6 +1,6 @@
 A black screen, the date, and almost nothing else.
 
-Blauncher is a minimal, gesture-driven Android launcher. The home screen is the date up top and, along the bottom, a search bar beside a key glyph that opens your password manager. No app icons, no dock, and no widgets. Swipe up for your apps. Long-press empty space for settings.
+Blauncher is a minimalist, gesture-driven home screen launcher for Android: free, open source, private, and distraction-free. The home screen is the date up top and, along the bottom, a search bar beside a key glyph that opens your password manager. No app icons, no dock, and no widgets. Swipe up for your apps. Long-press empty space for settings.
 
 HOME SCREEN
 • Tap the date for your calendar, or long-press it to choose another app. Place the date left, center, or right.
@@ -21,7 +21,8 @@ THROUGH THE DAY
 • Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
 
 EASY TO LEARN, ANYWHERE
-• On first run a small card teaches the two gestures, one at a time, and goes away once you have used them. Settings > How it works lists every gesture on one page.
+• On first run a small card teaches the gestures one at a time (swipe up, long-press, the date and the key) and goes away once you have used them.
+• Settings > Help and FAQ lists every gesture on one page, answers common questions, and brings the tips back. Send feedback opens a GitHub issue for bugs and ideas.
 • Phones stay in portrait. Tablets, foldables and Chromebooks rotate freely and keep your place when you rotate, fold or resize.
 • With a keyboard or mouse, the wheel, a letter key or Enter opens your apps, and right-click opens settings.
 • TalkBack gets every gesture as an action, and back is predictive.
@@ -31,6 +32,8 @@ PRIVATE BY CONSTRUCTION
 • What it learns, and any unsent search draft, stays in local preferences and is excluded from device backups.
 
 NO NONSENSE
-Blauncher is free. No ads. No network permission. No tracking. Requires Android 15 or newer.
+Blauncher is free. No ads, no in-app purchases, no network permission, no tracking. Requires Android 15 or newer.
+
+Fewer icons, less scrolling, more focus. Set Blauncher as your home app and give your phone a quieter start.
 
 Blauncher began as a fork of the open-source Olauncher by Tanuj Notes and is released under GPL-3.0.

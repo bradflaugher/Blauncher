@@ -15,6 +15,8 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
@@ -59,8 +61,8 @@ import kotlin.math.max
  * to the default browser's search engine next to a key glyph that opens the password
  * manager. Everything else is gestures on the empty space.
  *
- * Until the user has found the drawer and settings, a tip card above the search bar teaches
- * those two gestures one at a time (see [Onboarding]).
+ * Until the user has found the drawer, settings, and what the date and key do, a tip card above
+ * the search bar teaches them one at a time (see [Onboarding]).
  *
  * The search bar is a multi-line composer. Its text is treated as a draft: it survives
  * leaving the screen, the drawer, settings, rotation and a launcher restart, and is only
@@ -123,12 +125,26 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         when (view.id) {
             // Home button for recents feature disabled
             // R.id.recents -> {}
-            R.id.date -> openCalendarApp()
-            R.id.passwordManager -> openPasswordManager()
+            R.id.date -> {
+                prefs.learnTip(Tip.HOME_SHORTCUTS)
+                openCalendarApp()
+            }
+
+            R.id.passwordManager -> {
+                prefs.learnTip(Tip.HOME_SHORTCUTS)
+                openPasswordManager()
+            }
+
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
             R.id.coachCard -> when (Onboarding.nextHomeTip(prefs.learnedTips)) {
                 Tip.OPEN_DRAWER -> showAppList(Constants.FLAG_LAUNCH_APP)
                 Tip.OPEN_SETTINGS -> openSettings()
+                // Nothing to perform for this one: tapping the card says "got it".
+                Tip.HOME_SHORTCUTS -> {
+                    prefs.learnTip(Tip.HOME_SHORTCUTS)
+                    populateCoachCard()
+                }
+
                 else -> populateCoachCard()
             }
         }
@@ -148,8 +164,11 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     override fun onLongClick(view: View): Boolean {
         when (view.id) {
-            R.id.passwordManager -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
+            R.id.passwordManager -> if (showAppList(Constants.FLAG_SET_PASSWORD_APP))
+                prefs.learnTip(Tip.HOME_SHORTCUTS)
+
             R.id.date -> if (showAppList(Constants.FLAG_SET_CALENDAR_APP)) {
+                prefs.learnTip(Tip.HOME_SHORTCUTS)
                 prefs.calendarAppPackage = ""
                 prefs.calendarAppClassName = ""
                 prefs.calendarAppUser = ""
@@ -270,7 +289,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.passwordManager.setOnLongClickListener(this)
         binding.coachCard.setOnClickListener(this)
         binding.coachCard.setOnLongClickListener(this)
-        // Name what a long press does instead of TalkBack's generic "long press".
+        // Name what a tap and a long press do instead of TalkBack's generic "activate" and
+        // "long press". The key's tap label names its app, so it is set in populatePasswordManager().
+        ViewCompat.replaceAccessibilityAction(
+            binding.date, AccessibilityActionCompat.ACTION_CLICK,
+            getString(R.string.open_calendar), null
+        )
         ViewCompat.replaceAccessibilityAction(
             binding.date, AccessibilityActionCompat.ACTION_LONG_CLICK,
             getString(R.string.choose_calendar_app), null
@@ -304,33 +328,52 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         val total = Onboarding.homeTips.size
         binding.coachStep.text =
             getString(if (step == 1) R.string.tip_welcome_step else R.string.tip_step, step, total)
-        val settings = tip == Tip.OPEN_SETTINGS
-        binding.coachIcon.setImageResource(if (settings) R.drawable.ic_touch_hold else R.drawable.ic_swipe_up)
-        binding.coachTitle.setText(
-            if (settings) R.string.tip_open_settings_title else R.string.tip_open_drawer_title
-        )
-        binding.coachBody.setText(
-            if (settings) R.string.tip_open_settings_body else R.string.tip_open_drawer_body
-        )
+        val content = when (tip) {
+            Tip.OPEN_SETTINGS -> CoachContent(
+                R.drawable.ic_touch_hold, R.string.tip_open_settings_title,
+                R.string.tip_open_settings_body, R.string.tip_open_settings_action,
+            )
+
+            Tip.HOME_SHORTCUTS -> CoachContent(
+                R.drawable.ic_key, R.string.tip_home_shortcuts_title,
+                R.string.tip_home_shortcuts_body, R.string.got_it,
+            )
+
+            else -> CoachContent(
+                R.drawable.ic_swipe_up, R.string.tip_open_drawer_title,
+                R.string.tip_open_drawer_body, R.string.tip_open_drawer_action,
+            )
+        }
+        binding.coachIcon.setImageResource(content.icon)
+        binding.coachTitle.setText(content.title)
+        binding.coachBody.setText(content.body)
         // TalkBack reads "double-tap to open apps" rather than a bare "double-tap to activate".
         ViewCompat.replaceAccessibilityAction(
             binding.coachCard,
             AccessibilityActionCompat.ACTION_CLICK,
-            getString(if (settings) R.string.tip_open_settings_action else R.string.tip_open_drawer_action),
+            getString(content.action),
             null,
         )
         // Focus changes can land here while paused; the glyph only moves on a visible screen.
         if (isResumed) startCoachAnimation(tip)
     }
 
-    /** A slow nudge on the tip's glyph: a lift for the swipe, a swell for the long-press. */
+    /** What the tip card shows for one tip, and what TalkBack calls tapping it. */
+    private class CoachContent(
+        @DrawableRes val icon: Int,
+        @StringRes val title: Int,
+        @StringRes val body: Int,
+        @StringRes val action: Int,
+    )
+
+    /** A slow nudge on the tip's glyph: a lift for the swipe, a swell for a tap or long-press. */
     private fun startCoachAnimation(tip: Tip) {
         // Animations switched off in system settings leave the glyph still.
         if (!ValueAnimator.areAnimatorsEnabled()) return
         val icon = binding.coachIcon
         val lift = -6f * resources.displayMetrics.density
         coachAnimator = when (tip) {
-            Tip.OPEN_SETTINGS -> ObjectAnimator.ofPropertyValuesHolder(
+            Tip.OPEN_SETTINGS, Tip.HOME_SHORTCUTS -> ObjectAnimator.ofPropertyValuesHolder(
                 icon,
                 PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 0.8f),
                 PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 0.8f),
@@ -533,8 +576,16 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             }
         }
         val bound = prefs.passwordAppPackage.isNotBlank()
+        // "Password manager, Bitwarden": what the glyph is, then which app it opens.
         binding.passwordManager.contentDescription =
-            prefs.passwordAppName.ifBlank { getString(R.string.password_manager) }
+            if (bound) getString(R.string.setting_value, getString(R.string.password_manager), prefs.passwordAppName)
+            else getString(R.string.password_manager)
+        ViewCompat.replaceAccessibilityAction(
+            binding.passwordManager, AccessibilityActionCompat.ACTION_CLICK,
+            if (bound) getString(R.string.open_app_named, prefs.passwordAppName)
+            else getString(R.string.choose_password_manager),
+            null
+        )
         binding.passwordManager.alpha = if (bound) 1f else 0.5f
     }
 

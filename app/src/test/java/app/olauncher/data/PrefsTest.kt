@@ -1,10 +1,15 @@
 package app.olauncher.data
 
+import android.content.Context
 import android.os.Process
+import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
+import app.olauncher.helper.Onboarding
+import app.olauncher.helper.Tip
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,5 +72,30 @@ class PrefsTest {
 
         assertEquals("half-written query", prefs.searchDraft)
         assertEquals("", prefs.getAppRenameLabel(shortcut("com.example.notes", "SEARCH_DRAFT").emphasisKey))
+    }
+
+    @Test
+    fun skippingTheTipsSkipsEveryHomeTip() {
+        prefs.resetTips()
+        prefs.learnAllTips()
+        assertNull(Onboarding.nextHomeTip(prefs.learnedTips))
+    }
+
+    @Test
+    fun anUpdateFromTheTwoTipTourDoesNotReopenTheCard() {
+        // What a build before the date-and-key tip left behind after its tour was done.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences("app.olauncher", 0).edit(commit = true) {
+            putStringSet("LEARNED_TIPS", setOf("OPEN_DRAWER", "OPEN_SETTINGS"))
+            remove("TIPS_REVISION")
+        }
+
+        val upgraded = Prefs(context)
+
+        assertTrue(Tip.HOME_SHORTCUTS in upgraded.learnedTips)
+        assertNull(Onboarding.nextHomeTip(upgraded.learnedTips))
+        // Show tips again brings the whole tour back, the new tip included.
+        upgraded.resetTips()
+        assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(Prefs(context).learnedTips))
     }
 }

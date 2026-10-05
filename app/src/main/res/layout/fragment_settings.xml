@@ -74,9 +74,33 @@
                     android:paddingVertical="8dp"
                     android:text="@string/set_as_default_launcher" />
 
-                <!-- The quick guide to every gesture, and the way to bring the tips back. -->
+                <!-- Help: every gesture and common questions on one page, and the way to bring the tips back. -->
                 <TextView
                     android:id="@+id/howItWorks"
+                    style="@style/TextSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/how_it_works" />
+
+                <TextView
+                    android:id="@+id/sendFeedback"
+                    style="@style/TextSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/send_feedback" />
+
+                <TextView
+                    android:id="@+id/shareApp"
                     style="@style/TextSmall"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -86,7 +110,7 @@
                     android:minHeight="48dp"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="8dp"
-                    android:text="@string/how_it_works" />
+                    android:text="@string/share_app" />
 
             </LinearLayout>
 

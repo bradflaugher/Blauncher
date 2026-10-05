@@ -9,6 +9,7 @@ import android.text.SpannableStringBuilder
 import android.graphics.Typeface
 import android.text.style.BulletSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -39,6 +40,7 @@ import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
+import app.olauncher.helper.shareApp
 import app.olauncher.helper.showToast
 import java.util.Locale
 
@@ -99,6 +101,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
             R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
             R.id.howItWorks -> showQuickGuide()
+            R.id.sendFeedback -> requireContext().openUrl(Constants.URL_FEEDBACK)
+            R.id.shareApp -> requireContext().shareApp()
             // Home button for recents feature disabled
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
@@ -154,6 +158,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.appInfo.setOnClickListener(this)
         binding.setLauncher.setOnClickListener(this)
         binding.howItWorks.setOnClickListener(this)
+        binding.sendFeedback.setOnClickListener(this)
+        binding.shareApp.setOnClickListener(this)
         binding.autoShowKeyboard.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
@@ -261,8 +267,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     /**
-     * Every gesture on one page, for anyone who skipped the tips or forgot one. The swipe lines
-     * name what the user has actually set, so the guide never describes a different phone.
+     * Help: every gesture on one page, for anyone who skipped the tips or forgot one, then the
+     * questions people ask about a launcher with nothing on it. The swipe lines name what the
+     * user has actually set, so the guide never describes a different phone.
      */
     private fun showQuickGuide() {
         val off = getString(R.string.guide_gesture_off)
@@ -278,6 +285,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             val start = guide.length
             guide.append(getString(res))
             guide.setSpan(StyleSpan(Typeface.BOLD), start, guide.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            guide.setSpan(RelativeSizeSpan(1.15f), start, guide.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         fun line(text: String) {
             guide.append("\n")
@@ -300,6 +308,21 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         line(getString(R.string.guide_app_menu))
         line(getString(R.string.guide_emphasize))
         line(getString(R.string.guide_close_drawer))
+        heading(R.string.guide_faq_heading)
+        fun question(q: Int, a: Int) {
+            guide.append("\n\n")
+            val start = guide.length
+            guide.append(getString(q))
+            guide.setSpan(StyleSpan(Typeface.BOLD), start, guide.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            guide.append("\n").append(getString(a))
+        }
+        question(R.string.faq_old_launcher_q, R.string.faq_old_launcher_a)
+        question(R.string.faq_icons_q, R.string.faq_icons_a)
+        question(R.string.faq_wrong_group_q, R.string.faq_wrong_group_a)
+        question(R.string.faq_order_q, R.string.faq_order_a)
+        question(R.string.faq_fewer_apps_q, R.string.faq_fewer_apps_a)
+        question(R.string.faq_online_q, R.string.faq_online_a)
+        question(R.string.faq_feedback_q, R.string.faq_feedback_a)
 
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.how_it_works_title)

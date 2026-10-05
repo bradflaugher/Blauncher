@@ -32,6 +32,16 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        /**
+         * Debug builds only, for test and screenshot runs:
+         * `adb shell am start -n com.bradflaugher.blauncher.debug/app.olauncher.MainActivity --ez skip_tips true`
+         * turns the first-run tips off, and `--ez reset_tips true` brings them back.
+         */
+        const val EXTRA_SKIP_TIPS = "skip_tips"
+        const val EXTRA_RESET_TIPS = "reset_tips"
+    }
+
     private lateinit var prefs: Prefs
     private lateinit var navController: NavController
     private lateinit var viewModel: MainViewModel
@@ -58,6 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = Prefs(this)
+        applyDebugExtras(intent)
         if (isEinkDisplay()) prefs.appTheme = AppCompatDelegate.MODE_NIGHT_NO
         AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
         super.onCreate(savedInstanceState)
@@ -127,6 +138,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onNewIntent(intent: Intent) {
+        applyDebugExtras(intent)
         backToHomeScreen()
         super.onNewIntent(intent)
     }
@@ -134,6 +146,16 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
+    }
+
+    private fun applyDebugExtras(intent: Intent?) {
+        if (!BuildConfig.DEBUG || intent == null) return
+        if (intent.getBooleanExtra(EXTRA_RESET_TIPS, false)) prefs.resetTips()
+        if (intent.getBooleanExtra(EXTRA_SKIP_TIPS, false)) prefs.learnAllTips()
+        // One-shot: the activity keeps its launch intent across recreation (rotation, resizing,
+        // theme changes), so drop the extras once applied or they would run again each time.
+        intent.removeExtra(EXTRA_RESET_TIPS)
+        intent.removeExtra(EXTRA_SKIP_TIPS)
     }
 
     private fun initObservers(viewModel: MainViewModel) {

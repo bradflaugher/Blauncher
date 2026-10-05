@@ -47,6 +47,10 @@ gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher
   `ACTION_WEB_SEARCH` intent. Either way the launcher itself makes no
   network request; from the hand-off on, the text is the browser's and the
   chosen engine's data, subject to their privacy terms.
+- **Send feedback** and **Share Blauncher** in Settings are plain intents: an
+  `ACTION_VIEW` of the GitHub new-issue page in the browser, and the system
+  share sheet (`ACTION_SEND`) with a fixed line and the Play link. The
+  launcher adds nothing about the device or its apps to either.
 - The swipe-down notifications gesture calls the hidden
   `StatusBarManager.expandNotificationsPanel()` method by reflection (there
   is no public equivalent) under the `EXPAND_STATUS_BAR` permission. If a
