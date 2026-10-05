@@ -40,6 +40,7 @@ import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
+import app.olauncher.helper.rateApp
 import app.olauncher.helper.shareApp
 import app.olauncher.helper.showToast
 import java.util.Locale
@@ -103,6 +104,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.howItWorks -> showQuickGuide()
             R.id.sendFeedback -> requireContext().openUrl(Constants.URL_FEEDBACK)
             R.id.shareApp -> requireContext().shareApp()
+            R.id.rateApp -> requireContext().rateApp()
             // Home button for recents feature disabled
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
             R.id.autoShowKeyboard -> toggleKeyboardText()
@@ -160,6 +162,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.howItWorks.setOnClickListener(this)
         binding.sendFeedback.setOnClickListener(this)
         binding.shareApp.setOnClickListener(this)
+        binding.rateApp.setOnClickListener(this)
         binding.autoShowKeyboard.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)

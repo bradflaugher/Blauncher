@@ -10,7 +10,8 @@ interface. On first run a small tip card teaches those two gestures, then
 what the date and the key do, one at a time, and gets out of the way;
 **Settings → Help and FAQ** has the rest on one page, and the
 **[user guide](GUIDE.md)** covers everything. Settings also has **Send
-feedback** (a new GitHub issue) and **Share Blauncher**.
+feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
+(its Google Play page; the app never asks for a rating).
 
 ## Screens
 
@@ -18,7 +19,7 @@ feedback** (a new GitHub issue) and **Share Blauncher**.
   <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Swipe up for your apps">
   <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar reading Search the web beside a round key glyph for the password manager">
   <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: a one-line tip under the search field, then apps in groups, each marked by its own colored glyph; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
-  <img width="24%" src="docs/screenshots/settings.png" alt="Settings: the Blauncher card with Help and FAQ, Send feedback and Share Blauncher, then Smart ordering">
+  <img width="24%" src="docs/screenshots/settings.png" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering">
 </p>
 
 <p align="center"><sub>First run &nbsp;·&nbsp; Home &nbsp;·&nbsp; App drawer &nbsp;·&nbsp; Settings</sub></p>

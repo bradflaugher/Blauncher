@@ -105,12 +105,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:layout_marginBottom="8dp"
                     android:gravity="center_vertical"
                     android:minHeight="48dp"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="8dp"
                     android:text="@string/share_app" />
+
+                <!-- Opens the Play listing on a tap; Blauncher never asks for a rating. -->
+                <TextView
+                    android:id="@+id/rateApp"
+                    style="@style/TextSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/rate_app" />
 
             </LinearLayout>
 

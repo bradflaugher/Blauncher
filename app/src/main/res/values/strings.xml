@@ -155,10 +155,11 @@
     <string name="faq_online_a">No. It has no internet permission. A search opens in your browser, which does the searching.</string>
     <string name="faq_feedback_q">Found a bug, or have an idea?</string>
     <string name="faq_feedback_a">Settings → Send feedback opens a new issue on GitHub.</string>
-    <!-- Sharing and feedback, from the Blauncher card in settings. -->
+    <!-- Sharing, feedback and rating, from the Blauncher card in settings. -->
     <string name="share_app">Share Blauncher</string>
     <string name="share_app_text">Blauncher, a minimal Android launcher: %1$s</string>
     <string name="send_feedback">Send feedback</string>
+    <string name="rate_app">Rate Blauncher</string>
     <string name="nothing_to_share_with">No app can share this</string>
     <!-- Home and window -->
     <string name="open_calendar">Open calendar</string>

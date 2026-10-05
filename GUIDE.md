@@ -176,6 +176,9 @@ Long-press anywhere on the home screen to get here.
     your browser, for bugs and ideas.
   - **Share Blauncher**: the system share sheet with a line and the Google
     Play link. Nothing is ever shared without you choosing it.
+  - **Rate Blauncher**: opens Blauncher's Google Play page (in the Play
+    Store app, or the browser if there is none) to rate or review it.
+    Blauncher never asks you to rate it; this is only here if you want it.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
   **Search engine** (where the search bar sends its text), **Bold date**,
