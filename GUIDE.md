@@ -1,9 +1,9 @@
 # Blauncher User Guide
 
 Blauncher is a minimal launcher with no app icons, no dock, and no visible
-buttons. Everything is a gesture or a tap on text. The app teaches the two
-gestures you need on first run (see [First-run tips](#first-run-tips)); this
-page is the full tour.
+buttons. Everything is a gesture or a tap on text. The app teaches what you
+need on first run (see [First-run tips](#first-run-tips)); this page is the
+full tour, and [Questions](#questions) answers the usual ones.
 
 ## Install and set up
 
@@ -17,12 +17,15 @@ page is the full tour.
 ## First-run tips
 
 A fresh install shows a small card above the search bar that teaches one
-gesture at a time:
+thing at a time:
 
 1. **Swipe up for your apps.** The arrow on the card nudges upward. Swipe up
    anywhere (the card included), or just tap the card.
 2. **Long-press for settings.** Touch and hold any empty spot, or tap the
    card.
+3. **Tap the date or the key.** The date opens your calendar and the key
+   your password manager; hold either to pick the app. Use either one, or
+   tap the card to say got it.
 
 Each tip goes away for good once you have done what it says; nothing times
 out, so a tip is never gone before it has done its job. The first time the
@@ -31,11 +34,12 @@ app, long-press an app for its menu. It goes once you open any app's menu,
 or tap its **×**.
 
 - **×** on the home card skips all the tips at once.
-- **Settings → How it works** lists every gesture on one page (with the apps
-  your swipes are actually set to) and has **Show tips again** to bring the
-  tips back.
+- **Settings → Help and FAQ** lists every gesture on one page (with the apps
+  your swipes are actually set to), answers the usual questions, and has
+  **Show tips again** to bring the tips back.
 - Updating from a build without tips: if you had already opened settings,
-  the tips are skipped for you.
+  the tips are skipped for you. If you had already finished the two-tip
+  tour, the newer date-and-key tip is skipped too.
 - With TalkBack, the home screen offers **Open apps** and **Open settings**
   as actions, and the tip card reads as a button that does what it teaches.
 
@@ -165,8 +169,13 @@ In **Settings → Smart ordering**:
 
 Long-press anywhere on the home screen to get here.
 
-- **Blauncher card** — set/change default launcher, app info, and **How it
-  works**: a one-page summary of every gesture, with **Show tips again**.
+- **Blauncher card** — set/change default launcher, app info, and:
+  - **Help and FAQ**: every gesture on one page, the questions below, and
+    **Show tips again**.
+  - **Send feedback**: opens a new issue on the project's GitHub page in
+    your browser, for bugs and ideas.
+  - **Share Blauncher**: the system share sheet with a line and the Google
+    Play link. Nothing is ever shared without you choosing it.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
   **Search engine** (where the search bar sends its text), **Bold date**,
@@ -178,6 +187,28 @@ Long-press anywhere on the home screen to get here.
 - **Gestures** — the swipe-left and swipe-right apps (long-press either row
   to disable that gesture) and what swipe-down does (notifications or
   search).
+
+## Questions
+
+The same answers are in **Settings → Help and FAQ**.
+
+- **How do I go back to my old launcher?** Settings → Change default
+  launcher, then pick it. Android's own Settings → Apps → Default apps →
+  Home app works too.
+- **Where are the icons and widgets?** There are none, on purpose. Swipe up
+  and type a few letters instead.
+- **An app is in the wrong group.** Long-press it, choose **Group**, and
+  tick the groups you want.
+- **Why did the order of the groups change?** Smart ordering follows the
+  time of day and the apps you open. Pin groups or reset the learning in
+  Settings → Smart ordering.
+- **Can I see fewer apps?** Emphasize the ones you use (long-press, Group,
+  Emphasize). The rest of that group folds into one line, and search still
+  finds them.
+- **Does Blauncher go online?** No. It has no internet permission. A search
+  opens in your browser, which does the searching.
+- **Found a bug, or have an idea?** Settings → **Send feedback** opens a new
+  issue on GitHub.
 
 ## Privacy notes
 

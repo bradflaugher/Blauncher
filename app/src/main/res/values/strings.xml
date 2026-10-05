@@ -112,10 +112,12 @@
     <string name="tip_open_settings_title">Long-press for settings</string>
     <string name="tip_open_settings_body">Touch and hold any empty spot, or tap here.</string>
     <string name="tip_open_settings_action">Open settings</string>
+    <string name="tip_home_shortcuts_title">Tap the date or the key</string>
+    <string name="tip_home_shortcuts_body">The date opens your calendar, the key your password manager. Hold either to pick the app.</string>
     <string name="tip_app_menu">Type to find an app. Long-press any app to rename, regroup, or uninstall it.</string>
     <string name="tips_skip">Skip tips</string>
-    <string name="tips_skipped">Tips off. Settings → How it works has them all.</string>
-    <string name="how_it_works">How it works</string>
+    <string name="tips_skipped">Tips off. Settings → Help and FAQ has them all.</string>
+    <string name="how_it_works">Help and FAQ</string>
     <string name="how_it_works_title">How Blauncher works</string>
     <string name="got_it">Got it</string>
     <string name="show_tips_again">Show tips again</string>
@@ -137,7 +139,29 @@
     <string name="guide_app_menu">Long-press an app: uninstall, rename, group, info</string>
     <string name="guide_emphasize">Long-press a colored glyph: make that app bold and first</string>
     <string name="guide_close_drawer">Swipe down from the top of the list, or go back, to close it</string>
+    <!-- Questions people ask about a launcher with nothing on it; each is a bold line, then its answer. -->
+    <string name="guide_faq_heading">Questions</string>
+    <string name="faq_old_launcher_q">How do I go back to my old launcher?</string>
+    <string name="faq_old_launcher_a">Settings → Change default launcher, then pick it. Android\'s own Settings → Apps → Default apps → Home app works too.</string>
+    <string name="faq_icons_q">Where are the icons and widgets?</string>
+    <string name="faq_icons_a">There are none, on purpose. Swipe up and type a few letters instead.</string>
+    <string name="faq_wrong_group_q">An app is in the wrong group</string>
+    <string name="faq_wrong_group_a">Long-press it, choose Group, and tick the groups you want.</string>
+    <string name="faq_order_q">Why did the order of the groups change?</string>
+    <string name="faq_order_a">Smart ordering follows the time of day and the apps you open. Pin groups or reset the learning in Settings → Smart ordering.</string>
+    <string name="faq_fewer_apps_q">Can I see fewer apps?</string>
+    <string name="faq_fewer_apps_a">Emphasize the ones you use (long-press, Group, Emphasize). The rest of that group folds into one line, and search still finds them.</string>
+    <string name="faq_online_q">Does Blauncher go online?</string>
+    <string name="faq_online_a">No. It has no internet permission. A search opens in your browser, which does the searching.</string>
+    <string name="faq_feedback_q">Found a bug, or have an idea?</string>
+    <string name="faq_feedback_a">Settings → Send feedback opens a new issue on GitHub.</string>
+    <!-- Sharing and feedback, from the Blauncher card in settings. -->
+    <string name="share_app">Share Blauncher</string>
+    <string name="share_app_text">Blauncher, a minimal Android launcher: %1$s</string>
+    <string name="send_feedback">Send feedback</string>
+    <string name="nothing_to_share_with">No app can share this</string>
     <!-- Home and window -->
+    <string name="open_calendar">Open calendar</string>
     <string name="open_app_named">Open %1$s</string>
     <string name="choose_calendar_app">Choose calendar app</string>
     <string name="no_app_for_link">No app can open this link</string>

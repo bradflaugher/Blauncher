@@ -28,15 +28,34 @@ class OnboardingTest {
     }
 
     @Test
-    fun noHomeTipOnceBothAreLearned() {
-        assertNull(Onboarding.nextHomeTip(setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS)))
+    fun theDateAndKeyTipComesAfterSettings() {
+        assertEquals(Tip.HOME_SHORTCUTS, Onboarding.nextHomeTip(setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS)))
+    }
+
+    @Test
+    fun noHomeTipOnceAllAreLearned() {
+        assertNull(Onboarding.nextHomeTip(setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS, Tip.HOME_SHORTCUTS)))
     }
 
     @Test
     fun stepsAreNumberedFromOne() {
         assertEquals(1, Onboarding.homeStep(Tip.OPEN_DRAWER))
         assertEquals(2, Onboarding.homeStep(Tip.OPEN_SETTINGS))
-        assertEquals(2, Onboarding.homeTips.size)
+        assertEquals(3, Onboarding.homeStep(Tip.HOME_SHORTCUTS))
+        assertEquals(3, Onboarding.homeTips.size)
+    }
+
+    @Test
+    fun anUpgradeFromTheFinishedTwoStepTourAddsNoNewTip() {
+        val upgraded = Onboarding.tipsLearnedOnUpgrade(setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS, Tip.APP_MENU))
+        assertNull(Onboarding.nextHomeTip(upgraded))
+    }
+
+    @Test
+    fun anUpgradePartWayThroughTheTourKeepsTeaching() {
+        val upgraded = Onboarding.tipsLearnedOnUpgrade(setOf(Tip.OPEN_DRAWER))
+        assertEquals(setOf(Tip.OPEN_DRAWER), upgraded)
+        assertEquals(Tip.OPEN_SETTINGS, Onboarding.nextHomeTip(upgraded))
     }
 
     @Test
