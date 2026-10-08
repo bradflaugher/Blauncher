@@ -48,7 +48,8 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   folded apps, so nothing is ever out of reach. Long-press a glyph to toggle
   emphasis in place.
 - **An order that follows your day.** Groups shift with the time of day, news
-  in the morning, focus during work, media in the evening, then sharpen from
+  in the morning, focus during work, media in the evening, sleep and
+  meditation from about 8:30 pm, then sharpen from
   the apps you actually open. Apps stay alphabetical inside each group with
   emphasized ones first. Pin any groups to the top; AI Agents is pinned by
   default. Reset the learning any time in Settings.

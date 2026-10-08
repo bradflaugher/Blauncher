@@ -26,6 +26,7 @@ enum class AppCategory(
     SHOPPING("Shopping", R.drawable.ic_category_shopping, 0xFFDCB45F.toInt(), 0xFF946F20.toInt()),
     TRAVEL("Places", R.drawable.ic_category_places, 0xFF4FC1FF.toInt(), 0xFF007ABD.toInt()),
     HEALTH("Health", R.drawable.ic_category_health, 0xFFCE9178.toInt(), 0xFFAE5F3F.toInt()),
+    SLEEP("Sleep", R.drawable.ic_category_sleep, 0xFF8C9EFF.toInt(), 0xFF3D5AFE.toInt()),
     TOOLS("Tools", R.drawable.ic_category_tools, 0xFF9CDCFE.toInt(), 0xFF027ABA.toInt()),
     OTHER("Other", R.drawable.ic_category_other, 0xFF969696.toInt(), 0xFF757575.toInt());
 

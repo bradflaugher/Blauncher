@@ -43,6 +43,11 @@ class SmartOrderTest {
 
         val evening = SmartOrder.orderCategories(emptyList(), null, 20 * 60 + 30, weekend = false)
         assertEquals(AppCategory.MEDIA, evening.first())
+        assertTrue(rank(evening, AppCategory.SLEEP) <= 2)
+
+        val bedtime = SmartOrder.orderCategories(emptyList(), null, 22 * 60, weekend = false)
+        assertEquals(AppCategory.SLEEP, bedtime.first())
+        assertTrue(rank(earlyMorning, AppCategory.SLEEP) > rank(earlyMorning, AppCategory.NEWS))
 
         val weekendMorning = SmartOrder.orderCategories(emptyList(), null, 9 * 60, weekend = true)
         assertTrue(rank(weekendMorning, AppCategory.HEALTH) < rank(weekendMorning, AppCategory.PRODUCTIVITY))

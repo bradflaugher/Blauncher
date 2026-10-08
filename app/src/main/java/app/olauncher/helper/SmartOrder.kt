@@ -85,6 +85,8 @@ object SmartOrder {
             weekday = listOf(Peak(6.5, 1.5, 0.65), Peak(12.0, 1.5, 0.45)),
             weekend = listOf(Peak(9.0, 3.0, 0.75)),
         ),
+        // Wind-down: climbs into the top few from about 8:30 pm and leads late at night.
+        AppCategory.SLEEP to Curve(0.02, listOf(Peak(22.0, 2.0, 1.0))),
         AppCategory.TOOLS to Curve(0.08, listOf()),
         AppCategory.OTHER to Curve(0.0, listOf()),
     )
