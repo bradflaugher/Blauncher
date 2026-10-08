@@ -32,6 +32,10 @@ class AppCategorizerTest {
             "com.anthropic.claude Claude" to AppCategory.AI_AGENTS,
             "com.google.android.apps.bard Gemini" to AppCategory.AI_AGENTS,
             "ai.perplexity.app.android Perplexity" to AppCategory.AI_AGENTS,
+            "com.getsomeheadspace.android Headspace" to AppCategory.SLEEP,
+            "com.calm.android Calm" to AppCategory.SLEEP,
+            "com.example.zen Daily Meditation" to AppCategory.SLEEP,
+            "com.example.tracker Sleep Tracker" to AppCategory.SLEEP,
         )
 
         examples.forEach { (app, expected) ->

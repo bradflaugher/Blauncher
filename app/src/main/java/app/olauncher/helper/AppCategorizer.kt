@@ -30,6 +30,10 @@ object AppCategorizer {
         "com.amazon.kindle" to AppCategory.MEDIA,
         "com.audible.application" to AppCategory.MEDIA,
         "com.overdrive.mobile.android.libby" to AppCategory.MEDIA,
+        "com.getsomeheadspace.android" to AppCategory.SLEEP,
+        "com.calm.android" to AppCategory.SLEEP,
+        "com.spotlightsix.zentimerlite2" to AppCategory.SLEEP,
+        "com.urbandroid.sleep" to AppCategory.SLEEP,
     )
 
     private val semanticTerms = linkedMapOf(
@@ -54,8 +58,12 @@ object AppCategorizer {
             "tax", "wallet"
         ),
         AppCategory.HEALTH to setOf(
-            "club", "exercise", "fit", "fitness", "gym", "health", "meditate", "pilates", "run",
-            "sleep", "strava", "tennis", "workout", "wellness"
+            "club", "exercise", "fit", "fitness", "gym", "health", "pilates", "run", "strava",
+            "tennis", "workout", "wellness"
+        ),
+        AppCategory.SLEEP to setOf(
+            "bedtime", "breathe", "calm", "headspace", "insight timer", "meditate", "meditation",
+            "mindful", "mindfulness", "sleep", "white noise"
         ),
         AppCategory.TRAVEL to setOf(
             "airline", "ballpark", "bicycle", "bike", "car", "cinema", "dining", "flight",

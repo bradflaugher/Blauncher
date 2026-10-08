@@ -149,7 +149,8 @@ without a long tail below them.
 ## Smart ordering
 
 The order of the groups is not fixed — it follows the time of day (news
-surfaces in the morning, focus apps during work hours, media in the evening)
+surfaces in the morning, focus apps during work hours, media in the evening,
+sleep and meditation apps such as Headspace or Calm from about 8:30 pm)
 and quietly learns from what you actually open. Learning happens entirely on
 this device, is never sent anywhere, and fades after a couple of weeks. Apps
 stay alphabetical inside each group, with emphasized apps first.
