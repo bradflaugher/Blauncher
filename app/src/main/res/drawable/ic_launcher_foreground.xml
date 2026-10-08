@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Blauncher's mark: a geometric lowercase "b" whose bowl shares the stem's stroke,
-  lit with a sky-to-cobalt gradient. Sized inside the 66dp adaptive-icon safe zone.
+  white on black like the launcher itself. Sized inside the 66dp adaptive-icon safe zone.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
+        android:fillColor="#FFFFFFFF"
         android:fillType="evenOdd"
-        android:pathData="M37.26,32.67 A4.59,4.59 0 0 1 46.44,32.67 L46.44,48.24 A16.74,16.74 0 1 1 37.26,63.18 Z M54.0,55.62 A7.56,7.56 0 1 0 54.0,70.74 A7.56,7.56 0 1 0 54.0,55.62 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endColor="#FF3D63FF"
-                android:endX="71.28"
-                android:endY="79.92"
-                android:startColor="#FF8FD0FF"
-                android:startX="36.72"
-                android:startY="28.08"
-                android:type="linear" />
-        </aapt:attr>
-    </path>
+        android:pathData="M37.26,32.67 A4.59,4.59 0 0 1 46.44,32.67 L46.44,48.24 A16.74,16.74 0 1 1 37.26,63.18 Z M54.0,55.62 A7.56,7.56 0 1 0 54.0,70.74 A7.56,7.56 0 1 0 54.0,55.62 Z" />
 </vector>
