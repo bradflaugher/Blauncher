@@ -82,7 +82,7 @@ class PrefsTest {
     }
 
     @Test
-    fun anUpdateFromTheTwoTipTourDoesNotReopenTheCard() {
+    fun anUpdateFromTheTwoTipTourTeachesOnlyTheSearchBar() {
         // What a build before the date-and-key tip left behind after its tour was done.
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences("app.olauncher", 0).edit(commit = true) {
@@ -93,7 +93,10 @@ class PrefsTest {
         val upgraded = Prefs(context)
 
         assertTrue(Tip.HOME_SHORTCUTS in upgraded.learnedTips)
-        assertNull(Onboarding.nextHomeTip(upgraded.learnedTips))
+        // Swipe up no longer opens the apps, so the tip for the search bar comes back.
+        assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(upgraded.learnedTips))
+        upgraded.learnTip(Tip.OPEN_DRAWER)
+        assertNull(Onboarding.nextHomeTip(Prefs(context).learnedTips))
         // Show tips again brings the whole tour back, the new tip included.
         upgraded.resetTips()
         assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(Prefs(context).learnedTips))

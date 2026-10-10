@@ -1,16 +1,16 @@
 A black screen, the date, and almost nothing else.
 
-Blauncher is a minimalist, gesture-driven home screen launcher for Android: free, open source, private, and distraction-free. The home screen is the date up top and, along the bottom, a search bar beside a key glyph that opens your password manager. No app icons, no dock, and no widgets. Swipe up for your apps. Long-press empty space for settings.
+Blauncher is a minimalist, gesture-driven home screen launcher for Android: free, open source, private, and distraction-free. The home screen is the date up top and, along the bottom, a search bar beside a shortcut button for your password manager. No app icons, no dock, and no widgets. Tap the search bar for your apps. Long-press empty space for settings.
 
 HOME SCREEN
 • Tap the date for your calendar, or long-press it to choose another app. Place the date left, center, or right.
-• One search bar for your apps and the web: matching apps are listed as you type to tap, and Enter searches the web. The bar grows to a few lines, then scrolls, and unsent text stays as a draft. A web search opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. Or choose Browser default and let the browser search. The launcher itself makes no network request.
-• The key beside the search bar opens your password manager. It binds to one you already have installed (Bitwarden, 1Password, Proton Pass, KeePassDX, and others), and you can point it at any app.
-• Swipe down for notifications, or for search. Swipe left and swipe right open two apps you choose.
+• One search bar for your apps and the web: tap it and every app is listed under it, narrowing to the matches as you type. Tap an app to open it; Enter searches the web. The bar grows to a few lines, then scrolls, and unsent text stays as a draft. A web search opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. Or choose Browser default and let the browser search. The launcher itself makes no network request.
+• The shortcut button beside the search bar opens your password manager. It binds to one you already have (Bitwarden, 1Password, Proton Pass, KeePassDX, and others); point it at any app and pick from some thirty glyphs.
+• Swipe up, left and right open three apps you choose; the first swipe each way asks which. Swipe down for notifications, or for search.
 
-THE APP DRAWER
-• The keyboard is already open. One matching app launches itself. Enter launches the first. Start with a space to look around without launching.
-• No match? Enter searches the web. Start with ! for DuckDuckGo.
+YOUR APPS
+• Home and the app drawer are one surface: tap the search bar and it rides to the top with every app below it. Swipe down or go back to close.
+• An app opens only when you tap it, so Enter always searches the web.
 • Apps are grouped on the device, such as AI Agents, People, Focus, News, Media, and Tools. Each group has a small colored glyph. Apps stay alphabetical inside the group, with emphasized ones first.
 • Long-press an app to rename it, set its groups (more than one, if you like), or emphasize it. Emphasized apps go bold and first. The rest of that group folds into a single line that opens when you tap it. Search still reaches the folded apps.
 • A Private Space, when the device has one, sits at the bottom of the drawer behind a tap to unlock.
@@ -21,10 +21,10 @@ THROUGH THE DAY
 • Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
 
 EASY TO LEARN, ANYWHERE
-• On first run a small card teaches the gestures one at a time (swipe up, long-press, the date and the key) and goes away once you have used them.
+• On first run a small card teaches the gestures one at a time (the search bar, long-press, the date and the shortcut) and goes away once you have used them.
 • Settings > Help and FAQ lists every gesture on one page, answers common questions, and brings the tips back. Send feedback opens a GitHub issue for bugs and ideas.
 • Phones stay in portrait. Tablets, foldables and Chromebooks rotate freely and keep your place when you rotate, fold or resize.
-• With a keyboard or mouse, the wheel, a letter key or Enter opens your apps, and right-click opens settings.
+• With a keyboard or mouse, the wheel or Enter opens your apps, a letter key starts a search with it, and right-click opens settings.
 • TalkBack gets every gesture as an action, and back is predictive.
 
 PRIVATE BY CONSTRUCTION

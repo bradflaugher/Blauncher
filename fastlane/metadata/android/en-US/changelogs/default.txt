@@ -1,5 +1,4 @@
-- A third first-run tip: tap the date for your calendar, the key for your password manager, and hold either to pick the app. Already finished the tour? It stays out of your way.
-- Settings > Help and FAQ: every gesture plus answers to common questions, and Show tips again.
-- Send feedback opens a GitHub issue; Share Blauncher opens the share sheet.
-- TalkBack names what the date and key open, and the clear button is easier to hit.
-- Rate Blauncher in Settings opens its Play page. No nagging.
+- Home and your apps are one surface: tap the search bar and your apps come up under it, narrowing as you type.
+- Swipe up, left and right each open an app you pick; the first swipe asks which.
+- The key button opens any app, with about thirty glyphs to choose from.
+- The search bar keeps its size until your text needs another line.

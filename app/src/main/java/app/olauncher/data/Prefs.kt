@@ -15,7 +15,7 @@ class Prefs(context: Context) {
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val LEARNED_TIPS = "LEARNED_TIPS"
     private val TIPS_REVISION = "TIPS_REVISION"
-    private val CURRENT_TIPS_REVISION = 2
+    private val CURRENT_TIPS_REVISION = 3
     private val USER_STATE = "USER_STATE"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val SEARCH_ENGINE = "SEARCH_ENGINE"
@@ -127,10 +127,12 @@ class Prefs(context: Context) {
         prefs.edit { remove(FIRST_SETTINGS_OPEN) }
     }
 
-    // The home tour grew a third tip (the date and the key). Whoever finished the old tour skips it.
+    // The home tour grew a third tip (the date and the key) in revision 2, and its first tip changed
+    // from swiping up to tapping the search bar in revision 3; see Onboarding.tipsLearnedOnUpgrade.
     private fun migrateTipsRevision() {
-        if (prefs.getInt(TIPS_REVISION, 1) >= CURRENT_TIPS_REVISION) return
-        if (prefs.contains(LEARNED_TIPS)) storeLearnedTips(Onboarding.tipsLearnedOnUpgrade(learnedTips))
+        val stored = prefs.getInt(TIPS_REVISION, 1)
+        if (stored >= CURRENT_TIPS_REVISION) return
+        if (prefs.contains(LEARNED_TIPS)) storeLearnedTips(Onboarding.tipsLearnedOnUpgrade(learnedTips, stored))
         prefs.edit { putInt(TIPS_REVISION, CURRENT_TIPS_REVISION) }
     }
 
