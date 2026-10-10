@@ -1,78 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- "Select an app": the picker behind a gesture, the date or the key. Its search field wears the
+     home screen's search-bar pill so the two read as the same control. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/primaryShadeDarkColor"
     android:orientation="vertical">
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="8dp" />
-
-    <LinearLayout
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:imeOptions="actionSearch"
-            android:paddingHorizontal="7dp"
-            android:paddingVertical="0dp"
-            android:textCursorDrawable="@null"
-            app:closeIcon="@null"
-            app:iconifiedByDefault="false"
-            app:queryBackground="@null"
-            app:queryHint=" ___"
-            app:searchIcon="@null"
-            app:theme="@style/AppSearchText" />
-
-    </LinearLayout>
-
-    <!-- First-run tip: gone for good once an app's long-press menu has been opened. -->
-    <LinearLayout
-        android:id="@+id/drawerTip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="24dp"
+        android:layout_marginHorizontal="@dimen/home_margin_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="@dimen/search_row_margin_bottom"
+        android:background="@drawable/bg_search_bar"
+        android:imeOptions="actionSearch"
+        android:minHeight="52dp"
+        android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:visibility="gone"
-        tools:ignore="UseCompoundDrawables">
-
-        <TextView
-            style="@style/TextTip"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/tip_app_menu" />
-
-        <ImageView
-            android:id="@+id/drawerTipDismiss"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/got_it"
-            android:padding="13dp"
-            android:src="@drawable/ic_close" />
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="4dp" />
+        android:textCursorDrawable="@null"
+        app:closeIcon="@null"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@null"
+        app:queryHint="@string/select_an_app"
+        app:searchHintIcon="@null"
+        app:searchIcon="@drawable/ic_search"
+        app:theme="@style/AppSearchText" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/drawer_margin_horizontal"
         android:layout_weight="1"
         android:clipChildren="false"
         android:clipToPadding="false"

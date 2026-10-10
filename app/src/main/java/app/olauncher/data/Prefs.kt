@@ -19,7 +19,6 @@ class Prefs(context: Context) {
     private val USER_STATE = "USER_STATE"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val SEARCH_ENGINE = "SEARCH_ENGINE"
-    private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val HOME_ALIGNMENT = "HOME_ALIGNMENT"
     private val APP_LABEL_ALIGNMENT = "APP_LABEL_ALIGNMENT"
     private val DATE_BOLD = "DATE_BOLD"
@@ -53,6 +52,7 @@ class Prefs(context: Context) {
     private val PASSWORD_APP_PACKAGE = "PASSWORD_APP_PACKAGE"
     private val PASSWORD_APP_USER = "PASSWORD_APP_USER"
     private val PASSWORD_APP_CLASS_NAME = "PASSWORD_APP_CLASS_NAME"
+    private val SHORTCUT_GLYPH = "SHORTCUT_GLYPH"
 
     private val SHORTCUT_ID_SWIPE_LEFT = "SHORTCUT_ID_SWIPE_LEFT"
     private val IS_SHORTCUT_SWIPE_LEFT = "IS_SHORTCUT_SWIPE_LEFT"
@@ -169,10 +169,6 @@ class Prefs(context: Context) {
     var userState: String
         get() = prefs.getString(USER_STATE, Constants.UserState.START).toString()
         set(value) = prefs.edit { putString(USER_STATE, value).apply() }
-
-    var autoShowKeyboard: Boolean
-        get() = prefs.getBoolean(AUTO_SHOW_KEYBOARD, true)
-        set(value) = prefs.edit { putBoolean(AUTO_SHOW_KEYBOARD, value).apply() }
 
     /** Unsent text in the home-screen search bar; kept until it is sent or cleared. */
     var searchDraft: String
@@ -297,7 +293,15 @@ class Prefs(context: Context) {
         get() = prefs.getString(CALENDAR_APP_CLASS_NAME, "").toString()
         set(value) = prefs.edit { putString(CALENDAR_APP_CLASS_NAME, value).apply() }
 
-    /** The app behind the home-screen password shortcut; blank until chosen or auto-detected. */
+    /** The glyph the shortcut button beside the search bar wears; the key until another is picked. */
+    var shortcutGlyph: ShortcutGlyph
+        get() = ShortcutGlyph.fromName(prefs.getString(SHORTCUT_GLYPH, null))
+        set(value) = prefs.edit { putString(SHORTCUT_GLYPH, value.name) }
+
+    /**
+     * The app behind the shortcut button beside the search bar (stored under its original
+     * "password" keys): blank until chosen, or until a known password manager is auto-detected.
+     */
     var passwordAppName: String
         get() = prefs.getString(PASSWORD_APP_NAME, "").toString()
         set(value) = prefs.edit { putString(PASSWORD_APP_NAME, value) }

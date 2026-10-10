@@ -1,13 +1,14 @@
 # Blauncher
 
 A minimal, gesture-driven Android launcher that gets out of the way. The
-home screen is a black screen with the date, a search bar, and a shortcut to
-your password manager. No app icons, dock, or widgets. Everything else is a
+home screen is a black screen with the date, a search bar, and a shortcut
+button (your password manager to start, any app you like after). No app
+icons, dock, or widgets. Everything else is a
 gesture away.
 
 **Swipe up** for your apps. **Long-press** for settings. That is the whole
 interface. On first run a small tip card teaches those two gestures, then
-what the date and the key do, one at a time, and gets out of the way;
+what the date and the shortcut do, one at a time, and gets out of the way;
 **Settings → Help and FAQ** has the rest on one page, and the
 **[user guide](GUIDE.md)** covers everything. Settings also has **Send
 feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
@@ -17,7 +18,7 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 
 <p align="center">
   <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Swipe up for your apps">
-  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager">
+  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar beside a round shortcut button wearing a key glyph">
   <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: a one-line tip under the search field, then apps in groups, each marked by its own colored glyph; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
   <img width="24%" src="docs/screenshots/settings.png" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering">
 </p>
@@ -27,21 +28,23 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 ## What it does
 
 - **A home screen with almost nothing on it.** The date up top; along the
-  bottom, a search bar and a key glyph that opens your password manager. The
-  search bar is one search for apps and the web: the apps your text matches
-  are listed above it to tap, and Enter sends your query to the engine you
-  choose
+  bottom, a search bar and a shortcut button. The search bar is one search
+  for apps and the web: what you type narrows your apps, listed under the
+  bar, to tap, and Enter sends your query to the engine you choose
   (divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage,
   Ecosia, Perplexity, ChatGPT) in your default browser, or hands it to the
   browser's own engine.
-  The key glyph finds an installed password manager (Bitwarden, 1Password,
-  Proton Pass, KeePassDX, and others) on its own and can be pointed at any
-  app. Swipe down for notifications, swipe left or right for two apps of your
+  The shortcut button finds an installed password manager (Bitwarden,
+  1Password, Proton Pass, KeePassDX, and others) on its own and wears a key;
+  point it at any app and give it any of some thirty line-art glyphs. Swipe down for notifications, swipe left or right for two apps of your
   choice.
-- **Type, don't hunt.** The keyboard opens with the drawer. Type a few
-  letters: a single match launches itself, and Enter launches the first one.
-  No match? Enter sends the text to the web. Prefix `!` for DuckDuckGo, or a
-  leading space to browse without auto-launch.
+- **Home and the drawer are one surface.** Swipe up anywhere and the search
+  bar rides up to the top of the screen under your finger, with every app
+  filling in below it. Tap the bar instead and the keyboard comes up too: type
+  a few letters and the list narrows to the matches, best first. There is one
+  search with one rule: an app opens only when you tap it, and Enter always
+  searches the web. Swipe down from the bar or the top of the list, or go
+  back, and it all settles back to the quiet home screen.
 - **Apps in groups, your picks on top.** Apps are sorted on-device into groups
   such as AI Agents, People, Focus, News, Media, and Tools, each with a small
   colored glyph. Long-press an app to change its groups, including several at
@@ -65,8 +68,8 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   [`SECURITY.md`](SECURITY.md).
 - **Phones, tablets, foldables and Chromebooks.** Phones stay in portrait;
   larger screens rotate freely and keep your place when they do. With a
-  keyboard or mouse, the wheel, a letter key, the up arrow or Enter opens
-  the drawer and right-click opens Settings. Back is predictive everywhere
+  keyboard or mouse, the wheel, the up arrow or Enter opens the apps, a
+  letter key starts a search with it, and right-click opens Settings. Back is predictive everywhere
   but Home, and TalkBack gets every gesture as an action.
 
 ## Latest Android, no compatibility code

@@ -83,7 +83,9 @@ class MainActivity : AppCompatActivity() {
         val swallowBackOnHome = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {}
         }
-        onBackPressedDispatcher.addCallback(this, swallowBackOnHome)
+        // Added at once rather than on start, so it sits below Home's own callback, which puts
+        // the app sheet away first.
+        onBackPressedDispatcher.addCallback(swallowBackOnHome)
         navController.addOnDestinationChangedListener { _, destination, _ ->
             swallowBackOnHome.isEnabled = destination.id == R.id.mainFragment
         }
@@ -183,6 +185,7 @@ class MainActivity : AppCompatActivity() {
         if (viewModel.isPrivateSpaceToggling) return
         if (navController.currentDestination?.id != R.id.mainFragment)
             navController.popBackStack(R.id.mainFragment, false)
+        viewModel.closeAppSheet.call()
     }
 
     private fun openLauncherChooser(resetFailed: Boolean) {

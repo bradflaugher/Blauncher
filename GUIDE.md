@@ -23,14 +23,15 @@ thing at a time:
    anywhere (the card included), or just tap the card.
 2. **Long-press for settings.** Touch and hold any empty spot, or tap the
    card.
-3. **Tap the date or the key.** The date opens your calendar and the key
-   your password manager; hold either to pick the app. Use either one, or
+3. **Tap the date or the shortcut.** The date opens your calendar and the
+   button beside the search bar your shortcut app (a password manager to
+   start); hold either to pick the app. Use either one, or
    tap the card to say got it.
 
 Each tip goes away for good once you have done what it says; nothing times
 out, so a tip is never gone before it has done its job. The first time the
-app drawer opens, one line under the search field adds: type to find an
-app, long-press an app for its menu. It goes once you open any app's menu,
+apps come up, one line under the search bar adds: type to find an app,
+long-press an app for its menu. It goes once you open any app's menu,
 or tap its **×**.
 
 - **×** on the home card skips all the tips at once.
@@ -39,34 +40,41 @@ or tap its **×**.
   **Show tips again** to bring the tips back.
 - Updating from a build without tips: if you had already opened settings,
   the tips are skipped for you. If you had already finished the two-tip
-  tour, the newer date-and-key tip is skipped too.
+  tour, the newer date-and-shortcut tip is skipped too.
 - With TalkBack, the home screen offers **Open apps** and **Open settings**
   as actions, and the tip card reads as a button that does what it teaches.
 
 ## The home screen
 
 The home screen is the date at the top and, along the bottom, a search bar
-beside a round key glyph that opens your password manager. The notification
-bar is always visible and the middle of the screen is empty on purpose:
-everything else is gestures.
+beside a round shortcut button (a key, for your password manager, until you
+choose otherwise). The notification bar is always visible and the middle of
+the screen is empty on purpose: everything else is gestures.
+
+Home and the app drawer are one surface. The search bar sits on top of a
+sheet holding every app: swipe up and the sheet follows your finger, the bar
+riding up to the top of the screen and your apps filling in below it while
+the date fades away. Let go past a short pull (or flick) and it settles open;
+anything less and it settles back.
 
 | Gesture | What it does |
 | --- | --- |
 | **Long-press empty space** | Opens **Settings** — this is the big one to know |
-| Swipe up | Opens the app drawer |
+| Swipe up | Lifts the search bar to the top with your apps below it |
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens the camera (configurable) |
 | Swipe right | Opens the phone dialer (configurable) |
 | Tap the date | Opens your calendar |
 
 - **Search bar** — the pill reading *Search apps and the web*: one search
-  for both. Tap it and type.
-  - The apps your text matches are listed just above the bar, best match
-    first (a name that starts with your text beats one that only contains
-    it). Tap any of them to open it.
+  for both, and the only one. Tap it and the apps come up with the keyboard.
+  - As you type, the apps below the bar narrow to the ones your text
+    matches, best match first (a name that starts with your text beats one
+    that only contains it). Tap any of them to open it; nothing opens by
+    itself.
   - **Enter** (the keyboard's Go key) or the filled **send** button that
-    replaces the key glyph while there is text always searches the web, even
-    when an app matches: an app opens only when you tap it. So you can search
+    replaces the shortcut button while there is text always searches the
+    web, even when an app matches: an app opens only when you tap it. So you can search
     for `weather` with a Weather app installed.
   - The box grows to a few lines and then scrolls, and there is no length
     limit, so whole paragraphs are fine. Shift+Enter on a hardware keyboard
@@ -80,36 +88,40 @@ everything else is gestures.
     as a web search and lets the browser choose the engine. Some browsers
     only put the text in their address bar and wait for enter, which is
     why it is not the default. Failing everything, DuckDuckGo opens.
-  - Unsent text is a **draft**: it stays if you tap elsewhere, open the
-    drawer or settings, switch apps to copy something, rotate, or the
-    launcher restarts. Only a successful web search, opening an app from the
-    list above the bar, or the **×** button empties the bar, and if no app
-    could take the search the text stays put.
-- **Password manager** — the key glyph beside the search bar launches your
-  password manager. On first run it binds to a known password manager
+  - Unsent text is a **draft**: it stays if you close the apps, scroll the
+    list, open settings, switch apps to copy something, rotate, or the
+    launcher restarts. Only a successful web search, opening an app while
+    there is text, or the **×** button empties the bar, and if no app could
+    take the search the text stays put.
+- **Shortcut button** — the round button beside the search bar opens one
+  app of your choice. On first run it binds to a known password manager
   already installed (Bitwarden, 1Password, Proton Pass, KeePassDX,
-  Keepass2Android, Enpass, Keeper, LastPass, Dashlane, NordPass); until one
-  is bound the glyph is drawn faded and tapping it opens the picker.
-  **Long-press** the glyph to pick any other app; the same choice lives in
-  Settings → Home screen. A password manager in a paused work profile or a
-  locked Private Space stays bound until the app is actually uninstalled.
+  Keepass2Android, Enpass, Keeper, LastPass, Dashlane, NordPass) and wears a
+  key; until an app is bound the glyph is drawn faded and tapping it opens
+  the picker. **Long-press** it to pick any other app (the same choice is
+  Settings → Home screen → *Shortcut app*), and pick its look from about
+  thirty line-art glyphs (lock, shield, card, camera, phone, chat, mail,
+  music, pin, globe, book, pencil, clock, sparkle, terminal, bolt, star,
+  heart and the drawer's group glyphs) in Settings → Home screen →
+  *Shortcut icon*. An app in a paused work profile or a locked Private Space
+  stays bound until it is actually uninstalled.
 - **Long-press** the date to choose which app it opens.
 - The date's alignment (left, center, right) is in Settings.
 - **Keyboard and mouse** (Chromebooks, desktop windows): scroll the mouse
-  wheel or type a letter, the up arrow or Enter to open the app drawer;
-  right-click empty space for Settings.
+  wheel, or press the up arrow or Enter, to bring up your apps; type a letter
+  to start a search with it; right-click empty space for Settings.
 - **TalkBack**: every home gesture — all apps, Settings, the swipe-left and
   swipe-right apps (when enabled) and the swipe-down action — is also in the
   home screen's custom actions menu.
-- Back does nothing on the home screen, as in any launcher. Everywhere
-  else it is predictive back: start the back swipe and the screen behind
+- Back puts your apps away; with them down it does nothing on the home
+  screen, as in any launcher. Everywhere else it is predictive back: start the back swipe and the screen behind
   peeks through before you let go. Phones stay in portrait; tablets,
   unfolded foldables and desktop windows rotate freely, and rotating,
   folding or resizing keeps you on the screen you were on.
 
-## The app drawer
+## Your apps
 
-Swipe up from the home screen. Apps are listed in **groups** (AI Agents,
+Swipe up from the home screen (or tap the search bar). Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
 glyph (a deeper shade of the same color in the light theme, so it stays
 legible), alphabetical within the group. An **emphasized** app is bold and
@@ -120,18 +132,17 @@ without a long tail below them.
 
 - **Tap the folded line** to expand the group in place; the row turns into
   **− fewer** and tapping it again folds the group back. Expansion lasts
-  for the current visit only: the drawer always opens compact.
+  for the current visit only: your apps always come up compact.
 - Folded apps are never out of reach: **search matches every app**, folded
   or not, and a freshly installed app (marked ✦) stays visible in its group
   until it is an hour old — listed just above the folded line, never counted
   in it.
 - Groups without an emphasized app list every app as before.
 
-- **Search first**: the keyboard opens automatically. Type a few letters —
-  if exactly one app matches, it launches by itself. Matches are listed best
-  first, as on the home screen; press enter to launch the first one. Start with a space to browse without auto-launch.
-- No matches? Enter searches the web. Start the query with `!` to search
-  DuckDuckGo directly.
+- **Search** is the bar above the list. Swiping up leaves the keyboard down
+  so you can browse; tap the bar to type. Matches are listed best first, and
+  an app opens only when you tap it. Enter always searches the web.
+- Scrolling the list puts the keyboard away; the text stays.
 - **Long-press an app** for its menu: **Uninstall · Rename · Group ·
   Info**. Saving an empty name in **Rename** brings back the original one.
   - **Group** opens a sheet named after the app, with two parts:
@@ -150,7 +161,8 @@ without a long tail below them.
   emphasis toggle are offered as actions on the app, no long-press needed.
 - If your device has a **Private Space**, it appears at the bottom of the
   drawer with a tap-to-unlock row.
-- Swipe down from the top of the list, or go back, to close the drawer.
+- Swipe down from the search bar or the top of the list, or go back, to put
+  your apps away. Pressing the home button or opening an app does too.
 
 ## Smart ordering
 
@@ -187,10 +199,10 @@ Long-press anywhere on the home screen to get here.
     Store app, or the browser if there is none) to rate or review it.
     Blauncher never asks you to rate it; this is only here if you want it.
 - **Smart ordering** — see above.
-- **Home screen** — **Password manager** (the app the key glyph opens),
-  **Search engine** (where the search bar sends web searches), **Bold date**,
-  and the date's alignment (long-press *Date alignment* to also apply it to
-  the app drawer).
+- **Home screen** — **Shortcut app** (the app the button beside the search
+  bar opens), **Shortcut icon** (the glyph it wears), **Search engine**
+  (where the search bar sends web searches), **Bold date**, and the date's
+  alignment (long-press *Date alignment* to also apply it to your apps).
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size, which scales on top of the system font size rather than
   replacing it.

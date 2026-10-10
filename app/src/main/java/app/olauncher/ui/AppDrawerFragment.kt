@@ -1,64 +1,37 @@
 package app.olauncher.ui
 
-import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Bundle
-import android.os.Process
-import android.text.Spannable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.BaseInputConnection
-import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
-import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.Recycler
 import app.olauncher.MainViewModel
 import app.olauncher.R
 import app.olauncher.data.AppModel
-import app.olauncher.data.AppCategory
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
-import app.olauncher.data.SearchEngine
-import app.olauncher.databinding.DialogAppGroupsBinding
 import app.olauncher.databinding.FragmentAppDrawerBinding
-import app.olauncher.databinding.ItemGroupChoiceBinding
-import app.olauncher.helper.deletePinnedShortcut
-import app.olauncher.helper.Tip
 import app.olauncher.helper.hideKeyboard
-import app.olauncher.helper.isSystemApp
-import app.olauncher.helper.openAppInfo
-import app.olauncher.helper.openSearch
-import app.olauncher.helper.openUrl
-import app.olauncher.helper.showKeyboard
 import app.olauncher.helper.showToast
-import app.olauncher.helper.uninstall
 
+/**
+ * "Select an app": the plain list used to choose the app behind a gesture, the date or the key.
+ * Browsing and searching apps to open them happens on the home screen's sheet instead; this
+ * screen only picks. Its search field takes the keyboard only when tapped.
+ */
 class AppDrawerFragment : Fragment() {
 
-    private lateinit var prefs: Prefs
     private lateinit var adapter: AppDrawerAdapter
-    private lateinit var linearLayoutManager: LinearLayoutManager
-    private var searchTextView: TextView? = null
-    private var cachedIsCjkKeyboard: Boolean? = null
-
-    private var flag = Constants.FLAG_LAUNCH_APP
-    private var currentAppList: List<AppModel>? = null
-    private var currentPrivateSpaceApps: List<AppModel>? = null
-    private var currentPrivateSpaceLocked: Boolean = true
-    private var currentPrivateSpaceAvailable: Boolean = false
+    private var flag = Constants.FLAG_SET_SWIPE_LEFT_APP
 
     private val viewModel: MainViewModel by activityViewModels()
     private var _binding: FragmentAppDrawerBinding? = null
@@ -75,15 +48,12 @@ class AppDrawerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        prefs = Prefs(requireContext())
-        arguments?.let {
-            flag = it.getInt(Constants.Key.FLAG, Constants.FLAG_LAUNCH_APP)
-        }
-
+        flag = arguments?.getInt(Constants.Key.FLAG, flag) ?: flag
         initViews()
-        initSearch()
         initAdapter()
-        initObservers()
+        viewModel.appList.observe(viewLifecycleOwner) {
+            adapter.setAppList(it.orEmpty().toMutableList())
+        }
     }
 
     private fun initViews() {
@@ -95,356 +65,63 @@ class AppDrawerFragment : Fragment() {
             root.setPadding(safe.left, safe.top, safe.right, maxOf(safe.bottom, ime.bottom))
             insets
         }
-        val isPicker = flag in Constants.APP_PICKER_FLAGS
-        if (isPicker)
-            binding.search.queryHint = getString(R.string.select_an_app)
-        // One line under the search field until the user has opened an app's menu once.
-        binding.drawerTip.isVisible = flag == Constants.FLAG_LAUNCH_APP && !prefs.isTipLearned(Tip.APP_MENU)
-        binding.drawerTipDismiss.setOnClickListener { learnAppMenuTip() }
-        try {
-            searchTextView = binding.search.findViewById(androidx.appcompat.R.id.search_src_text)
-            searchTextView?.gravity = prefs.appLabelAlignment
-            // The drawer's visual hint is a bare underline; give TalkBack a real one instead.
-            val spokenHint = getString(if (isPicker) R.string.select_an_app else R.string.search_apps)
-            searchTextView?.let {
-                ViewCompat.setAccessibilityDelegate(it, object : AccessibilityDelegateCompat() {
-                    override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
-                        super.onInitializeAccessibilityNodeInfo(host, info)
-                        info.hintText = spokenHint
-                    }
-                })
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun initSearch() {
         binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            // Enter picks nothing: an app is chosen only by tapping it.
             override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query?.startsWith("!") == true)
-                    requireContext().openUrl(SearchEngine.DUCKDUCKGO.searchUrl(query.trim()).orEmpty())
-                else if (adapter.itemCount == 0)
-                    requireContext().openSearch(query?.trim())
-                else
-                    adapter.launchFirstInList()
+                binding.search.hideKeyboard()
                 return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                try {
-                    adapter.allowAutoLaunch = !isSearchComposing()
-                    adapter.filter.filter(newText)
-                    return true
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                return false
+                adapter.search(newText)
+                return true
             }
         })
-    }
-
-    private fun isSearchComposing(): Boolean {
-        val text = searchTextView?.text
-        if (text !is Spannable) return false
-        val start = BaseInputConnection.getComposingSpanStart(text)
-        val end = BaseInputConnection.getComposingSpanEnd(text)
-        if (start !in 0 until end) return false
-        return isCjkKeyboard()
-    }
-
-    private fun isCjkKeyboard(): Boolean {
-        cachedIsCjkKeyboard?.let { return it }
-        val result = try {
-            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            val subtype = imm.currentInputMethodSubtype
-            val language = when {
-                subtype == null -> ""
-                subtype.languageTag.isNotEmpty() -> subtype.languageTag // e.g. "zh-CN", "ja-JP", "en-US"
-                else -> subtype.locale // deprecated fallback, e.g. "zh_CN"
-            }
-            language.startsWith("zh") || language.startsWith("ja") || language.startsWith("ko")
-        } catch (e: Exception) {
-            false
+        binding.search.findViewById<View>(androidx.appcompat.R.id.search_src_text)?.let {
+            ViewCompat.setAccessibilityDelegate(it, object : AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    info.hintText = getString(R.string.select_an_app)
+                }
+            })
         }
-        cachedIsCjkKeyboard = result
-        return result
     }
 
     private fun initAdapter() {
         adapter = AppDrawerAdapter(
             flag,
-            prefs.appLabelAlignment,
+            Prefs(requireContext()).appLabelAlignment,
             appClickListener = { appModel ->
-                // A double tap (or a typed match auto-launching under a tap) lands here twice;
-                // only the first, while the drawer is still current, may act.
-                if (!isDrawerCurrent()) return@AppDrawerAdapter
+                // A double tap lands here twice; only the first, while the picker is still
+                // current, may act.
+                if (!isPickerCurrent()) return@AppDrawerAdapter
                 if (flag == Constants.FLAG_SET_PASSWORD_APP && appModel !is AppModel.App) {
                     // Only a launchable app can be the password manager; stay here to pick again.
                     requireContext().showToast(R.string.password_manager_needs_app)
                     return@AppDrawerAdapter
                 }
                 viewModel.selectedApp(appModel, flag)
-                if (flag == Constants.FLAG_LAUNCH_APP)
-                    findNavController().popBackStack(R.id.mainFragment, false)
-                else
-                    leaveDrawer()
+                findNavController().popBackStack()
             },
-            appInfoListener = {
-                if (!isDrawerCurrent()) return@AppDrawerAdapter
-                openAppInfo(
-                    requireContext(),
-                    it.user,
-                    it.appPackage
-                )
-                findNavController().popBackStack(R.id.mainFragment, false)
-            },
-            appDeleteListener = { appModel ->
-                when (appModel) {
-                    is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> {}
-                    is AppModel.PinnedShortcut ->
-                        requireContext().deletePinnedShortcut(
-                            packageName = appModel.appPackage,
-                            shortcutIdToDelete = appModel.shortcutId,
-                            user = appModel.user,
-                        )
-
-                    is AppModel.App -> {
-                        if (appModel.user != Process.myUserHandle()) {
-                            openAppInfo(requireContext(), appModel.user, appModel.appPackage)
-                        } else if (requireContext().isSystemApp(appModel.appPackage, appModel.user)) {
-                            requireContext().showToast(getString(R.string.system_app_cannot_delete))
-                            openAppInfo(requireContext(), appModel.user, appModel.appPackage)
-                        } else {
-                            requireContext().uninstall(appModel.appPackage)
-                        }
-                    }
-                }
-                viewModel.getAppList()
-            },
-            appRenameListener = { appModel, renameLabel ->
-                val identifier = when (appModel) {
-                    // Package-qualified: two apps may pin shortcuts with the same id.
-                    is AppModel.PinnedShortcut -> appModel.emphasisKey
-                    is AppModel.App -> appModel.appPackage
-                    else -> return@AppDrawerAdapter
-                }
-                prefs.setAppRenameLabel(identifier, renameLabel)
-                viewModel.getAppList()
-            },
-            appCategoryListener = { appModel -> showCategoryChooser(appModel) },
-            appEmphasisListener = { appModel ->
-                if (appModel.emphasisKey.isBlank()) return@AppDrawerAdapter
-                val emphasized = prefs.toggleAppEmphasized(appModel.emphasisKey)
-                requireContext().showToast(
-                    getString(
-                        if (emphasized) R.string.emphasized_toast else R.string.unemphasized_toast,
-                        appModel.appLabel,
-                    )
-                )
-                viewModel.getAppList()
-            },
-            privateSpaceToggleListener = {
-                viewModel.togglePrivateSpaceLock()
-            },
-            privateSpaceSettingsListener = {
-                if (!isDrawerCurrent()) return@AppDrawerAdapter
-                viewModel.openPrivateSpaceSettings()
-                findNavController().popBackStack(R.id.mainFragment, false)
-            },
-            appMenuOpenedListener = { learnAppMenuTip() },
+            // The picker has no app menu.
+            appInfoListener = {},
+            appDeleteListener = {},
+            appRenameListener = { _, _ -> },
+            appCategoryListener = {},
         )
-
-        linearLayoutManager = object : LinearLayoutManager(requireContext()) {
-            override fun scrollVerticallyBy(
-                dx: Int,
-                recycler: Recycler,
-                state: RecyclerView.State,
-            ): Int {
-                val scrollRange = super.scrollVerticallyBy(dx, recycler, state)
-                val overScroll = dx - scrollRange
-                if (overScroll < -10 && binding.recyclerView.scrollState == RecyclerView.SCROLL_STATE_DRAGGING)
-                    checkMessageAndExit()
-                return scrollRange
-            }
-        }
-
-        binding.recyclerView.layoutManager = linearLayoutManager
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.addOnScrollListener(getRecyclerViewOnScrollListener())
         binding.recyclerView.itemAnimator = null
-    }
-
-    private fun initObservers() {
-        viewModel.firstOpen.observe(viewLifecycleOwner) {
-        }
-        viewModel.appList.observe(viewLifecycleOwner) {
-            currentAppList = it
-            updateCombinedAppList()
-        }
-        if (flag == Constants.FLAG_LAUNCH_APP) {
-            viewModel.privateSpaceAvailable.observe(viewLifecycleOwner) {
-                currentPrivateSpaceAvailable = it
-                updateCombinedAppList()
-            }
-            viewModel.privateSpaceLocked.observe(viewLifecycleOwner) {
-                currentPrivateSpaceLocked = it
-                updateCombinedAppList()
-            }
-            viewModel.privateSpaceApps.observe(viewLifecycleOwner) {
-                currentPrivateSpaceApps = it
-                updateCombinedAppList()
-            }
-        }
-    }
-
-    private fun learnAppMenuTip() {
-        prefs.learnTip(Tip.APP_MENU)
-        _binding?.drawerTip?.isVisible = false
-    }
-
-    private fun updateCombinedAppList() {
-        val apps = currentAppList ?: return
-        if (flag != Constants.FLAG_LAUNCH_APP) {
-            adapter.setAppList(apps.toMutableList())
-            adapter.filter.filter(binding.search.query)
-            return
-        }
-        val combined = apps.toMutableList()
-
-        if (flag == Constants.FLAG_LAUNCH_APP && currentPrivateSpaceAvailable) {
-            combined.add(AppModel.PrivateSpaceHeader(isLocked = currentPrivateSpaceLocked))
-            if (!currentPrivateSpaceLocked) {
-                currentPrivateSpaceApps?.let(combined::addAll)
-            }
-        }
-
-        adapter.setAppList(combined)
-        adapter.filter.filter(binding.search.query)
-    }
-
-    /**
-     * The Group sheet for one app: an Emphasize switch on top, then the groups the app is listed
-     * under. With no manual choice the current automatic group is pre-ticked so the sheet always
-     * shows where the app actually is; saving an unchanged automatic selection stays automatic.
-     */
-    private fun showCategoryChooser(appModel: AppModel) {
-        if (appModel.appPackage.isBlank()) return
-        binding.search.hideKeyboard()
-        val context = requireContext()
-        val categories = AppCategory.entries
-        val manual = prefs.getAppCategoryOverrides(appModel.appPackage)
-        val automatic = currentGroupsOf(appModel)
-        val checked = (manual ?: automatic).toMutableSet()
-        val builder = AlertDialog.Builder(context)
-        // Inflate against the dialog's own theme so the sheet matches the dialog's colors.
-        val inflater = LayoutInflater.from(builder.context)
-        val sheet = DialogAppGroupsBinding.inflate(inflater)
-
-        sheet.emphasizeSwitch.isChecked = prefs.isAppEmphasized(appModel.emphasisKey)
-        sheet.emphasizeRow.setOnClickListener { sheet.emphasizeSwitch.toggle() }
-        sheet.groupsSummary.setText(
-            if (manual == null) R.string.groups_automatic_summary else R.string.groups_manual_summary
-        )
-        categories.forEach { category ->
-            val row = ItemGroupChoiceBinding.inflate(inflater, sheet.groupList, true).root
-            row.text = category.displayName
-            row.isChecked = category in checked
-            row.setCompoundDrawablesRelativeWithIntrinsicBounds(category.iconRes, 0, 0, 0)
-            TextViewCompat.setCompoundDrawableTintList(row, ColorStateList.valueOf(category.colorFor(builder.context)))
-            row.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) checked.add(category) else checked.remove(category)
-            }
-        }
-
-        fun saveEmphasis() {
-            if (appModel.emphasisKey.isNotBlank()) {
-                prefs.setAppEmphasized(appModel.emphasisKey, sheet.emphasizeSwitch.isChecked)
-            }
-        }
-
-        val dialog = builder
-            .setTitle(appModel.appLabel)
-            .setView(sheet.root)
-            .setPositiveButton(R.string.save_groups) { dialog, _ ->
-                val keepAutomatic = manual == null && checked == automatic.toSet()
-                if (checked.isEmpty() || keepAutomatic) prefs.clearAppCategoryOverride(appModel.appPackage)
-                else prefs.setAppCategoryOverrides(appModel.appPackage, checked)
-                saveEmphasis()
-                dialog.dismiss()
-                viewModel.getAppList()
-            }
-            .setNeutralButton(R.string.automatic) { dialog, _ ->
-                prefs.clearAppCategoryOverride(appModel.appPackage)
-                saveEmphasis()
-                dialog.dismiss()
-                viewModel.getAppList()
-            }
-            .setNegativeButton(R.string.close, null)
-            .create()
-        dialog.setOnDismissListener {
-            _binding?.search?.showKeyboard(prefs.autoShowKeyboard)
-        }
-        dialog.show()
-    }
-
-    /** Every group this app (or pinned shortcut) is currently listed under in the drawer. */
-    private fun currentGroupsOf(appModel: AppModel): List<AppCategory> {
-        val groups = adapter.appsList
-            .filter { it.emphasisKey == appModel.emphasisKey }
-            .mapNotNull { it.category }
-            .distinct()
-        return groups.ifEmpty { listOfNotNull(appModel.category) }
-    }
-
-    private fun getRecyclerViewOnScrollListener(): RecyclerView.OnScrollListener {
-        return object : RecyclerView.OnScrollListener() {
-
-            var onTop = false
-
+        // Scrolling the list puts the keyboard away so the list has the room.
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                when (newState) {
-
-                    RecyclerView.SCROLL_STATE_DRAGGING -> {
-                        onTop = !recyclerView.canScrollVertically(-1)
-                        if (onTop)
-                            binding.search.hideKeyboard()
-                    }
-
-                    RecyclerView.SCROLL_STATE_IDLE -> {
-                        if (!recyclerView.canScrollVertically(1))
-                            binding.search.hideKeyboard()
-                        else if (!recyclerView.canScrollVertically(-1))
-                            if (!onTop && isRemoving.not())
-                                binding.search.showKeyboard(prefs.autoShowKeyboard)
-                    }
-                }
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) binding.search.hideKeyboard()
             }
-        }
+        })
     }
 
-    private fun checkMessageAndExit() = leaveDrawer()
-
-    /**
-     * Pops the drawer, once. Every overscrolled move of a pull-down lands in [checkMessageAndExit]
-     * and a quick double tap picks twice; without the check the extra pops would also close the
-     * screen underneath (Settings, or even Home itself, leaving an empty window).
-     */
-    private fun leaveDrawer() {
-        if (isDrawerCurrent()) findNavController().popBackStack()
-    }
-
-    private fun isDrawerCurrent(): Boolean =
+    private fun isPickerCurrent(): Boolean =
         findNavController().currentDestination?.id == R.id.appListFragment
-
-    override fun onStart() {
-        super.onStart()
-        cachedIsCjkKeyboard = null
-        if (flag == Constants.FLAG_LAUNCH_APP)
-            viewModel.refreshAppOrder()
-        binding.search.showKeyboard(prefs.autoShowKeyboard)
-    }
 
     override fun onStop() {
         binding.search.hideKeyboard()
@@ -453,7 +130,6 @@ class AppDrawerFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        searchTextView = null
         _binding = null
     }
 }

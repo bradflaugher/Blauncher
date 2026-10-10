@@ -43,6 +43,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var isPrivateSpaceToggling = false
 
     val resetLauncherLiveData = SingleLiveEvent<Unit?>()
+    /** Asks Home to put its app sheet away, as pressing the home button does in any launcher. */
+    val closeAppSheet = SingleLiveEvent<Unit?>()
     // Home button for recents feature disabled
     // val showRecentApps = SingleLiveEvent<Unit?>()
 

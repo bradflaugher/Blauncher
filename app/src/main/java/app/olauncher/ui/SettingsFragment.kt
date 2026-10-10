@@ -15,7 +15,11 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.content.res.ColorStateList
 import android.widget.ArrayAdapter
+import android.widget.GridLayout
+import android.widget.ImageView
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -24,6 +28,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -34,6 +39,7 @@ import app.olauncher.data.AppCategory
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.data.SearchEngine
+import app.olauncher.data.ShortcutGlyph
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.getColorFromAttr
@@ -71,7 +77,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         } ?: throw Exception("Invalid Activity")
         viewModel.isOlauncherDefault()
 
-        populateKeyboardText()
         // Home button for recents feature disabled
         // populateHomeButtonRecents()
         populateAppThemeText()
@@ -79,6 +84,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAlignment()
         populateDateBold()
         populatePasswordApp()
+        populateShortcutGlyph()
         populateSearchEngine()
         populateSmartOrdering()
         populateSwipeApps()
@@ -107,8 +113,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.rateApp -> requireContext().rateApp()
             // Home button for recents feature disabled
             // R.id.homeButtonRecents -> toggleHomeButtonRecents()
-            R.id.autoShowKeyboard -> toggleKeyboardText()
             R.id.passwordApp -> showAppList(Constants.FLAG_SET_PASSWORD_APP)
+            R.id.shortcutGlyph -> showShortcutGlyphChooser()
             R.id.searchEngine -> showSearchEngineChooser()
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
@@ -140,8 +146,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         when (view.id) {
             R.id.alignment -> {
                 prefs.appLabelAlignment = prefs.homeAlignment
-                if (navigateFromSettings(R.id.action_settingsFragment_to_appListFragment))
-                    requireContext().showToast(getString(R.string.alignment_changed))
+                requireContext().showToast(getString(R.string.alignment_changed))
             }
 
             R.id.appThemeText -> {
@@ -163,10 +168,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.sendFeedback.setOnClickListener(this)
         binding.shareApp.setOnClickListener(this)
         binding.rateApp.setOnClickListener(this)
-        binding.autoShowKeyboard.setOnClickListener(this)
         // Home button for recents feature disabled
         // binding.homeButtonRecents.setOnClickListener(this)
         binding.passwordApp.setOnClickListener(this)
+        binding.shortcutGlyph.setOnClickListener(this)
         binding.searchEngine.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
@@ -357,7 +362,60 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             .show()
     }
 
-    /** Names the app behind the home-screen password shortcut, or invites picking one. */
+    /** Shows the shortcut button's glyph, drawn as it is on Home, with its name. */
+    private fun populateShortcutGlyph() {
+        val glyph = prefs.shortcutGlyph
+        binding.shortcutGlyph.text = glyph.label
+        binding.shortcutGlyph.setCompoundDrawablesRelativeWithIntrinsicBounds(glyph.icon, 0, 0, 0)
+        TextViewCompat.setCompoundDrawableTintList(
+            binding.shortcutGlyph,
+            ColorStateList.valueOf(requireContext().getColorFromAttr(R.attr.primaryColor)),
+        )
+        binding.shortcutGlyph.describeAs(R.string.shortcut_glyph)
+    }
+
+    /** Every glyph on a grid, the current one ringed; a tap picks it. */
+    private fun showShortcutGlyphChooser() {
+        val context = requireContext()
+        val density = resources.displayMetrics.density
+        val cell = (56 * density).toInt()
+        val padding = (16 * density).toInt()
+        val tint = ColorStateList.valueOf(context.getColorFromAttr(R.attr.primaryColor))
+        val grid = GridLayout(context).apply {
+            columnCount = 5
+            setPadding(padding, padding, padding, 0)
+        }
+        val dialog = AlertDialog.Builder(context)
+            .setTitle(R.string.shortcut_glyph)
+            .setView(ScrollView(context).apply { addView(grid) })
+            .setNegativeButton(R.string.close, null)
+            .create()
+        ShortcutGlyph.entries.forEach { glyph ->
+            grid.addView(ImageView(context).apply {
+                layoutParams = GridLayout.LayoutParams().apply {
+                    width = cell
+                    height = cell
+                    columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                }
+                val inset = (14 * density).toInt()
+                setPadding(inset, inset, inset, inset)
+                setImageResource(glyph.icon)
+                imageTintList = tint
+                contentDescription = glyph.label
+                isSelected = glyph == prefs.shortcutGlyph
+                if (isSelected) setBackgroundResource(R.drawable.bg_quick_action)
+                else setBackgroundResource(android.R.drawable.list_selector_background)
+                setOnClickListener {
+                    prefs.shortcutGlyph = glyph
+                    populateShortcutGlyph()
+                    dialog.dismiss()
+                }
+            })
+        }
+        dialog.show()
+    }
+
+    /** Names the app behind the shortcut button beside the search bar, or invites picking one. */
     private fun populatePasswordApp() {
         binding.passwordApp.text = prefs.passwordAppName.ifBlank { getString(R.string.none) }
         binding.passwordApp.describeAs(R.string.password_manager)
@@ -403,11 +461,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         prefs.textSizeScale = pendingTextSizeScale
         pendingTextSizeScale = -1f
         requireActivity().recreate()
-    }
-
-    private fun toggleKeyboardText() {
-        prefs.autoShowKeyboard = !prefs.autoShowKeyboard
-        populateKeyboardText()
     }
 
     private fun updateTheme(appTheme: Int) {
@@ -511,12 +564,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             adapter.notifyDataSetChanged()
         }
         dialog.show()
-    }
-
-    private fun populateKeyboardText() {
-        if (prefs.autoShowKeyboard) binding.autoShowKeyboard.text = getString(R.string.on)
-        else binding.autoShowKeyboard.text = getString(R.string.off)
-        binding.autoShowKeyboard.describeAs(R.string.auto_show_keyboard)
     }
 
     private fun populateAlignment() {

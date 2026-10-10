@@ -5,7 +5,7 @@ import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
-import android.os.Process
+import android.os.SystemClock
 import android.text.InputType
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -14,10 +14,13 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowInsets
 import android.view.inputmethod.EditorInfo
+import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.os.bundleOf
@@ -25,19 +28,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import app.olauncher.MainViewModel
 import app.olauncher.R
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
-import app.olauncher.databinding.ItemSearchSuggestionBinding
-import app.olauncher.helper.AppSearch
 import app.olauncher.helper.Onboarding
 import app.olauncher.helper.Tip
 import app.olauncher.helper.Typefaces
@@ -46,7 +49,6 @@ import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
-import app.olauncher.helper.isPrivateSpaceProfile
 import app.olauncher.helper.isProfileAvailable
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
@@ -63,27 +65,35 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * The home screen: the date on top, and along the bottom a unified search bar next to a key
- * glyph that opens the password manager. Everything else is gestures on the empty space.
+ * The home screen and the app drawer, as one surface. At rest it is the date on top and, along
+ * the bottom, a unified search bar next to a key glyph that opens the password manager;
+ * everything else is gestures on the empty space.
  *
- * The search bar finds apps and the web in one place. The apps its text matches are listed
- * above it, best first, and open with a tap; enter (or the send button) always hands the text
- * to the chosen search engine. An app never opens without being tapped, unlike in the drawer:
- * "weather" may name an installed app and still be meant for the web.
+ * The search bar sits on top of a sheet holding every app. Swiping up anywhere lifts the sheet
+ * under the finger: the bar rides up to the top of the screen and the apps fill in below it,
+ * while the date and prompts fade. Tapping the bar does the same and raises the keyboard; what
+ * is typed narrows the apps below to the ones it matches, best first. Swiping down from the top
+ * of the list, back, or the home button puts the sheet away again. There is one search: an app
+ * opens only when tapped, and enter (or the send button) always hands the text to the chosen
+ * search engine, since "weather" may name an installed app and still be meant for the web.
  *
  * Until the user has found the drawer, settings, and what the date and key do, a tip card above
  * the search bar teaches them one at a time (see [Onboarding]).
  *
  * The search bar is a multi-line composer. Its text is treated as a draft: it survives
- * leaving the screen, the drawer, settings, rotation and a launcher restart, and is only
- * dropped once a browser has accepted it or the user taps clear.
+ * leaving the screen, settings, rotation and a launcher restart, and is only dropped once a
+ * browser has accepted it, an app has been opened from it, or the user taps clear.
  */
 class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
     private companion object {
         const val MAX_KEYBOARD_ATTEMPTS = 3
         const val KEYBOARD_RETRY_DELAY_MS = 120L
-        const val MAX_APP_SUGGESTIONS = 4
+        const val SHEET_ANIMATION_MS = 280L
+        const val FLING_DP_PER_SECOND = 400f
+        const val KEY_SHEET_OPEN = "sheet_open"
+        /** A second tap this soon after opening an app is the same tap, not a new launch. */
+        const val LAUNCH_DEBOUNCE_MS = 600L
     }
 
     private lateinit var prefs: Prefs
@@ -92,6 +102,19 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private val binding get() = _binding!!
     private var coachAnimator: ObjectAnimator? = null
     private val accessibilityActionIds = mutableListOf<Int>()
+    private lateinit var drawerList: AppDrawerList
+
+    /** How far the sheet is lifted: 0 at rest with only the search row showing, 1 fully open. */
+    private var sheetProgress = 0f
+    private var dragStartProgress = 0f
+    private var sheetAnimator: ValueAnimator? = null
+    private var sheetTarget = 0f
+    private var lastLaunchAt = 0L
+
+    /** Back puts the sheet away; while it is down, the activity's own callback swallows back. */
+    private val closeSheetOnBack = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() = closeSheet()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -110,6 +133,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         initSwipeTouchListener()
         initPointerAndKeyInput()
         initClickListeners()
+        // The sheet first: the search bar's text watcher filters its list.
+        initSheet(savedInstanceState?.getBoolean(KEY_SHEET_OPEN) == true)
         initSearchBar()
         initCoachCard()
     }
@@ -118,13 +143,19 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         super.onResume()
         populateHomeScreen()
         restoreSearchDraft()
-        // Apps may have been installed, removed or paused while Home was away; a draft's
-        // suggestions have to follow, even though the field may never have lost focus.
-        if (binding.searchInput.text?.isNotBlank() == true) viewModel.getAppList()
+        // Apps may have been installed, removed or paused while Home was away; an open sheet
+        // has to follow, even though it never closed.
+        if (sheetProgress > 0f) viewModel.getAppList()
         populateCoachCard()
         updateAccessibilityActions()
         viewModel.isOlauncherDefault()
         showStatusBar()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Rotating, folding or resizing keeps the sheet where it was.
+        outState.putBoolean(KEY_SHEET_OPEN, sheetProgress > 0.5f)
     }
 
     override fun onPause() {
@@ -151,7 +182,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
             R.id.coachCard -> when (Onboarding.nextHomeTip(prefs.learnedTips)) {
-                Tip.OPEN_DRAWER -> showAppList(Constants.FLAG_LAUNCH_APP)
+                Tip.OPEN_DRAWER -> openSheet()
                 Tip.OPEN_SETTINGS -> openSettings()
                 // Nothing to perform for this one: tapping the card says "got it".
                 Tip.HOME_SHORTCUTS -> {
@@ -178,10 +209,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     override fun onLongClick(view: View): Boolean {
         when (view.id) {
-            R.id.passwordManager -> if (showAppList(Constants.FLAG_SET_PASSWORD_APP))
+            R.id.passwordManager -> if (openPicker(Constants.FLAG_SET_PASSWORD_APP))
                 prefs.learnTip(Tip.HOME_SHORTCUTS)
 
-            R.id.date -> if (showAppList(Constants.FLAG_SET_CALENDAR_APP)) {
+            R.id.date -> if (openPicker(Constants.FLAG_SET_CALENDAR_APP)) {
                 prefs.learnTip(Tip.HOME_SHORTCUTS)
                 prefs.calendarAppPackage = ""
                 prefs.calendarAppClassName = ""
@@ -213,10 +244,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
             setHomeAlignment(it)
         }
-        // The search bar matches the same apps the drawer lists, unlocked Private Space included.
-        viewModel.appList.observe(viewLifecycleOwner) { updateSearchSuggestions() }
-        viewModel.privateSpaceApps.observe(viewLifecycleOwner) { updateSearchSuggestions() }
-        viewModel.privateSpaceLocked.observe(viewLifecycleOwner) { updateSearchSuggestions() }
+        viewModel.closeAppSheet.observe(viewLifecycleOwner) { closeSheet(animate = isResumed) }
         // Home button for recents feature disabled
         // viewModel.showRecentApps.observe(viewLifecycleOwner) {
         //     binding.recents.performClick()
@@ -235,17 +263,18 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     /**
-     * Keyboard and mouse on Home (ChromeOS, desktop windowing): the wheel opens the drawer like a
-     * swipe up, a right-click opens settings like a long press, and a letter, up or Enter key
-     * opens the drawer while nothing else has focus.
+     * Keyboard and mouse on Home (ChromeOS, desktop windowing): the wheel opens the app sheet like
+     * a swipe up, a right-click opens settings like a long press, a letter starts a search with
+     * that letter, and up or Enter opens the sheet, while nothing else has focus.
      */
     private fun initPointerAndKeyInput() {
         binding.mainLayout.setOnGenericMotionListener { _, event ->
             if (event.actionMasked == MotionEvent.ACTION_SCROLL &&
                 event.isFromSource(InputDevice.SOURCE_CLASS_POINTER) &&
-                event.getAxisValue(MotionEvent.AXIS_VSCROLL) != 0f
+                event.getAxisValue(MotionEvent.AXIS_VSCROLL) != 0f &&
+                sheetProgress == 0f
             ) {
-                showAppList(Constants.FLAG_LAUNCH_APP)
+                openSheet()
                 true
             } else false
         }
@@ -254,14 +283,20 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             true
         }
         binding.mainLayout.setOnKeyListener { _, keyCode, event ->
-            val opensDrawer = keyCode in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z ||
+            val letter = keyCode in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z
+            val opensSheet = letter ||
                     keyCode == KeyEvent.KEYCODE_DPAD_UP ||
                     keyCode == KeyEvent.KEYCODE_ENTER ||
                     keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
-            if (!opensDrawer || event.isCtrlPressed || event.isAltPressed || event.isMetaPressed)
+            if (!opensSheet || event.isCtrlPressed || event.isAltPressed || event.isMetaPressed)
                 return@setOnKeyListener false
-            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0)
-                showAppList(Constants.FLAG_LAUNCH_APP)
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                if (letter) {
+                    // The letter is the first of the search; the rest go straight to the bar.
+                    event.unicodeChar.takeIf { it != 0 }?.let { binding.searchInput.append(it.toChar().toString()) }
+                    focusSearch()
+                } else openSheet()
+            }
             true
         }
     }
@@ -280,7 +315,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 true
             }
         }
-        add(getString(R.string.tip_open_drawer_action)) { showAppList(Constants.FLAG_LAUNCH_APP) }
+        add(getString(R.string.tip_open_drawer_action)) { openSheet() }
         add(getString(R.string.tip_open_settings_action)) { openSettings() }
         if (prefs.swipeLeftEnabled)
             add(swipeAppLabel(prefs.appNameSwipeLeft, R.string.swipe_left_app)) { openSwipeLeftApp() }
@@ -330,10 +365,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             requireContext().showToast(R.string.tips_skipped, Toast.LENGTH_LONG)
         }
         binding.searchInput.setOnFocusChangeListener { _, hasFocus ->
-            // While composing a search the card would only crowd the keyboard.
-            populateCoachCard()
-            // Pick up apps installed or renamed since the list was last loaded.
-            if (hasFocus) viewModel.getAppList()
+            // Searching happens on the open sheet, with the apps to choose from below the bar.
+            if (hasFocus) openSheet()
         }
     }
 
@@ -341,7 +374,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun populateCoachCard() {
         val binding = _binding ?: return
         val tip = Onboarding.nextHomeTip(prefs.learnedTips)
-        val show = tip != null && !binding.searchInput.hasFocus()
+        val show = tip != null
         binding.coachCard.isVisible = show
         stopCoachAnimation()
         if (!show || tip == null) return
@@ -357,7 +390,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             )
 
             Tip.HOME_SHORTCUTS -> CoachContent(
-                R.drawable.ic_key, R.string.tip_home_shortcuts_title,
+                prefs.shortcutGlyph.icon, R.string.tip_home_shortcuts_title,
                 R.string.tip_home_shortcuts_body, R.string.got_it,
             )
 
@@ -376,8 +409,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             getString(content.action),
             null,
         )
-        // Focus changes can land here while paused; the glyph only moves on a visible screen.
-        if (isResumed) startCoachAnimation(tip)
+        // The glyph only moves on a visible screen, never under the sheet.
+        if (isResumed && sheetProgress == 0f) startCoachAnimation(tip)
     }
 
     /** What the tip card shows for one tip, and what TalkBack calls tapping it. */
@@ -420,6 +453,162 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
+    private fun initSheet(startOpen: Boolean) {
+        drawerList = AppDrawerList(
+            fragment = this,
+            recyclerView = binding.appList,
+            viewModel = viewModel,
+            prefs = prefs,
+            isActive = { sheetProgress > 0f },
+            onLaunch = ::launchFromSheet,
+            onLeave = { closeSheet(animate = false) },
+            onAppMenuOpened = ::learnAppMenuTip,
+            beforeDialog = { binding.searchInput.hideKeyboard() },
+        )
+        binding.drawerTipDismiss.setOnClickListener { learnAppMenuTip() }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, closeSheetOnBack)
+        // Scrolling the list puts the keyboard away so the apps have the room; the text stays.
+        binding.appList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) _binding?.searchInput?.hideKeyboard()
+            }
+        })
+        // The resting position depends on the sheet's height and the search row's, both of which
+        // change with the keyboard, a growing draft and rotation.
+        binding.sheet.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> applySheetProgress() }
+        binding.mainLayout.callback = object : SheetDragLayout.Callback {
+            override fun canDragSheet(x: Float, y: Float, up: Boolean): Boolean {
+                val canDrag = if (up) {
+                    // From anywhere on Home, or catching the sheet while it settles.
+                    sheetProgress < 1f
+                } else {
+                    // Down on Home is the swipe-down gesture. On the open sheet, pull it down from
+                    // the search row, or from the list once it is scrolled to the top.
+                    sheetProgress > 0f &&
+                            (y < binding.sheet.top + binding.sheet.translationY + binding.appList.top ||
+                                    !binding.appList.canScrollVertically(-1))
+                }
+                if (canDrag) {
+                    sheetAnimator?.cancel()
+                    dragStartProgress = sheetProgress
+                    if (!up) binding.searchInput.hideKeyboard()
+                }
+                return canDrag
+            }
+
+            override fun onSheetDrag(dy: Float) {
+                val travel = restOffset()
+                if (travel > 0f) setSheetProgress(dragStartProgress - dy / travel)
+            }
+
+            override fun onSheetRelease(velocityY: Float) {
+                val fling = FLING_DP_PER_SECOND * resources.displayMetrics.density
+                val open = when {
+                    velocityY < -fling -> true
+                    velocityY > fling -> false
+                    // A short pull is enough to open from rest, and to close from open.
+                    dragStartProgress < 0.5f -> sheetProgress > 0.2f
+                    else -> sheetProgress > 0.8f
+                }
+                if (open) openSheet() else closeSheet()
+            }
+        }
+        setSheetProgress(if (startOpen) 1f else 0f)
+    }
+
+    /** Lifts the sheet: the search row to the top, every app below it. */
+    private fun openSheet() {
+        if (_binding == null) return
+        animateSheet(1f)
+    }
+
+    /** Lowers the sheet back to Home. The search text stays as a draft. */
+    private fun closeSheet(animate: Boolean = true) {
+        val binding = _binding ?: return
+        binding.searchInput.hideKeyboard()
+        if (animate) animateSheet(0f)
+        else {
+            sheetAnimator?.cancel()
+            setSheetProgress(0f)
+        }
+    }
+
+    private fun animateSheet(target: Float) {
+        // Already on its way there: a second request (a tap that also focuses the bar) must not
+        // restart the motion.
+        if (sheetAnimator?.isRunning == true && sheetTarget == target) return
+        sheetAnimator?.cancel()
+        sheetAnimator = null
+        sheetTarget = target
+        if (sheetProgress == target) return
+        val distance = abs(target - sheetProgress)
+        sheetAnimator = ValueAnimator.ofFloat(sheetProgress, target).apply {
+            duration = (SHEET_ANIMATION_MS * distance).toLong().coerceAtLeast(120L)
+            interpolator = DecelerateInterpolator(1.5f)
+            addUpdateListener { setSheetProgress(it.animatedValue as Float) }
+            start()
+        }
+    }
+
+    /** How far the sheet travels: from the open position down to where only the search row shows. */
+    private fun restOffset(): Float {
+        val binding = _binding ?: return 0f
+        val row = binding.searchRow
+        val margin = (row.layoutParams as MarginLayoutParams).bottomMargin
+        return (binding.sheet.height - row.bottom - margin).coerceAtLeast(0).toFloat()
+    }
+
+    private fun setSheetProgress(progress: Float) {
+        val binding = _binding ?: return
+        val old = sheetProgress
+        sheetProgress = progress.coerceIn(0f, 1f)
+        closeSheetOnBack.isEnabled = sheetProgress > 0f
+        if (old == 0f && sheetProgress > 0f) {
+            // On the way up: catch up with installs and the time of day, quiet the tip card.
+            viewModel.refreshAppOrder()
+            viewModel.getAppList()
+            stopCoachAnimation()
+            binding.drawerTip.isVisible = !prefs.isTipLearned(Tip.APP_MENU)
+        }
+        if (old < 1f && sheetProgress == 1f) {
+            // A tip counts as learned only once its screen has actually opened.
+            prefs.learnTip(Tip.OPEN_DRAWER)
+        }
+        if (old > 0f && sheetProgress == 0f) {
+            // Back at rest: each visit to the apps starts at the top with groups folded.
+            drawerList.reset()
+            populateCoachCard()
+        }
+        applySheetProgress()
+    }
+
+    /** Places the sheet and fades Home and the apps for the current [sheetProgress]. */
+    private fun applySheetProgress() {
+        val binding = _binding ?: return
+        val progress = sheetProgress
+        val travel = restOffset()
+        binding.sheet.translationY = travel * (1f - progress)
+        binding.sheetScrim.alpha = progress
+        // Home fades out over the first half of the lift, the apps fade in after it starts.
+        val homeAlpha = (1f - progress * 2f).coerceAtLeast(0f)
+        val appsAlpha = ((progress - 0.2f) / 0.8f).coerceIn(0f, 1f)
+        binding.date.alpha = homeAlpha
+        binding.bottomPrompts.alpha = homeAlpha
+        binding.date.isInvisible = homeAlpha == 0f
+        binding.bottomPrompts.isInvisible = homeAlpha == 0f
+        binding.appList.alpha = appsAlpha
+        binding.drawerTip.alpha = appsAlpha
+        // Out of sight is out of reach, for TalkBack and keyboard focus alike.
+        binding.appList.isInvisible = progress == 0f
+        // The prompts sit just above the resting search row, however tall the draft has made it.
+        binding.bottomPrompts.translationY = travel + binding.searchRow.top - binding.sheet.height
+    }
+
+    private fun learnAppMenuTip() {
+        prefs.learnTip(Tip.APP_MENU)
+        _binding?.drawerTip?.isVisible = false
+    }
+
     private fun openSettings() {
         if (!navigateFromHome(R.id.action_mainFragment_to_settingsFragment)) return
         // A tip counts as learned only once its screen has actually opened.
@@ -458,7 +647,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             // While composing, the slot beside the bar becomes the send button.
             binding.searchSend.isVisible = hasText
             binding.passwordManager.isVisible = !hasText
-            updateSearchSuggestions()
+            drawerList.filter(text ?: "")
         }
         // The field stays multi-line, so long text wraps and grows the bar, but the keyboard is
         // told it is a one-line field: its enter key becomes Go and submits instead of adding
@@ -479,52 +668,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
-    /** Every app the drawer would list right now: the main list, plus Private Space while unlocked. */
-    private fun searchableApps(): List<AppModel> {
-        val apps = viewModel.appList.value.orEmpty()
-        val privateApps =
-            if (viewModel.privateSpaceLocked.value == false) viewModel.privateSpaceApps.value.orEmpty()
-            else emptyList()
-        return apps + privateApps
-    }
-
-    /** Lists the apps the search text matches above the bar, best first; a tap opens one. */
-    private fun updateSearchSuggestions() {
-        val binding = _binding ?: return
-        val query = binding.searchInput.text?.toString()?.trim().orEmpty()
-        val matches =
-            if (query.isEmpty()) emptyList()
-            else AppSearch.search(searchableApps(), query, label = { it.appLabel }, key = { it.emphasisKey })
-                .take(MAX_APP_SUGGESTIONS)
-        val list = binding.searchSuggestions
-        list.removeAllViews()
-        // Each new result set starts at its best match, even if the last one was scrolled.
-        binding.searchSuggestionsScroll.scrollTo(0, 0)
-        binding.searchSuggestionsScroll.isVisible = matches.isNotEmpty()
-        val inflater = layoutInflater
-        matches.forEach { (app, _) ->
-            val row = ItemSearchSuggestionBinding.inflate(inflater, list, true)
-            row.suggestionLabel.text = app.appLabel
-            val profile = profileLabel(app)
-            row.suggestionProfile.text = profile
-            row.suggestionProfile.isVisible = profile != null
-            row.root.setOnClickListener { openSearchedApp(app) }
-        }
-    }
-
-    /**
-     * "Work profile" or "Private space" for an app outside the main profile, so two copies of one
-     * app can be told apart by sight and by TalkBack alike; null for the main profile.
-     */
-    private fun profileLabel(app: AppModel): String? {
-        if (app.user == Process.myUserHandle()) return null
-        return getString(
-            if (isPrivateSpaceProfile(requireContext(), app.user)) R.string.private_space else R.string.work_profile
-        )
-    }
-
     /** Focuses the composer and raises the keyboard, verifying that it actually came up. */
     private fun focusSearch() {
+        openSheet()
         val input = binding.searchInput
         if (!input.hasFocus() && !input.requestFocus()) return
         input.setSelection(input.length())
@@ -584,9 +730,18 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
-    private fun openSearchedApp(app: AppModel) {
+    /**
+     * A tap on an app in the sheet. The sheet stays up under the app's opening animation and is
+     * put away once Home has left the screen (see MainActivity.backToHomeScreen); a failed
+     * launch leaves it where it was.
+     */
+    private fun launchFromSheet(app: AppModel) {
+        val now = SystemClock.uptimeMillis()
+        if (now - lastLaunchAt < LAUNCH_DEBOUNCE_MS) return
+        lastLaunchAt = now
         viewModel.selectedApp(app, Constants.FLAG_LAUNCH_APP)
-        clearSearch()
+        if (binding.searchInput.text?.isNotEmpty() == true) clearSearch()
+        else binding.searchInput.hideKeyboard()
     }
 
     /**
@@ -657,6 +812,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             }
         }
         val bound = prefs.passwordAppPackage.isNotBlank()
+        binding.passwordManager.setImageResource(prefs.shortcutGlyph.icon)
         // "Password manager, Bitwarden": what the glyph is, then which app it opens.
         binding.passwordManager.contentDescription =
             if (bound) getString(R.string.setting_value, getString(R.string.password_manager), prefs.passwordAppName)
@@ -673,7 +829,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun openPasswordManager() {
         if (prefs.passwordAppPackage.isBlank()) {
             requireContext().showToast(R.string.choose_password_manager)
-            showAppList(Constants.FLAG_SET_PASSWORD_APP)
+            openPicker(Constants.FLAG_SET_PASSWORD_APP)
             return
         }
         launchApp(
@@ -770,13 +926,11 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
-    /** Opens the drawer for [flag]; returns whether it actually opened. */
-    private fun showAppList(flag: Int): Boolean {
+    /** Opens the app picker for [flag] (an app for a gesture, the date or the key); returns whether it opened. */
+    private fun openPicker(flag: Int): Boolean {
         if (!navigateFromHome(R.id.action_mainFragment_to_appListFragment, bundleOf(Constants.Key.FLAG to flag)))
             return false
         viewModel.getAppList()
-        // Reached only once the drawer has actually opened.
-        if (flag == Constants.FLAG_LAUNCH_APP) prefs.learnTip(Tip.OPEN_DRAWER)
         return true
     }
 
@@ -827,7 +981,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                showAppList(Constants.FLAG_LAUNCH_APP)
+                openSheet()
             }
 
             override fun onSwipeDown() {
@@ -862,7 +1016,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                showAppList(Constants.FLAG_LAUNCH_APP)
+                openSheet()
             }
 
             override fun onSwipeDown() {
@@ -883,6 +1037,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     override fun onDestroyView() {
+        sheetAnimator?.cancel()
+        sheetAnimator = null
         stopCoachAnimation()
         super.onDestroyView()
         accessibilityActionIds.clear()

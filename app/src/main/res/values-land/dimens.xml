@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Landscape leaves wider side margins so lines stay a comfortable length. -->
+    <dimen name="home_margin_horizontal">48dp</dimen>
+    <dimen name="home_date_margin_top">16dp</dimen>
+    <dimen name="drawer_margin_horizontal">24dp</dimen>
+</resources>
