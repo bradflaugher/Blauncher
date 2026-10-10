@@ -33,6 +33,7 @@ class Prefs(context: Context) {
     private val PINNED_CATEGORY = "PINNED_CATEGORY"
     private val PINNED_CATEGORIES = "PINNED_CATEGORIES"
     private val CATEGORY_USAGE_DATA = "CATEGORY_USAGE_DATA"
+    private val APP_USAGE_DATA = "APP_USAGE_DATA"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -226,7 +227,16 @@ class Prefs(context: Context) {
         get() = prefs.getString(CATEGORY_USAGE_DATA, null)
         set(value) = prefs.edit { putString(CATEGORY_USAGE_DATA, value) }
 
-    fun clearCategoryUsageData() = prefs.edit { remove(CATEGORY_USAGE_DATA) }
+    /** Decayed launch weight per app, which orders apps inside their groups; see SmartOrder. */
+    var appUsageData: String?
+        get() = prefs.getString(APP_USAGE_DATA, null)
+        set(value) = prefs.edit { putString(APP_USAGE_DATA, value) }
+
+    /** Forgets everything learned from launches: the group order and the order inside groups. */
+    fun clearUsageLearning() = prefs.edit {
+        remove(CATEGORY_USAGE_DATA)
+        remove(APP_USAGE_DATA)
+    }
 
     var swipeLeftEnabled: Boolean
         get() = prefs.getBoolean(SWIPE_LEFT_ENABLED, true)

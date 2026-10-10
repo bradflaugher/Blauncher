@@ -162,9 +162,44 @@ class SmartOrderTest {
     }
 
     @Test
-    fun appsSortByGroupThenAlphabetically() {
-        assertTrue(SmartOrder.compareDrawerRows(0, "WSJ", 1, "BBC") < 0)
-        assertTrue(SmartOrder.compareDrawerRows(0, "bbc", 0, "WSJ") < 0)
-        assertTrue(SmartOrder.compareDrawerRows(1, "Maps", 0, "Zoom") > 0)
+    fun appsSortByGroupThenMostOpenedThenAlphabetically() {
+        // The group comes first, whatever the usage.
+        assertTrue(SmartOrder.compareDrawerRows(0, 0.0, "WSJ", 1, 9.0, "BBC") < 0)
+        // Inside a group the more-opened app leads, even against the alphabet.
+        assertTrue(SmartOrder.compareDrawerRows(0, 3.0, "WSJ", 0, 1.0, "BBC") < 0)
+        // Equal (or no) use falls back to A-Z.
+        assertTrue(SmartOrder.compareDrawerRows(0, 0.0, "bbc", 0, 0.0, "WSJ") < 0)
+    }
+
+    @Test
+    fun eachLaunchAddsOneAndOldLaunchesFade() {
+        val usage = SmartOrder.AppUsage(updatedAt = dayMillis)
+        SmartOrder.recordAppLaunch(usage, "maps", nowMillis = dayMillis)
+        SmartOrder.recordAppLaunch(usage, "maps", nowMillis = dayMillis)
+        // Two weeks later Maps' two launches count as one, and the new app's one launch ties it.
+        SmartOrder.recordAppLaunch(usage, "uber", nowMillis = dayMillis + 14 * dayMillis)
+        assertEquals(1.0, usage.weights.getValue("maps"), 1e-9)
+        assertEquals(1.0, usage.weights.getValue("uber"), 1e-9)
+    }
+
+    @Test
+    fun appsUnopenedForMonthsAreForgotten() {
+        val usage = SmartOrder.AppUsage(updatedAt = dayMillis)
+        SmartOrder.recordAppLaunch(usage, "old", nowMillis = dayMillis)
+        SmartOrder.recordAppLaunch(usage, "new", nowMillis = dayMillis + 120 * dayMillis)
+        assertEquals(setOf("new"), usage.weights.keys)
+    }
+
+    @Test
+    fun appUsageSurvivesARoundTripThroughPrefs() {
+        val usage = SmartOrder.AppUsage(updatedAt = 42L)
+        usage.weights["shortcut:com.example.mail/compose|UserHandle{0}"] = 2.5
+        usage.weights["com.example.maps|UserHandle{0}"] = 1.0
+
+        val parsed = SmartOrder.parseAppUsage(SmartOrder.serializeAppUsage(usage))!!
+
+        assertEquals(42L, parsed.updatedAt)
+        assertEquals(usage.weights, parsed.weights)
+        assertNull(SmartOrder.parseAppUsage("not a blob"))
     }
 }

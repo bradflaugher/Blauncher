@@ -204,7 +204,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
         binding.smartOrderSettings.resetLearning.setOnClickListener {
             confirmSmartOrderAction(R.string.usage_learning, R.string.confirm_reset_learning, R.string.reset) {
-                prefs.clearCategoryUsageData()
+                prefs.clearUsageLearning()
                 viewModel.getAppList()
                 populateSmartOrdering()
                 requireContext().showToast(R.string.learning_reset)

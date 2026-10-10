@@ -54,8 +54,8 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 - **An order that follows your day.** Groups shift with the time of day, news
   in the morning, focus during work, media in the evening, sleep and
   meditation from about 8:30 pm, then sharpen from
-  the apps you actually open. Apps stay alphabetical inside each group. Pin
-  any groups to the top; AI Agents is pinned by
+  the apps you actually open. Inside each group, the apps you open most come
+  first. Pin any groups to the top; AI Agents is pinned by
   default. Reset the learning any time in Settings.
 - **Private by construction.** No internet permission, no usage-stats access,
   no accounts, sync, analytics, accessibility service, or launcher-managed

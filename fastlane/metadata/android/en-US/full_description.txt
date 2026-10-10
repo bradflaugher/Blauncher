@@ -16,7 +16,7 @@ YOUR APPS
 • A Private Space, when the device has one, sits at the bottom of the drawer behind a tap to unlock.
 
 THROUGH THE DAY
-• Groups shift with the time of day: news in the morning, focus apps during work hours, media in the evening, then sharpen from the apps you actually open.
+• Groups shift with the time of day: news in the morning, focus apps during work hours, media in the evening, then sharpen from the apps you actually open. Inside each group, the apps you open most come first.
 • Learning stays on this device. It uses only launches made inside the launcher, never the system usage-stats API, and fades after a couple of weeks.
 • Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
 

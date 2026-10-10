@@ -5,6 +5,7 @@ import android.os.Process
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
 import app.olauncher.helper.Onboarding
+import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.Tip
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -111,5 +112,29 @@ class PrefsTest {
     fun aGlyphNoLongerOfferedFallsBackToTheKey() {
         assertEquals(ShortcutGlyph.KEY, ShortcutGlyph.fromName("RETIRED"))
         assertEquals(ShortcutGlyph.KEY, ShortcutGlyph.fromName(null))
+    }
+
+    @Test
+    fun theAppsOpenedMostLeadTheirCategory() {
+        fun app(label: String) = AppModel.App(
+            appLabel = label, key = null, appPackage = "com.example.${label.lowercase()}",
+            activityClassName = "Main", user = user, category = AppCategory.TRAVEL,
+        )
+        val apps = mutableListOf<AppModel>(app("Bolt"), app("Maps"), app("Uber"))
+        repeat(3) { SmartOrder.recordAppLaunch(prefs, app("Uber").identityKey) }
+        SmartOrder.recordAppLaunch(prefs, app("Maps").identityKey)
+
+        SmartOrder.sort(prefs, apps)
+
+        assertEquals(listOf("Uber", "Maps", "Bolt"), apps.map { it.appLabel })
+    }
+
+    @Test
+    fun resettingTheLearningForgetsAppLaunchesToo() {
+        SmartOrder.recordAppLaunch(prefs, "com.example.maps|$user")
+
+        prefs.clearUsageLearning()
+
+        assertNull(prefs.appUsageData)
     }
 }

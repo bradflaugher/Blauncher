@@ -53,6 +53,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         when (flag) {
             Constants.FLAG_LAUNCH_APP -> {
                 SmartOrder.recordLaunch(prefs, appModel.category)
+                SmartOrder.recordAppLaunch(prefs, appModel.identityKey)
                 when (appModel) {
                     is AppModel.PinnedShortcut -> launchShortcut(appModel)
                     is AppModel.App ->

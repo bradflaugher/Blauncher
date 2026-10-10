@@ -132,7 +132,8 @@ Focus, News, Media, and so on): one row each, with its small colored glyph
 (a deeper shade of the same color in the light theme, so it stays legible),
 its name and how many apps it holds.
 
-- **Tap a category** to list its apps under it, alphabetically; its name
+- **Tap a category** to list its apps under it, the ones you open most on
+  top (apps you have not opened from here follow, alphabetically); its name
   turns bold. Tap another and that one opens instead, so the list never
   outgrows the room above the keyboard. Tap the open one to close it. Every
   category starts closed each time your apps come up.
@@ -170,8 +171,10 @@ The order of the groups is not fixed — it follows the time of day (news
 surfaces in the morning, focus apps during work hours, media in the evening,
 sleep and meditation apps such as Headspace or Calm from about 8:30 pm)
 and quietly learns from what you actually open. Learning happens entirely on
-this device, is never sent anywhere, and fades after a couple of weeks. Apps
-stay alphabetical inside each category.
+this device, is never sent anywhere, and fades after a couple of weeks.
+Inside each category the apps you open most come first, learned the same
+way; if you know an app's name, searching is quicker than scrolling anyway.
+**Reset** (below) forgets both.
 
 In **Settings → Smart ordering**:
 
