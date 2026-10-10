@@ -30,7 +30,6 @@ class Prefs(context: Context) {
     private val HIDE_SET_DEFAULT_LAUNCHER = "HIDE_SET_DEFAULT_LAUNCHER"
     private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
     private val APP_CATEGORY_OVERRIDE_PREFIX = "APP_CATEGORY_OVERRIDE_"
-    private val EMPHASIZED_APPS = "EMPHASIZED_APPS"
     private val PINNED_CATEGORY = "PINNED_CATEGORY"
     private val PINNED_CATEGORIES = "PINNED_CATEGORIES"
     private val CATEGORY_USAGE_DATA = "CATEGORY_USAGE_DATA"
@@ -84,7 +83,7 @@ class Prefs(context: Context) {
             "PRO_MESSAGE_SHOWN",
             "SHOWN_ON_DAY_OF_YEAR",
             "FIRST_HIDE",
-            // Hiding apps was removed; groups with an emphasized app collapse instead.
+            // Hiding apps was removed; the drawer opens on closed categories instead.
             "HIDDEN_APPS",
             "HIDDEN_APPS_UPDATED",
             "ROUTINE_READING_START",
@@ -110,6 +109,10 @@ class Prefs(context: Context) {
                     "SHORTCUT_ID_$slot",
                 )
             }.toTypedArray(),
+            // The drawer's own keyboard setting went with its search field.
+            "AUTO_SHOW_KEYBOARD",
+            // Emphasis went once the drawer opened on closed categories.
+            "EMPHASIZED_APPS",
         )
         if (obsoleteKeys.any(prefs::contains)) {
             prefs.edit { obsoleteKeys.forEach(::remove) }
@@ -199,7 +202,7 @@ class Prefs(context: Context) {
         get() = prefs.getInt(APP_LABEL_ALIGNMENT, Gravity.START)
         set(value) = prefs.edit { putInt(APP_LABEL_ALIGNMENT, value).apply() }
 
-    /** Draws the home-screen date in the same medium face the emphasized apps use. */
+    /** Draws the home-screen date in the medium face instead of the light one. */
     var dateBold: Boolean
         get() = prefs.getBoolean(DATE_BOLD, false)
         set(value) = prefs.edit { putBoolean(DATE_BOLD, value).apply() }
@@ -399,23 +402,6 @@ class Prefs(context: Context) {
         if (renameLabel.isBlank()) remove(appPackage) else putString(appPackage, renameLabel)
     }
 
-    /**
-     * Shortcut emphasis used to be keyed by shortcut id alone, which two apps can share. Moves a
-     * shortcut's old entry onto its package-qualified [AppModel.emphasisKey]; the first shortcut
-     * to claim an old entry keeps it. Returns whether an old emphasis was carried over.
-     *
-     * Old shortcut renames are not carried over: they sat under the bare id, in the same file as
-     * every other setting, so an id that happens to equal another key (a setting, or an app's
-     * rename) cannot be told apart from a real rename. Those shortcuts show their own label again.
-     */
-    fun migrateShortcutKeys(shortcut: AppModel.PinnedShortcut): Boolean {
-        val legacyEmphasis = AppModel.legacyShortcutKey(shortcut.shortcutId, shortcut.user.toString())
-        val emphasized = emphasizedApps
-        if (legacyEmphasis !in emphasized) return false
-        emphasizedApps = emphasized - legacyEmphasis + shortcut.emphasisKey
-        return true
-    }
-
     fun getAppCategoryOverrides(appPackage: String): List<AppCategory>? {
         val raw = prefs.getString(APP_CATEGORY_OVERRIDE_PREFIX + appPackage, null) ?: return null
         val categories = raw.split(',')
@@ -454,25 +440,4 @@ class Prefs(context: Context) {
         prefs.all.keys.filter { it.startsWith(APP_CATEGORY_OVERRIDE_PREFIX) }.forEach(::remove)
     }
 
-    /** Emphasis keys (see [AppModel.emphasisKey]) of apps that render bold and first in their group. */
-    var emphasizedApps: Set<String>
-        get() = prefs.getStringSet(EMPHASIZED_APPS, null)?.toSet() ?: emptySet()
-        set(value) = prefs.edit { putStringSet(EMPHASIZED_APPS, value.toSet()) }
-
-    fun isAppEmphasized(key: String): Boolean =
-        key.isNotBlank() && emphasizedApps.contains(key)
-
-    fun setAppEmphasized(key: String, emphasized: Boolean) {
-        if (key.isBlank()) return
-        val next = emphasizedApps.toMutableSet()
-        if (emphasized) next.add(key) else next.remove(key)
-        emphasizedApps = next
-    }
-
-    /** Flips emphasis for [key] and returns the new state. */
-    fun toggleAppEmphasized(key: String): Boolean {
-        val next = !isAppEmphasized(key)
-        setAppEmphasized(key, next)
-        return next
-    }
 }

@@ -91,51 +91,25 @@ object SmartOrder {
         AppCategory.OTHER to Curve(0.0, listOf()),
     )
 
-    /** Sorts the drawer: pinned groups first in the user's order, the rest by score, emphasized then A-Z inside. */
+    /** Sorts the drawer: pinned groups first in the user's order, the rest by score, A-Z inside. */
     fun sort(prefs: Prefs, apps: MutableList<AppModel>) {
         val order = currentOrder(prefs).withIndex().associate { it.value to it.index }
         apps.sortWith(drawerComparator(order))
     }
 
-    /** Group rank, then emphasized apps above the rest, then A-Z. */
+    /** Group rank, then A-Z. */
     fun drawerComparator(order: Map<AppCategory, Int>): Comparator<AppModel> = Comparator { a, b ->
         compareDrawerRows(
-            order[a.category] ?: Int.MAX_VALUE, a.emphasized, a.appLabel,
-            order[b.category] ?: Int.MAX_VALUE, b.emphasized, b.appLabel,
+            order[a.category] ?: Int.MAX_VALUE, a.appLabel,
+            order[b.category] ?: Int.MAX_VALUE, b.appLabel,
         )
     }
 
-    fun compareDrawerRows(
-        groupRankA: Int,
-        emphasizedA: Boolean,
-        labelA: String,
-        groupRankB: Int,
-        emphasizedB: Boolean,
-        labelB: String,
-    ): Int {
+    fun compareDrawerRows(groupRankA: Int, labelA: String, groupRankB: Int, labelB: String): Int {
         val byGroup = groupRankA.compareTo(groupRankB)
         if (byGroup != 0) return byGroup
-        val byEmphasis = emphasizedA.not().compareTo(emphasizedB.not())
-        if (byEmphasis != 0) return byEmphasis
         return labelA.compareTo(labelB, ignoreCase = true)
     }
-
-    /**
-     * Marks the rows that should fade back: any non-emphasized row whose group has at least one
-     * emphasized row. Applied per list (drawer, private space) right after loading, so the flag
-     * travels with the row and flipping one app re-renders every row in its group.
-     */
-    fun applyGroupEmphasis(apps: MutableList<AppModel>) {
-        val groups = groupsWithEmphasis(apps.map { it.category to it.emphasized })
-        for (index in apps.indices) {
-            val app = apps[index]
-            apps[index] = app.withDimmed(!app.emphasized && app.category in groups)
-        }
-    }
-
-    /** From (group, emphasized) rows, the groups that contain at least one emphasized row. */
-    fun groupsWithEmphasis(rows: List<Pair<AppCategory?, Boolean>>): Set<AppCategory> =
-        rows.filter { it.second }.mapNotNullTo(HashSet()) { it.first }
 
     /** The full group order for the current moment. */
     fun currentOrder(

@@ -95,7 +95,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun saveSwipeUpApp(appModel: AppModel) {
         val shortcut = appModel as? AppModel.PinnedShortcut
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> return
             else -> {
                 prefs.appNameSwipeUp = appModel.appLabel
                 prefs.appPackageSwipeUp = appModel.appPackage
@@ -110,7 +110,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> return
             is AppModel.App -> {
                 if (isLeft) {
                     prefs.appNameSwipeLeft = appModel.appLabel

@@ -162,30 +162,9 @@ class SmartOrderTest {
     }
 
     @Test
-    fun onlyGroupsWithAnEmphasizedAppDimTheirOtherApps() {
-        val rows = listOf(
-            AppCategory.NEWS to true,
-            AppCategory.NEWS to false,
-            AppCategory.MEDIA to false,
-            null to false,
-        )
-        assertEquals(setOf(AppCategory.NEWS), SmartOrder.groupsWithEmphasis(rows))
-        assertEquals(emptySet<AppCategory>(), SmartOrder.groupsWithEmphasis(rows.filterNot { it.second }))
-    }
-
-    @Test
-    fun emphasizedAppsSortAboveTheRestOfTheSameGroup() {
-        assertTrue(
-            SmartOrder.compareDrawerRows(0, true, "WSJ", 0, false, "BBC") < 0
-        )
-        assertTrue(
-            SmartOrder.compareDrawerRows(0, false, "BBC", 0, true, "WSJ") > 0
-        )
-        assertTrue(
-            SmartOrder.compareDrawerRows(0, true, "BBC", 0, true, "WSJ") < 0
-        )
-        assertTrue(
-            SmartOrder.compareDrawerRows(0, false, "BBC", 1, true, "Maps") < 0
-        )
+    fun appsSortByGroupThenAlphabetically() {
+        assertTrue(SmartOrder.compareDrawerRows(0, "WSJ", 1, "BBC") < 0)
+        assertTrue(SmartOrder.compareDrawerRows(0, "bbc", 0, "WSJ") < 0)
+        assertTrue(SmartOrder.compareDrawerRows(1, "Maps", 0, "Zoom") > 0)
     }
 }

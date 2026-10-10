@@ -40,38 +40,34 @@ class PrefsTest {
     }
 
     @Test
-    fun shortcutsSharingAnIdKeepSeparateSettings() {
+    fun shortcutsSharingAnIdKeepSeparateRenames() {
         val mail = shortcut("com.example.mail", "1")
         val maps = shortcut("com.example.maps", "1")
-        assertNotEquals(mail.emphasisKey, maps.emphasisKey)
+        assertNotEquals(mail.identityKey, maps.identityKey)
 
-        prefs.setAppRenameLabel(mail.emphasisKey, "Compose")
-        prefs.setAppEmphasized(mail.emphasisKey, true)
+        prefs.setAppRenameLabel(mail.identityKey, "Compose")
 
-        assertEquals("", prefs.getAppRenameLabel(maps.emphasisKey))
-        assertFalse(prefs.isAppEmphasized(maps.emphasisKey))
-    }
-
-    @Test
-    fun oldShortcutEmphasisMovesToTheQualifiedKey() {
-        val mail = shortcut("com.example.mail", "compose")
-        prefs.emphasizedApps = setOf(AppModel.legacyShortcutKey("compose", user.toString()))
-
-        assertTrue(prefs.migrateShortcutKeys(mail))
-
-        assertEquals(setOf(mail.emphasisKey), prefs.emphasizedApps)
-        // A second shortcut with the same id finds nothing left to claim.
-        assertFalse(prefs.migrateShortcutKeys(shortcut("com.example.maps", "compose")))
+        assertEquals("", prefs.getAppRenameLabel(maps.identityKey))
     }
 
     @Test
     fun aShortcutIdNamedLikeASettingLeavesTheSettingAlone() {
         prefs.searchDraft = "half-written query"
 
-        prefs.migrateShortcutKeys(shortcut("com.example.notes", "SEARCH_DRAFT"))
-
+        assertEquals("", prefs.getAppRenameLabel(shortcut("com.example.notes", "SEARCH_DRAFT").identityKey))
         assertEquals("half-written query", prefs.searchDraft)
-        assertEquals("", prefs.getAppRenameLabel(shortcut("com.example.notes", "SEARCH_DRAFT").emphasisKey))
+    }
+
+    @Test
+    fun emphasisLeftOverFromOlderBuildsIsCleared() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences("app.olauncher", 0).edit(commit = true) {
+            putStringSet("EMPHASIZED_APPS", setOf("com.example.mail|0"))
+        }
+
+        Prefs(context)
+
+        assertFalse(context.getSharedPreferences("app.olauncher", 0).contains("EMPHASIZED_APPS"))
     }
 
     @Test

@@ -11,8 +11,8 @@ HOME SCREEN
 YOUR APPS
 • Home and the app drawer are one surface: tap the search bar and it rides to the top with every app below it. Swipe down or go back to close.
 • An app opens only when you tap it, so Enter always searches the web.
-• Apps are grouped on the device, such as AI Agents, People, Focus, News, Media, and Tools. Each group has a small colored glyph. Apps stay alphabetical inside the group, with emphasized ones first.
-• Long-press an app to rename it, set its groups (more than one, if you like), or emphasize it. Emphasized apps go bold and first. The rest of that group folds into a single line that opens when you tap it. Search still reaches the folded apps.
+• With nothing typed, your apps are a short list of categories sorted on the device, such as AI Agents, People, Focus, News, Media, and Tools, each with a colored glyph. Tap one to list its apps.
+• Long-press an app to rename it or set its categories (more than one, if you like).
 • A Private Space, when the device has one, sits at the bottom of the drawer behind a tap to unlock.
 
 THROUGH THE DAY

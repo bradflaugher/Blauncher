@@ -18,7 +18,7 @@
         android:text="@string/app" />
 
     <!-- Drawn as a 20dp glyph at 24dp from the edge; the padding widens the touch target
-         to the whole 48dp gutter so tap (launch) and long-press (emphasize) are easy to hit. -->
+         to the whole 48dp gutter so a tap there launches the app too. Shown on search results. -->
     <ImageView
         android:id="@+id/categoryMarker"
         android:layout_width="48dp"
