@@ -24,7 +24,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.os.bundleOf
+import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -637,6 +639,14 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             prefs.searchDraft = ""
             focusSearch()
         }
+        // The visible hint goes while there is text (below), but TalkBack keeps reading it as the
+        // field's label, so a draft never leaves an unnamed edit box.
+        ViewCompat.setAccessibilityDelegate(binding.searchInput, object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.hintText = getString(R.string.search_hint)
+            }
+        })
         binding.searchInput.doAfterTextChanged { text ->
             val hasText = !text.isNullOrBlank()
             binding.searchClear.isVisible = hasText

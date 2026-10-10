@@ -120,6 +120,17 @@ class HomeSearchTest {
     }
 
     @Test
+    fun talkBackStillNamesTheBarOnceItHoldsText() {
+        val activity = homeWithApps("Maps")
+        val input = activity.findViewById<EditText>(R.id.searchInput)
+
+        type(activity, "maps")
+
+        val info = androidx.core.view.accessibility.AccessibilityNodeInfoCompat.wrap(input.createAccessibilityNodeInfo())
+        assertEquals(activity.getString(R.string.search_hint), info.hintText?.toString())
+    }
+
+    @Test
     fun theSheetRestsWithOnlyTheSearchBarShowing() {
         val activity = homeWithApps("Maps")
 
