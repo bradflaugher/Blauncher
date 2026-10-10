@@ -197,10 +197,15 @@
                 android:scrollbars="vertical"
                 tools:ignore="LabelFor" />
 
+            <!-- Appears with the first character. The negative margins keep its 48dp touch target
+                 inside the field's one-line height, so the bar keeps its size until the text
+                 itself wraps onto another line. -->
             <ImageView
                 android:id="@+id/searchClear"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:layout_marginTop="-2dp"
+                android:layout_marginBottom="-2dp"
                 android:alpha="0.8"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/clear_search"
