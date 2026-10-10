@@ -256,12 +256,14 @@ class Prefs(context: Context) {
         get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.NOTIFICATIONS)
         set(value) = prefs.edit { putInt(SWIPE_DOWN_ACTION, value).apply() }
 
+    // Blank until an app is chosen; the swipe then opens the picker. Older builds stored "Camera"
+    // and "Phone" here with no app behind them, which counts as nothing chosen.
     var appNameSwipeLeft: String
-        get() = prefs.getString(APP_NAME_SWIPE_LEFT, "Camera").toString()
+        get() = if (appPackageSwipeLeft.isBlank()) "" else prefs.getString(APP_NAME_SWIPE_LEFT, "").toString()
         set(value) = prefs.edit { putString(APP_NAME_SWIPE_LEFT, value).apply() }
 
     var appNameSwipeRight: String
-        get() = prefs.getString(APP_NAME_SWIPE_RIGHT, "Phone").toString()
+        get() = if (appPackageSwipeRight.isBlank()) "" else prefs.getString(APP_NAME_SWIPE_RIGHT, "").toString()
         set(value) = prefs.edit { putString(APP_NAME_SWIPE_RIGHT, value).apply() }
 
     var appPackageSwipeLeft: String
@@ -349,8 +351,8 @@ class Prefs(context: Context) {
         set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_RIGHT, value) }
 
     /**
-     * The app (or pinned shortcut) a swipe up on Home opens. Blank until chosen, meaning the
-     * default browser: the apps themselves are behind the search bar, so the swipe is free.
+     * The app (or pinned shortcut) a swipe up on Home opens. Blank until chosen: the apps
+     * themselves are behind the search bar, so the swipe is free for one app of the user's own.
      */
     var swipeUpEnabled: Boolean
         get() = prefs.getBoolean(SWIPE_UP_ENABLED, true)

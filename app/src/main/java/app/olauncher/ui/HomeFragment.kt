@@ -52,10 +52,7 @@ import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.isProfileAvailable
-import app.olauncher.helper.openBrowser
 import app.olauncher.helper.openCalendar
-import app.olauncher.helper.openCameraApp
-import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
 import app.olauncher.helper.sendSearch
 import app.olauncher.helper.showToast
@@ -320,9 +317,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         add(getString(R.string.tip_open_drawer_action)) { openSheet() }
         if (prefs.swipeUpEnabled)
-            add(getString(R.string.open_app_named, prefs.appNameSwipeUp.ifBlank { getString(R.string.browser) })) {
-                openSwipeUpApp()
-            }
+            add(swipeAppLabel(prefs.appNameSwipeUp, R.string.swipe_up_app)) { openSwipeUpApp() }
         add(getString(R.string.tip_open_settings_action)) { openSettings() }
         if (prefs.swipeLeftEnabled)
             add(swipeAppLabel(prefs.appNameSwipeLeft, R.string.swipe_left_app)) { openSwipeLeftApp() }
@@ -860,12 +855,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         shortcutId: String?,
         isShortcut: Boolean,
         userString: String,
-        fallback: (() -> Unit)? = null,
     ) {
-        if (appName.isEmpty()) {
-            requireContext().showToast(R.string.long_press_to_change_app)
-            return
-        }
         if (isShortcut && !shortcutId.isNullOrEmpty()) {
             launchShortcut(
                 packageName = packageName,
@@ -873,15 +863,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 shortcutLabel = appName,
                 userString = userString
             )
-        } else if (packageName.isNotEmpty()) {
+        } else {
             launchApp(
                 appName = appName,
                 packageName = packageName,
                 activityClassName = activityClassName,
                 userString = userString
             )
-        } else {
-            fallback?.invoke()
         }
     }
 
@@ -913,8 +901,20 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
+    /**
+     * Until a swipe has an app, the swipe opens the picker for it (with a toast saying so), so a
+     * gesture never does nothing. Returns true when it did that instead of launching.
+     */
+    private fun pickSwipeAppIfUnset(packageName: String, flag: Int, @StringRes prompt: Int): Boolean {
+        if (packageName.isNotBlank()) return false
+        if (openPicker(flag)) requireContext().showToast(prompt)
+        return true
+    }
+
     private fun openSwipeRightApp() {
         if (!prefs.swipeRightEnabled) return
+        if (pickSwipeAppIfUnset(prefs.appPackageSwipeRight, Constants.FLAG_SET_SWIPE_RIGHT_APP, R.string.choose_swipe_right_app))
+            return
         launchAppOrShortcut(
             appName = prefs.appNameSwipeRight,
             packageName = prefs.appPackageSwipeRight,
@@ -922,21 +922,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             shortcutId = prefs.shortcutIdSwipeRight,
             isShortcut = prefs.isShortcutSwipeRight,
             userString = prefs.appUserSwipeRight,
-            fallback = { openDialerApp(requireContext()) }
         )
     }
 
-    /**
-     * The swipe-up app. Until one is chosen it is the default browser; with no browser at all
-     * the swipe opens the picker instead, so the gesture never does nothing.
-     */
     private fun openSwipeUpApp() {
         if (!prefs.swipeUpEnabled) return
-        if (prefs.appPackageSwipeUp.isBlank()) {
-            if (!openBrowser(requireContext()) && openPicker(Constants.FLAG_SET_SWIPE_UP_APP))
-                requireContext().showToast(R.string.choose_swipe_up_app)
+        if (pickSwipeAppIfUnset(prefs.appPackageSwipeUp, Constants.FLAG_SET_SWIPE_UP_APP, R.string.choose_swipe_up_app))
             return
-        }
         launchAppOrShortcut(
             appName = prefs.appNameSwipeUp,
             packageName = prefs.appPackageSwipeUp,
@@ -949,6 +941,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
     private fun openSwipeLeftApp() {
         if (!prefs.swipeLeftEnabled) return
+        if (pickSwipeAppIfUnset(prefs.appPackageSwipeLeft, Constants.FLAG_SET_SWIPE_LEFT_APP, R.string.choose_swipe_left_app))
+            return
         launchAppOrShortcut(
             appName = prefs.appNameSwipeLeft,
             packageName = prefs.appPackageSwipeLeft,
@@ -956,7 +950,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             shortcutId = prefs.shortcutIdSwipeLeft,
             isShortcut = prefs.isShortcutSwipeLeft,
             userString = prefs.appUserSwipeLeft,
-            fallback = { openCameraApp(requireContext()) }
         )
     }
 

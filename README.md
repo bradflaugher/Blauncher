@@ -37,8 +37,8 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   The shortcut button finds an installed password manager (Bitwarden,
   1Password, Proton Pass, KeePassDX, and others) on its own and wears a key;
   point it at any app and give it any of some thirty line-art glyphs.
-  Swipe down for notifications; swipe up for your browser, left for the
-  camera and right for the dialer, each pointable at any app.
+  Swipe down for notifications; swipe up, left or right for three apps of
+  your choice (the first swipe each way asks which).
 - **Home and the drawer are one surface.** Tap the search bar and it rides
   up to the top of the screen with the keyboard, every app filling in below
   it: type a few letters and the list narrows to the matches, best first. There is one

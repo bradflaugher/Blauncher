@@ -17,7 +17,6 @@ import android.net.Uri
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.CalendarContract
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
@@ -331,21 +330,6 @@ fun openSearch(context: Context) {
 }
 
 /**
- * Opens the user's default browser on its own start page (Chrome on most phones), or lets the
- * system offer a choice when no browser is the default. Returns false when there is no browser.
- */
-fun openBrowser(context: Context): Boolean {
-    val intent = defaultBrowserPackage(context)?.let { context.packageManager.getLaunchIntentForPackage(it) }
-        ?: Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_BROWSER)
-    return try {
-        context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    }
-}
-
-/**
  * The package the user has chosen to open web links, or null when no browser is set as
  * default (the system resolver would show a chooser instead).
  */
@@ -436,22 +420,6 @@ fun expandNotificationDrawer(context: Context) {
         method.invoke(statusBarService)
     } catch (_: ReflectiveOperationException) {
     } catch (_: SecurityException) {
-    }
-}
-
-fun openDialerApp(context: Context) {
-    try {
-        context.startActivity(Intent(Intent.ACTION_DIAL))
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun openCameraApp(context: Context) {
-    try {
-        context.startActivity(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA))
-    } catch (e: Exception) {
-        e.printStackTrace()
     }
 }
 

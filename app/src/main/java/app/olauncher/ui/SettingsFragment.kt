@@ -297,9 +297,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             if (prefs.swipeDownAction == Constants.SwipeDownAction.SEARCH) R.string.search
             else R.string.notifications
         )
-        val swipeUp = if (prefs.swipeUpEnabled) prefs.appNameSwipeUp.ifBlank { getString(R.string.browser) } else off
-        val swipeLeft = if (prefs.swipeLeftEnabled) prefs.appNameSwipeLeft else off
-        val swipeRight = if (prefs.swipeRightEnabled) prefs.appNameSwipeRight else off
+        val swipeUp = if (prefs.swipeUpEnabled) prefs.appNameSwipeUp.ifBlank { getString(R.string.none) } else off
+        val none = getString(R.string.none)
+        val swipeLeft = if (prefs.swipeLeftEnabled) prefs.appNameSwipeLeft.ifBlank { none } else off
+        val swipeRight = if (prefs.swipeRightEnabled) prefs.appNameSwipeRight.ifBlank { none } else off
         val guide = SpannableStringBuilder()
         fun heading(res: Int) {
             if (guide.isNotEmpty()) guide.append("\n\n")
@@ -604,13 +605,12 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateSwipeApps() {
-        // Until an app is picked, swipe up opens the default browser.
-        binding.swipeUpApp.text = prefs.appNameSwipeUp.ifBlank { getString(R.string.browser) }
+        binding.swipeUpApp.text = prefs.appNameSwipeUp.ifBlank { getString(R.string.none) }
         binding.swipeUpApp.describeAs(R.string.swipe_up_app)
         if (!prefs.swipeUpEnabled) showSwipeAppState(binding.swipeUpApp, false)
         else describeSwipeAppState(binding.swipeUpApp, true)
-        binding.swipeLeftApp.text = prefs.appNameSwipeLeft
-        binding.swipeRightApp.text = prefs.appNameSwipeRight
+        binding.swipeLeftApp.text = prefs.appNameSwipeLeft.ifBlank { getString(R.string.none) }
+        binding.swipeRightApp.text = prefs.appNameSwipeRight.ifBlank { getString(R.string.none) }
         binding.swipeLeftApp.describeAs(R.string.swipe_left_app)
         binding.swipeRightApp.describeAs(R.string.swipe_right_app)
         // Enabled keeps the style's own colors; only a disabled app is recolored (faded).

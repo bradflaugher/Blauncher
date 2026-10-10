@@ -18,7 +18,6 @@
     <string name="center">Center</string>
     <string name="home_layout_alignment">Date alignment</string>
     <string name="swipe_up_app">Swipe up app</string>
-    <string name="browser">Browser</string>
     <string name="swipe_left_app">Swipe left app</string>
     <string name="swipe_right_app">Swipe right app</string>
     <string name="okay">Okay</string>
@@ -98,10 +97,11 @@
     <string name="shortcut_glyph">Shortcut icon</string>
     <string name="choose_password_manager">Choose your shortcut app</string>
     <string name="choose_swipe_up_app">Choose the app a swipe up opens</string>
+    <string name="choose_swipe_left_app">Choose the app a swipe left opens</string>
+    <string name="choose_swipe_right_app">Choose the app a swipe right opens</string>
     <string name="swipe_up_app_enabled">Swipe up app enabled</string>
     <string name="swipe_up_app_disabled">Swipe up app disabled</string>
     <string name="password_manager_needs_app">Pick an app, not a shortcut</string>
-    <string name="long_press_to_change_app">Long press to change the app</string>
     <string name="emphasized_toast">%1$s emphasized</string>
     <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>
