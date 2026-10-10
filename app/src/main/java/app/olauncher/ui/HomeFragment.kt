@@ -316,6 +316,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             }
         }
         add(getString(R.string.tip_open_drawer_action)) { openSheet() }
+        if (prefs.swipeUpEnabled && prefs.appPackageSwipeUp.isNotBlank())
+            add(getString(R.string.open_app_named, prefs.appNameSwipeUp)) { openSwipeUpApp() }
         add(getString(R.string.tip_open_settings_action)) { openSettings() }
         if (prefs.swipeLeftEnabled)
             add(swipeAppLabel(prefs.appNameSwipeLeft, R.string.swipe_left_app)) { openSwipeLeftApp() }
@@ -395,7 +397,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             )
 
             else -> CoachContent(
-                R.drawable.ic_swipe_up, R.string.tip_open_drawer_title,
+                R.drawable.ic_search, R.string.tip_open_drawer_title,
                 R.string.tip_open_drawer_body, R.string.tip_open_drawer_action,
             )
         }
@@ -410,7 +412,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             null,
         )
         // The glyph only moves on a visible screen, never under the sheet.
-        if (isResumed && sheetProgress == 0f) startCoachAnimation(tip)
+        if (isResumed && sheetProgress == 0f) startCoachAnimation()
     }
 
     /** What the tip card shows for one tip, and what TalkBack calls tapping it. */
@@ -421,21 +423,15 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         @StringRes val action: Int,
     )
 
-    /** A slow nudge on the tip's glyph: a lift for the swipe, a swell for a tap or long-press. */
-    private fun startCoachAnimation(tip: Tip) {
+    /** A slow swell on the tip's glyph, the nudge for a tap or a long-press. */
+    private fun startCoachAnimation() {
         // Animations switched off in system settings leave the glyph still.
         if (!ValueAnimator.areAnimatorsEnabled()) return
-        val icon = binding.coachIcon
-        val lift = -6f * resources.displayMetrics.density
-        coachAnimator = when (tip) {
-            Tip.OPEN_SETTINGS, Tip.HOME_SHORTCUTS -> ObjectAnimator.ofPropertyValuesHolder(
-                icon,
-                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 0.8f),
-                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 0.8f),
-            )
-
-            else -> ObjectAnimator.ofFloat(icon, View.TRANSLATION_Y, 0f, lift)
-        }.apply {
+        coachAnimator = ObjectAnimator.ofPropertyValuesHolder(
+            binding.coachIcon,
+            PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 0.8f),
+            PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 0.8f),
+        ).apply {
             duration = 700L
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.REVERSE
@@ -447,7 +443,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         coachAnimator?.cancel()
         coachAnimator = null
         _binding?.coachIcon?.apply {
-            translationY = 0f
             scaleX = 1f
             scaleY = 1f
         }
@@ -479,8 +474,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.mainLayout.callback = object : SheetDragLayout.Callback {
             override fun canDragSheet(x: Float, y: Float, up: Boolean): Boolean {
                 val canDrag = if (up) {
-                    // From anywhere on Home, or catching the sheet while it settles.
-                    sheetProgress < 1f
+                    // Up on Home is the swipe-up app; the sheet opens from the search bar. A sheet
+                    // still settling can be caught and pushed back up, though.
+                    sheetProgress > 0f && sheetProgress < 1f
                 } else {
                     // Down on Home is the swipe-down gesture. On the open sheet, pull it down from
                     // the search row, or from the list once it is scrolled to the top.
@@ -917,6 +913,27 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         )
     }
 
+    /**
+     * The swipe-up app. Until one is chosen the swipe opens the picker for it, so the gesture
+     * never does nothing.
+     */
+    private fun openSwipeUpApp() {
+        if (!prefs.swipeUpEnabled) return
+        if (prefs.appPackageSwipeUp.isBlank()) {
+            if (openPicker(Constants.FLAG_SET_SWIPE_UP_APP))
+                requireContext().showToast(R.string.choose_swipe_up_app)
+            return
+        }
+        launchAppOrShortcut(
+            appName = prefs.appNameSwipeUp,
+            packageName = prefs.appPackageSwipeUp,
+            activityClassName = prefs.appActivityClassNameSwipeUp,
+            shortcutId = prefs.shortcutIdSwipeUp,
+            isShortcut = prefs.isShortcutSwipeUp,
+            userString = prefs.appUserSwipeUp,
+        )
+    }
+
     private fun openSwipeLeftApp() {
         if (!prefs.swipeLeftEnabled) return
         launchAppOrShortcut(
@@ -985,7 +1002,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                openSheet()
+                openSwipeUpApp()
             }
 
             override fun onSwipeDown() {
@@ -1020,7 +1037,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                openSheet()
+                openSwipeUpApp()
             }
 
             override fun onSwipeDown() {

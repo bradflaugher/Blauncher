@@ -54,6 +54,13 @@ class Prefs(context: Context) {
     private val PASSWORD_APP_CLASS_NAME = "PASSWORD_APP_CLASS_NAME"
     private val SHORTCUT_GLYPH = "SHORTCUT_GLYPH"
 
+    private val SWIPE_UP_ENABLED = "SWIPE_UP_ENABLED"
+    private val APP_NAME_SWIPE_UP = "APP_NAME_SWIPE_UP"
+    private val APP_PACKAGE_SWIPE_UP = "APP_PACKAGE_SWIPE_UP"
+    private val APP_ACTIVITY_CLASS_NAME_SWIPE_UP = "APP_ACTIVITY_CLASS_NAME_SWIPE_UP"
+    private val APP_USER_SWIPE_UP = "APP_USER_SWIPE_UP"
+    private val SHORTCUT_ID_SWIPE_UP = "SHORTCUT_ID_SWIPE_UP"
+    private val IS_SHORTCUT_SWIPE_UP = "IS_SHORTCUT_SWIPE_UP"
     private val SHORTCUT_ID_SWIPE_LEFT = "SHORTCUT_ID_SWIPE_LEFT"
     private val IS_SHORTCUT_SWIPE_LEFT = "IS_SHORTCUT_SWIPE_LEFT"
     private val SHORTCUT_ID_SWIPE_RIGHT = "SHORTCUT_ID_SWIPE_RIGHT"
@@ -341,11 +348,44 @@ class Prefs(context: Context) {
         get() = prefs.getBoolean(IS_SHORTCUT_SWIPE_RIGHT, false)
         set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_RIGHT, value) }
 
+    /**
+     * The app (or pinned shortcut) a swipe up on Home opens. Blank until chosen: the apps
+     * themselves are behind the search bar, so the swipe is free for one app of the user's own.
+     */
+    var swipeUpEnabled: Boolean
+        get() = prefs.getBoolean(SWIPE_UP_ENABLED, true)
+        set(value) = prefs.edit { putBoolean(SWIPE_UP_ENABLED, value) }
+
+    var appNameSwipeUp: String
+        get() = prefs.getString(APP_NAME_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_NAME_SWIPE_UP, value) }
+
+    var appPackageSwipeUp: String
+        get() = prefs.getString(APP_PACKAGE_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_PACKAGE_SWIPE_UP, value) }
+
+    var appActivityClassNameSwipeUp: String?
+        get() = prefs.getString(APP_ACTIVITY_CLASS_NAME_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_ACTIVITY_CLASS_NAME_SWIPE_UP, value) }
+
+    var appUserSwipeUp: String
+        get() = prefs.getString(APP_USER_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_USER_SWIPE_UP, value) }
+
+    var shortcutIdSwipeUp: String
+        get() = prefs.getString(SHORTCUT_ID_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(SHORTCUT_ID_SWIPE_UP, value) }
+
+    var isShortcutSwipeUp: Boolean
+        get() = prefs.getBoolean(IS_SHORTCUT_SWIPE_UP, false)
+        set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_UP, value) }
+
     fun updateAppActivityClassName(packageName: String, activityClassName: String) {
         if (calendarAppPackage == packageName) calendarAppClassName = activityClassName
         if (passwordAppPackage == packageName) passwordAppClassName = activityClassName
         if (appPackageSwipeLeft == packageName) appActivityClassNameSwipeLeft = activityClassName
         if (appPackageSwipeRight == packageName) appActivityClassNameRight = activityClassName
+        if (appPackageSwipeUp == packageName) appActivityClassNameSwipeUp = activityClassName
     }
 
     fun getAppRenameLabel(appPackage: String): String = prefs.getString(appPackage, "").toString()

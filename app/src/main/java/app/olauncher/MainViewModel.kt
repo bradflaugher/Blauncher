@@ -62,6 +62,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
+            Constants.FLAG_SET_SWIPE_UP_APP -> saveSwipeUpApp(appModel)
             Constants.FLAG_SET_SWIPE_LEFT_APP -> saveSwipeApp(appModel, isLeft = true)
             Constants.FLAG_SET_SWIPE_RIGHT_APP -> saveSwipeApp(appModel, isLeft = false)
             Constants.FLAG_SET_CALENDAR_APP -> saveCalendarApp(appModel)
@@ -89,6 +90,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             e.printStackTrace()
             appContext.showToast(appContext.getString(R.string.unable_to_open_app))
         }
+    }
+
+    private fun saveSwipeUpApp(appModel: AppModel) {
+        val shortcut = appModel as? AppModel.PinnedShortcut
+        when (appModel) {
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> return
+            else -> {
+                prefs.appNameSwipeUp = appModel.appLabel
+                prefs.appPackageSwipeUp = appModel.appPackage
+                prefs.appUserSwipeUp = appModel.user.toString()
+                prefs.appActivityClassNameSwipeUp = (appModel as? AppModel.App)?.activityClassName
+                prefs.isShortcutSwipeUp = shortcut != null
+                prefs.shortcutIdSwipeUp = shortcut?.shortcutId.orEmpty()
+            }
+        }
+        updateSwipeApps()
     }
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {

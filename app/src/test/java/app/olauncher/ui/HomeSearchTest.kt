@@ -133,11 +133,11 @@ class HomeSearchTest {
     }
 
     @Test
-    fun aSwipeUpLiftsTheSheetAndBackPutsItAway() {
+    fun tappingTheBarLiftsTheSheetAndBackPutsItAway() {
         val activity = homeWithApps("Maps")
         val root = activity.findViewById<View>(R.id.mainLayout)
 
-        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        activity.findViewById<EditText>(R.id.searchInput).performClick()
         settle()
 
         assertTrue(isSheetOpen(activity))
@@ -157,7 +157,7 @@ class HomeSearchTest {
     fun aSwipeDownFromTheBarPutsTheSheetAway() {
         val activity = homeWithApps("Maps")
         val root = activity.findViewById<View>(R.id.mainLayout)
-        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        activity.findViewById<EditText>(R.id.searchInput).performClick()
         settle()
 
         val bar = Rect().also { activity.findViewById<View>(R.id.searchBar).getGlobalVisibleRect(it) }
@@ -168,13 +168,35 @@ class HomeSearchTest {
     }
 
     @Test
-    fun tappingTheBarLiftsTheSheet() {
+    fun aSwipeUpOpensTheSwipeUpAppNotTheSheet() {
+        Prefs(app).apply {
+            appNameSwipeUp = "Notes"
+            appPackageSwipeUp = "com.example.notes"
+            appActivityClassNameSwipeUp = "Main"
+            appUserSwipeUp = Process.myUserHandle().toString()
+        }
         val activity = homeWithApps("Maps")
+        val root = activity.findViewById<View>(R.id.mainLayout)
 
-        activity.findViewById<EditText>(R.id.searchInput).performClick()
+        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
         settle()
 
-        assertTrue(isSheetOpen(activity))
+        assertFalse(isSheetOpen(activity))
+        // The fake app is not really installed, so the launch itself reports it is missing.
+        assertEquals(activity.getString(R.string.app_not_found), ShadowToast.getTextOfLatestToast())
+    }
+
+    @Test
+    fun aSwipeUpWithNoAppChosenOpensThePickerForIt() {
+        val activity = homeWithApps("Maps")
+        val root = activity.findViewById<View>(R.id.mainLayout)
+
+        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        settle()
+
+        val navController = androidx.navigation.Navigation.findNavController(activity, R.id.nav_host_fragment)
+        assertEquals(R.id.appListFragment, navController.currentDestination?.id)
+        assertEquals(activity.getString(R.string.choose_swipe_up_app), ShadowToast.getTextOfLatestToast())
     }
 
     @Test
