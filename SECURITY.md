@@ -40,7 +40,10 @@ gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher
   stores its data in local app preferences; the system usage-stats API is
   never used.
 - The home-screen search bar keeps unsent text as a draft in the same local
-  preferences (excluded from backups) until it is sent or cleared. Sending
+  preferences (excluded from backups) until it is sent or cleared. Matching
+  the text against app names happens in memory, against the same app list
+  the drawer shows; opening an app from there sends nothing anywhere. Sending
+  the text as a web search
   builds the results URL for the search engine chosen in Settings and opens
   it in the default browser with an `ACTION_VIEW` intent, or, for the
   "Browser default" option, hands the raw text over as an

@@ -26,13 +26,13 @@ import app.olauncher.data.Constants
 import app.olauncher.databinding.AdapterAppDrawerBinding
 import app.olauncher.databinding.AdapterGroupToggleBinding
 import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
+import app.olauncher.helper.AppSearch
 import app.olauncher.helper.GroupCollapse
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPrivateSpaceProfile
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.showKeyboard
 import app.olauncher.helper.Typefaces
-import java.text.Normalizer
 
 class AppDrawerAdapter(
     private var flag: Int,
@@ -96,8 +96,6 @@ class AppDrawerAdapter(
      * Lives with the adapter, which the drawer recreates on every open, so it resets by itself.
      */
     private val expandedGroups = mutableSetOf<String>()
-    private val diacriticsRegex = Regex("\\p{InCombiningDiacriticalMarks}+")
-    private val separatorsRegex = Regex("[-_+,.`'\\s\\p{Z}]")
     private val appFilter = createAppFilter()
     private val myUserHandle = android.os.Process.myUserHandle()
 
@@ -205,13 +203,14 @@ class AppDrawerAdapter(
                 val appFilteredList = if (charSearch.isNullOrBlank()) {
                     displayRows()
                 } else {
-                    // Dedupe multi-category duplicates so keyboard matching / auto-launch
-                    // still treats each app as a single result.
-                    dedupeAppsForSearch(
-                        appsList.filter { app ->
-                            app.isLaunchable() && appLabelMatches(app.appLabel, charSearch)
-                        }
-                    )
+                    // Best match first, so enter and auto-launch pick what the user meant; each
+                    // app is one result even when it is listed under several groups.
+                    AppSearch.search(
+                        appsList.filter { it.isLaunchable() },
+                        charSearch,
+                        label = { it.appLabel },
+                        key = { it.searchKey() },
+                    ).mapTo(mutableListOf()) { it.first }
                 }
 
                 val filterResults = FilterResults()
@@ -282,31 +281,12 @@ class AppDrawerAdapter(
     }
 
 
-    private fun dedupeAppsForSearch(apps: List<AppModel>): MutableList<AppModel> {
-        val seen = LinkedHashSet<String>()
-        val result = mutableListOf<AppModel>()
-        for (app in apps) {
-            val key = when (app) {
-                is AppModel.App -> "app:${app.appPackage}|${app.user}"
-                is AppModel.PinnedShortcut -> "shortcut:${app.appPackage}/${app.shortcutId}|${app.user}"
-                is AppModel.PrivateSpaceHeader -> "private-space"
-                is AppModel.GroupToggle -> "toggle:${app.toggleKey}"
-            }
-            if (seen.add(key)) result.add(app)
-        }
-        return result
+    private fun AppModel.searchKey(): String = when (this) {
+        is AppModel.App -> "app:$appPackage|$user"
+        is AppModel.PinnedShortcut -> "shortcut:$appPackage/$shortcutId|$user"
+        is AppModel.PrivateSpaceHeader -> "private-space"
+        is AppModel.GroupToggle -> "toggle:$toggleKey"
     }
-
-    private fun appLabelMatches(appLabel: String, charSearch: CharSequence): Boolean {
-        if (appLabel.contains(charSearch.trim(), true)) return true
-        val query = charSearch.normalizeForSearch()
-        return query.isNotEmpty() && appLabel.normalizeForSearch().contains(query, true)
-    }
-
-    private fun CharSequence.normalizeForSearch(): String =
-        Normalizer.normalize(this, Normalizer.Form.NFD)
-            .replace(diacriticsRegex, "")
-            .replace(separatorsRegex, "")
 
     fun setAppList(appsList: MutableList<AppModel>) {
         // Add empty app for bottom padding in recyclerview and assign to list

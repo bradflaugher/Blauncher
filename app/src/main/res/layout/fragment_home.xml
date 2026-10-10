@@ -135,6 +135,17 @@
                 android:visibility="gone" />
         </LinearLayout>
 
+        <!-- Unified search: while the composer holds text, the apps it matches, best first,
+             then a row that searches the web instead. Filled in by HomeFragment. -->
+        <LinearLayout
+            android:id="@+id/searchSuggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
         <!-- Bottom row: the search composer and the password-manager glyph, aligned to the
              composer's bottom edge so the glyph stays put while the composer grows upward. -->
         <LinearLayout
@@ -144,8 +155,9 @@
             android:gravity="bottom"
             android:orientation="horizontal">
 
-            <!-- Search composer: text goes to the default browser's search engine. The draft
-                 survives leaving the screen; only a successful send or the clear button empties it. -->
+            <!-- Search composer for apps and the web: enter opens the top matching app or sends the
+                 text to the chosen search engine. The draft survives leaving the screen; only a
+                 successful send or the clear button empties it. -->
             <LinearLayout
                 android:id="@+id/searchBar"
                 android:layout_width="0dp"
@@ -176,7 +188,7 @@
                     android:background="@null"
                     android:gravity="center_vertical"
                     android:hint="@string/search_hint"
-                    android:imeOptions="flagNoExtractUi"
+                    android:imeOptions="actionGo|flagNoExtractUi"
                     android:importantForAutofill="no"
                     android:inputType="textMultiLine|textCapSentences"
                     android:maxLines="6"

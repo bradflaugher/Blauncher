@@ -4,7 +4,7 @@ Blauncher is a minimalist, gesture-driven home screen launcher for Android: free
 
 HOME SCREEN
 • Tap the date for your calendar, or long-press it to choose another app. Place the date left, center, or right.
-• The search bar grows to a few lines, then scrolls, and unsent text stays as a draft. Send opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. Or choose Browser default and let the browser search. The launcher itself makes no network request.
+• One search bar for your apps and the web: matching apps are listed as you type, and Enter opens the top one, or searches the web when no app name starts with your text. The bar grows to a few lines, then scrolls, and unsent text stays as a draft. A web search opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. Or choose Browser default and let the browser search. The launcher itself makes no network request.
 • The key beside the search bar opens your password manager. It binds to one you already have installed (Bitwarden, 1Password, Proton Pass, KeePassDX, and others), and you can point it at any app.
 • Swipe down for notifications, or for search. Swipe left and swipe right open two apps you choose.
 

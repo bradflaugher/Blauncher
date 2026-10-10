@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One row above the home search bar: an app the text matches, or the web search instead.
+     Indented to line up with the text in the bar below it. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/TextMedium"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:drawablePadding="12dp"
+    android:ellipsize="end"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    android:minHeight="48dp"
+    android:paddingHorizontal="18dp"
+    android:paddingVertical="6dp"
+    tools:text="Maps" />
