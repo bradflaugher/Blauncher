@@ -29,7 +29,7 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 
 - **A home screen with almost nothing on it.** The date up top; along the
   bottom, a search bar and a shortcut button. The search bar is one search
-  for apps and the web: what you type narrows your apps, listed under the
+  for apps and the web: what you type finds your apps, listed under the
   bar, to tap, and Enter sends your query to the engine you choose
   (divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage,
   Ecosia, Perplexity, ChatGPT) in your default browser, or hands it to the

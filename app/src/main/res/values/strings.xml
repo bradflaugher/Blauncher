@@ -125,7 +125,7 @@
     <string name="tips_reset">Tips are back on the home screen</string>
     <!-- The quick guide. The swipe lines name the app or action the user has set. -->
     <string name="guide_home_heading">Home screen</string>
-    <string name="guide_search_apps">Tap the search bar: all your apps, listed under it</string>
+    <string name="guide_search_apps">Tap the search bar: your app categories, listed under it</string>
     <string name="guide_swipe_up">Swipe up: %1$s</string>
     <string name="guide_long_press">Long-press empty space: settings</string>
     <string name="guide_swipe_down">Swipe down: %1$s</string>
@@ -134,7 +134,7 @@
     <string name="guide_gesture_off">off</string>
     <string name="guide_date">Tap the date: calendar (long-press to change the app)</string>
     <string name="guide_key">Shortcut button by the search bar: your chosen app, a password manager to start (long-press to change the app; pick its icon in Settings)</string>
-    <string name="guide_search">Search bar: type to narrow your apps to the ones that match (tap one to open it), or press enter to search the web</string>
+    <string name="guide_search">Search bar: type to find any app (tap it to open it), or press enter to search the web</string>
     <string name="guide_drawer_heading">App drawer</string>
     <string name="guide_type">Type in the search bar: the apps below narrow to the matches, best first</string>
     <string name="guide_enter">Tap an app to open it; enter always searches the web</string>

@@ -1,4 +1,5 @@
-- Home and your apps are one surface: tap the search bar and your apps come up under it, narrowing as you type.
+- Home and your apps are one surface: tap the search bar for your app categories under it, or type to find any app.
+- Tap a category to see its apps. Emphasis and folded rows are gone.
 - Swipe up, left and right each open an app you pick; the first swipe asks which.
 - The key button opens any app, with about thirty glyphs to choose from.
 - The search bar keeps its size until your text needs another line.

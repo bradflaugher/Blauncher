@@ -60,7 +60,7 @@ apps of your choice.
 | Gesture | What it does |
 | --- | --- |
 | **Long-press empty space** | Opens **Settings** — this is the big one to know |
-| Tap the search bar | Your apps, listed under the bar, with the keyboard up |
+| Tap the search bar | Your app categories, listed under the bar, with the keyboard up |
 | Swipe up | Opens an app you choose |
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens an app you choose |
