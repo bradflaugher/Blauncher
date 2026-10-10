@@ -28,8 +28,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
 
 /**
- * The home bar is one search for apps and the web: matching apps are listed above it, enter
- * opens the top one when the text starts its name, and anything else goes to the search engine.
+ * The home bar is one search for apps and the web: matching apps are listed above it and open
+ * with a tap, while enter always goes to the search engine, so an app is never opened by accident.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w411dp-h891dp-xxhdpi")
@@ -47,12 +47,12 @@ class HomeSearchTest {
     }
 
     @Test
-    fun matchingAppsAreListedBestFirstWithTheWebSearchLast() {
+    fun matchingAppsAreListedBestFirst() {
         val activity = homeWithApps("Google Maps", "Maps", "Weather")
 
         type(activity, "maps")
 
-        assertEquals(listOf("Maps", "Google Maps", "Search the web for “maps”"), suggestionTexts(activity))
+        assertEquals(listOf("Maps", "Google Maps"), suggestionTexts(activity))
     }
 
     @Test
@@ -65,46 +65,31 @@ class HomeSearchTest {
     }
 
     @Test
-    fun enterOpensTheTopApp() {
+    fun enterSearchesTheWebEvenWhenAnAppMatches() {
+        val activity = homeWithApps("Weather")
+
+        type(activity, "weather")
+        activity.findViewById<EditText>(R.id.searchInput).onEditorAction(EditorInfo.IME_ACTION_GO)
+        idle()
+
+        val started = shadowOf(activity).nextStartedActivity
+        assertEquals(Intent.ACTION_VIEW, started.action)
+        assertTrue(started.dataString!!.endsWith("?q=weather"))
+        assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
+    }
+
+    @Test
+    fun tappingAnAppOpensIt() {
         val activity = homeWithApps("Maps", "Weather")
 
         type(activity, "map")
-        activity.findViewById<EditText>(R.id.searchInput).onEditorAction(EditorInfo.IME_ACTION_GO)
+        activity.findViewById<LinearLayout>(R.id.searchSuggestions).getChildAt(0).performClick()
         idle()
 
         // The fake app is not really installed, so the launch itself reports it is missing.
         assertEquals(activity.getString(R.string.app_not_found), ShadowToast.getTextOfLatestToast())
         assertNoWebSearch(activity)
         assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
-    }
-
-    @Test
-    fun enterSearchesTheWebWhenNoAppStartsWithTheText() {
-        val activity = homeWithApps("Showtime")
-
-        // "how" is inside "Showtime" but starts none of its words: listed, not opened.
-        type(activity, "how")
-        assertEquals(listOf("Showtime"), suggestionTexts(activity))
-        activity.findViewById<EditText>(R.id.searchInput).onEditorAction(EditorInfo.IME_ACTION_GO)
-        idle()
-
-        val started = shadowOf(activity).nextStartedActivity
-        assertEquals(Intent.ACTION_VIEW, started.action)
-        assertTrue(started.dataString!!.endsWith("?q=how"))
-    }
-
-    @Test
-    fun theWebRowSearchesTheWebEvenWhenAnAppMatches() {
-        val activity = homeWithApps("Maps")
-
-        type(activity, "maps")
-        val rows = activity.findViewById<LinearLayout>(R.id.searchSuggestions)
-        rows.getChildAt(rows.childCount - 1).performClick()
-        idle()
-
-        val started = shadowOf(activity).nextStartedActivity
-        assertEquals(Intent.ACTION_VIEW, started.action)
-        assertTrue(started.dataString!!.endsWith("?q=maps"))
     }
 
     private fun homeWithApps(vararg labels: String): MainActivity {

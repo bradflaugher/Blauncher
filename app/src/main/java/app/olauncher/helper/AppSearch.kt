@@ -52,13 +52,6 @@ object AppSearch {
             .sortedBy { (_, match) -> match.ordinal }
     }
 
-    /**
-     * Whether a match is strong enough for the home bar's enter to open the app instead of
-     * searching the web: the query has to start the label or one of its words. A query that
-     * only turns up inside a name ("how" in "Showtime") is more likely meant for the web.
-     */
-    fun opensOnEnter(match: Match): Boolean = match != Match.CONTAINS
-
     private fun normalize(text: CharSequence): String =
         Normalizer.normalize(text, Normalizer.Form.NFD)
             .replace(diacriticsRegex, "")

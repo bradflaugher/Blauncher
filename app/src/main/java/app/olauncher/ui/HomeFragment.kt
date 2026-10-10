@@ -66,10 +66,9 @@ import kotlin.math.max
  * glyph that opens the password manager. Everything else is gestures on the empty space.
  *
  * The search bar finds apps and the web in one place. The apps its text matches are listed
- * above it, best first; enter (or the send button) opens the top app when the text starts its
- * name or one of its words, and otherwise hands the text to the chosen search engine. Unlike
- * the drawer, nothing opens by itself while typing: a lone match here may well be the first
- * word of a web search.
+ * above it, best first, and open with a tap; enter (or the send button) always hands the text
+ * to the chosen search engine. An app never opens without being tapped, unlike in the drawer:
+ * "weather" may name an installed app and still be meant for the web.
  *
  * Until the user has found the drawer, settings, and what the date and key do, a tip card above
  * the search bar teaches them one at a time (see [Onboarding]).
@@ -92,9 +91,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private val binding get() = _binding!!
     private var coachAnimator: ObjectAnimator? = null
     private val accessibilityActionIds = mutableListOf<Int>()
-
-    /** The app enter opens for the current text, or null when enter searches the web. */
-    private var enterTarget: AppModel? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -488,11 +484,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         return apps + privateApps
     }
 
-    /**
-     * Lists the apps the search text matches above the bar, best first, and picks what enter
-     * does. The top app is drawn bold when enter opens it, and a last row offers the web
-     * search instead; when no app is a strong enough match, enter already searches the web.
-     */
+    /** Lists the apps the search text matches above the bar, best first; a tap opens one. */
     private fun updateSearchSuggestions() {
         val binding = _binding ?: return
         val query = binding.searchInput.text?.toString()?.trim().orEmpty()
@@ -500,31 +492,14 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             if (query.isEmpty()) emptyList()
             else AppSearch.search(searchableApps(), query, label = { it.appLabel }, key = { it.emphasisKey })
                 .take(MAX_APP_SUGGESTIONS)
-        val target = matches.firstOrNull()?.takeIf { AppSearch.opensOnEnter(it.second) }?.first
-        enterTarget = target
-
-        binding.searchSend.contentDescription =
-            if (target != null) getString(R.string.open_app_named, target.appLabel)
-            else getString(R.string.search_the_web)
-
         val list = binding.searchSuggestions
         list.removeAllViews()
         list.isVisible = matches.isNotEmpty()
-        if (matches.isEmpty()) return
         val inflater = layoutInflater
         matches.forEach { (app, _) ->
             suggestionRow(inflater, list).apply {
                 text = app.appLabel
-                typeface = Typefaces.forEmphasis(app == target)
                 setOnClickListener { openSearchedApp(app) }
-            }
-        }
-        if (target != null) {
-            suggestionRow(inflater, list).apply {
-                text = getString(R.string.search_web_for, query)
-                alpha = 0.8f
-                setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_search, 0, 0, 0)
-                setOnClickListener { searchWeb() }
             }
         }
     }
@@ -593,22 +568,16 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
-    /** Enter and the send button: opens the top matching app, or else searches the web. */
-    private fun submitSearch() {
-        val app = enterTarget
-        if (app != null) openSearchedApp(app) else searchWeb()
-    }
-
     private fun openSearchedApp(app: AppModel) {
         viewModel.selectedApp(app, Constants.FLAG_LAUNCH_APP)
         clearSearch()
     }
 
     /**
-     * Sends the composed text to the chosen search engine. The field is emptied only after an
-     * app accepted the query, so a missing browser never eats the text.
+     * Enter and the send button: sends the composed text to the chosen search engine. The field
+     * is emptied only after an app accepted the query, so a missing browser never eats the text.
      */
-    private fun searchWeb() {
+    private fun submitSearch() {
         val query = binding.searchInput.text?.toString()?.trim().orEmpty()
         if (query.isEmpty()) return
         if (sendSearch(requireContext(), prefs.searchEngine, query)) clearSearch()

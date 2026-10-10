@@ -29,8 +29,8 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 - **A home screen with almost nothing on it.** The date up top; along the
   bottom, a search bar and a key glyph that opens your password manager. The
   search bar is one search for apps and the web: the apps your text matches
-  are listed above it, and Enter opens the top one, or, when no app name
-  starts with what you typed, sends your query to the engine you choose
+  are listed above it to tap, and Enter sends your query to the engine you
+  choose
   (divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage,
   Ecosia, Perplexity, ChatGPT) in your default browser, or hands it to the
   browser's own engine.

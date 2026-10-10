@@ -65,14 +65,9 @@ everything else is gestures.
     first (a name that starts with your text beats one that only contains
     it). Tap any of them to open it.
   - **Enter** (the keyboard's Go key) or the filled **send** button that
-    replaces the key glyph while there is text: if your text starts the top
-    app's name, or one of the words in it, that app opens — it is drawn in
-    bold. Otherwise your text goes to the search engine. So `maps` opens
-    Maps, while `maps of italy` or `how tall is everest` is a web search.
-  - When an app would open, a last row, **Search the web for "…"**, does the
-    web search instead.
-  - Unlike the app drawer, nothing opens by itself while you type: a lone
-    match on the home screen may well be the first word of a web search.
+    replaces the key glyph while there is text always searches the web, even
+    when an app matches: an app opens only when you tap it. So you can search
+    for `weather` with a Weather app installed.
   - The box grows to a few lines and then scrolls, and there is no length
     limit, so whole paragraphs are fine. Shift+Enter on a hardware keyboard
     starts a new line. An **×** at the end of the bar clears the text.

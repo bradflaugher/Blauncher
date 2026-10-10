@@ -135,8 +135,8 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Unified search: while the composer holds text, the apps it matches, best first,
-             then a row that searches the web instead. Filled in by HomeFragment. -->
+        <!-- Unified search: while the composer holds text, the apps it matches, best first.
+             A tap opens one; enter still searches the web. Filled in by HomeFragment. -->
         <LinearLayout
             android:id="@+id/searchSuggestions"
             android:layout_width="match_parent"
@@ -155,9 +155,9 @@
             android:gravity="bottom"
             android:orientation="horizontal">
 
-            <!-- Search composer for apps and the web: enter opens the top matching app or sends the
-                 text to the chosen search engine. The draft survives leaving the screen; only a
-                 successful send or the clear button empties it. -->
+            <!-- Search composer for apps and the web: matching apps are listed above it, and enter
+                 sends the text to the chosen search engine. The draft survives leaving the screen;
+                 only a successful send or the clear button empties it. -->
             <LinearLayout
                 android:id="@+id/searchBar"
                 android:layout_width="0dp"

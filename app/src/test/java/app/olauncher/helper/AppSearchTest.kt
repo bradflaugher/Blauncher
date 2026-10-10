@@ -2,9 +2,7 @@ package app.olauncher.helper
 
 import app.olauncher.helper.AppSearch.Match
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AppSearchTest {
@@ -37,11 +35,4 @@ class AppSearchTest {
         assertEquals(listOf("Maps" to "travel"), results.map { it.first })
     }
 
-    @Test
-    fun enterOpensAnAppOnlyWhenTheQueryStartsAWord() {
-        assertTrue(AppSearch.opensOnEnter(Match.EXACT))
-        assertTrue(AppSearch.opensOnEnter(Match.PREFIX))
-        assertTrue(AppSearch.opensOnEnter(Match.WORD_PREFIX))
-        assertFalse(AppSearch.opensOnEnter(Match.CONTAINS))
-    }
 }
