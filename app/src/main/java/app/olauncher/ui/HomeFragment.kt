@@ -571,7 +571,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             prefs.learnTip(Tip.OPEN_DRAWER)
         }
         if (old > 0f && sheetProgress == 0f) {
-            // Back at rest: each visit to the apps starts at the top with groups folded.
+            // Back at rest: each visit to the apps starts at the top with every category closed.
             drawerList.reset()
             populateCoachCard()
         }
@@ -794,7 +794,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun populateDate() {
         val dateText = SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())
         binding.date.text = dateText.replace(".,", ",")
-        binding.date.typeface = Typefaces.forEmphasis(prefs.dateBold)
+        binding.date.typeface = Typefaces.forWeight(prefs.dateBold)
     }
 
     /**

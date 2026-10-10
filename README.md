@@ -29,7 +29,7 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 
 - **A home screen with almost nothing on it.** The date up top; along the
   bottom, a search bar and a shortcut button. The search bar is one search
-  for apps and the web: what you type narrows your apps, listed under the
+  for apps and the web: what you type finds your apps, listed under the
   bar, to tap, and Enter sends your query to the engine you choose
   (divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage,
   Ecosia, Perplexity, ChatGPT) in your default browser, or hands it to the
@@ -40,24 +40,22 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   Swipe down for notifications; swipe up, left or right for three apps of
   your choice (the first swipe each way asks which).
 - **Home and the drawer are one surface.** Tap the search bar and it rides
-  up to the top of the screen with the keyboard, every app filling in below
-  it: type a few letters and the list narrows to the matches, best first. There is one
+  up to the top of the screen with the keyboard, your app categories below
+  it: type a few letters and they give way to the matching apps, best first. There is one
   search with one rule: an app opens only when you tap it, and Enter always
   searches the web. Swipe down from the bar or the top of the list, or go
   back, and it all settles back to the quiet home screen.
-- **Apps in groups, your picks on top.** Apps are sorted on-device into groups
-  such as AI Agents, People, Focus, News, Media, and Tools, each with a small
-  colored glyph. Long-press an app to change its groups, including several at
-  once, or to **emphasize** it: emphasized apps go bold and rise to the top of
-  their group while the rest fold into one faded line
-  (`+5 · Gemini · Perplexity · …`) that expands on tap. Search still matches
-  folded apps, so nothing is ever out of reach. Long-press a glyph to toggle
-  emphasis in place.
+- **Search, or pick a category.** With nothing typed, your apps come up as a
+  short list of categories sorted on-device (AI Agents, People, Focus, News,
+  Media, Tools, and more), each with a small colored glyph and its app count.
+  Tap one to list its apps; opening another closes it, so the list always
+  fits above the keyboard. Long-press an app to change its categories,
+  including several at once.
 - **An order that follows your day.** Groups shift with the time of day, news
   in the morning, focus during work, media in the evening, sleep and
   meditation from about 8:30 pm, then sharpen from
-  the apps you actually open. Apps stay alphabetical inside each group with
-  emphasized ones first. Pin any groups to the top; AI Agents is pinned by
+  the apps you actually open. Inside each group, the apps you open most come
+  first. Pin any groups to the top; AI Agents is pinned by
   default. Reset the learning any time in Settings.
 - **Private by construction.** No internet permission, no usage-stats access,
   no accounts, sync, analytics, accessibility service, or launcher-managed

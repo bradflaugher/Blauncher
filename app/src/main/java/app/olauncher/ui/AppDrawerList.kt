@@ -62,7 +62,7 @@ class AppDrawerList(
         appRenameListener = { appModel, renameLabel ->
             val identifier = when (appModel) {
                 // Package-qualified: two apps may pin shortcuts with the same id.
-                is AppModel.PinnedShortcut -> appModel.emphasisKey
+                is AppModel.PinnedShortcut -> appModel.identityKey
                 is AppModel.App -> appModel.appPackage
                 else -> return@AppDrawerAdapter
             }
@@ -70,17 +70,6 @@ class AppDrawerList(
             viewModel.getAppList()
         },
         appCategoryListener = ::showCategoryChooser,
-        appEmphasisListener = { appModel ->
-            if (appModel.emphasisKey.isBlank()) return@AppDrawerAdapter
-            val emphasized = prefs.toggleAppEmphasized(appModel.emphasisKey)
-            context.showToast(
-                context.getString(
-                    if (emphasized) R.string.emphasized_toast else R.string.unemphasized_toast,
-                    appModel.appLabel,
-                )
-            )
-            viewModel.getAppList()
-        },
         privateSpaceToggleListener = { viewModel.togglePrivateSpaceLock() },
         privateSpaceSettingsListener = {
             if (isActive()) {
@@ -123,7 +112,7 @@ class AppDrawerList(
         adapter.search(text)
     }
 
-    /** Back to the top with every group folded again, as each visit to the drawer starts. */
+    /** Back to the top with every category closed again, as each visit to the drawer starts. */
     fun reset() {
         adapter.collapseGroups()
         recyclerView.scrollToPosition(0)
@@ -142,7 +131,7 @@ class AppDrawerList(
 
     private fun uninstall(appModel: AppModel) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> {}
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> {}
             is AppModel.PinnedShortcut ->
                 context.deletePinnedShortcut(
                     packageName = appModel.appPackage,
@@ -165,8 +154,7 @@ class AppDrawerList(
     }
 
     /**
-     * The Group sheet for one app: an Emphasize switch on top, then the groups the app is listed
-     * under. With no manual choice the current automatic group is pre-ticked so the sheet always
+     * The Group sheet for one app: the groups the app is listed under. With no manual choice the current automatic group is pre-ticked so the sheet always
      * shows where the app actually is; saving an unchanged automatic selection stays automatic.
      */
     private fun showCategoryChooser(appModel: AppModel) {
@@ -181,8 +169,6 @@ class AppDrawerList(
         val inflater = LayoutInflater.from(builder.context)
         val sheet = DialogAppGroupsBinding.inflate(inflater)
 
-        sheet.emphasizeSwitch.isChecked = prefs.isAppEmphasized(appModel.emphasisKey)
-        sheet.emphasizeRow.setOnClickListener { sheet.emphasizeSwitch.toggle() }
         sheet.groupsSummary.setText(
             if (manual == null) R.string.groups_automatic_summary else R.string.groups_manual_summary
         )
@@ -197,12 +183,6 @@ class AppDrawerList(
             }
         }
 
-        fun saveEmphasis() {
-            if (appModel.emphasisKey.isNotBlank()) {
-                prefs.setAppEmphasized(appModel.emphasisKey, sheet.emphasizeSwitch.isChecked)
-            }
-        }
-
         builder
             .setTitle(appModel.appLabel)
             .setView(sheet.root)
@@ -210,13 +190,11 @@ class AppDrawerList(
                 val keepAutomatic = manual == null && checked == automatic.toSet()
                 if (checked.isEmpty() || keepAutomatic) prefs.clearAppCategoryOverride(appModel.appPackage)
                 else prefs.setAppCategoryOverrides(appModel.appPackage, checked)
-                saveEmphasis()
                 dialog.dismiss()
                 viewModel.getAppList()
             }
             .setNeutralButton(R.string.automatic) { dialog, _ ->
                 prefs.clearAppCategoryOverride(appModel.appPackage)
-                saveEmphasis()
                 dialog.dismiss()
                 viewModel.getAppList()
             }
@@ -227,7 +205,7 @@ class AppDrawerList(
     /** Every group this app (or pinned shortcut) is currently listed under in the drawer. */
     private fun currentGroupsOf(appModel: AppModel): List<AppCategory> {
         val groups = adapter.appsList
-            .filter { it.emphasisKey == appModel.emphasisKey }
+            .filter { it.identityKey == appModel.identityKey }
             .mapNotNull { it.category }
             .distinct()
         return groups.ifEmpty { listOfNotNull(appModel.category) }

@@ -73,13 +73,49 @@ class HomeSearchTest {
     }
 
     @Test
-    fun clearingTheTextListsEveryAppAgain() {
-        val activity = homeWithApps("Maps", "Weather")
+    fun withNothingTypedTheDrawerListsClosedCategories() {
+        val activity = homeWithApps(
+            "Maps" to AppCategory.TRAVEL, "Uber" to AppCategory.TRAVEL, "Spotify" to AppCategory.MEDIA,
+        )
 
         type(activity, "maps")
         type(activity, "")
 
-        assertEquals(listOf("Maps", "Weather"), listedLabels(activity).sorted())
+        assertEquals(listOf("Places 2", "Media 1").sorted(), headerSummaries(activity).sorted())
+        assertEquals(emptyList<String>(), listedLabels(activity))
+    }
+
+    @Test
+    fun tappingACategoryOpensItAndAnotherSwitchesToThatOne() {
+        val activity = openSheetWithApps(
+            "Maps" to AppCategory.TRAVEL, "Uber" to AppCategory.TRAVEL, "Spotify" to AppCategory.MEDIA,
+        )
+
+        rowView(activity, headerPosition(activity, AppCategory.TRAVEL)).performClick()
+        idle()
+        assertEquals(listOf("Maps", "Uber"), listedLabels(activity))
+
+        rowView(activity, headerPosition(activity, AppCategory.MEDIA)).performClick()
+        idle()
+        assertEquals(listOf("Spotify"), listedLabels(activity))
+
+        // Tapping the open one closes it.
+        rowView(activity, headerPosition(activity, AppCategory.MEDIA)).performClick()
+        idle()
+        assertEquals(emptyList<String>(), listedLabels(activity))
+    }
+
+    @Test
+    fun theDrawerOpensWithEveryCategoryClosedEachTime() {
+        val activity = openSheetWithApps("Maps" to AppCategory.TRAVEL)
+        rowView(activity, headerPosition(activity, AppCategory.TRAVEL)).performClick()
+        idle()
+        assertEquals(listOf("Maps"), listedLabels(activity))
+
+        activity.onBackPressedDispatcher.onBackPressed()
+        settle()
+
+        assertEquals(emptyList<String>(), listedLabels(activity))
     }
 
     @Test
@@ -244,6 +280,21 @@ class HomeSearchTest {
         assertEquals(activity.getString(R.string.app_not_found), ShadowToast.getTextOfLatestToast())
         assertNoWebSearch(activity)
         assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
+        // An app that did not open does not climb its category.
+        assertEquals(null, Prefs(app).appUsageData)
+    }
+
+    @Test
+    fun tappingAnAppInAnOpenCategoryOpensIt() {
+        val activity = openSheetWithApps("Maps" to AppCategory.TRAVEL)
+        val header = headerPosition(activity, AppCategory.TRAVEL)
+        rowView(activity, header).performClick()
+        idle()
+
+        rowTitle(activity, header + 1).performClick()
+        idle()
+
+        assertEquals(activity.getString(R.string.app_not_found), ShadowToast.getTextOfLatestToast())
     }
 
     @Test
@@ -259,35 +310,46 @@ class HomeSearchTest {
         assertTrue(rowTitle(activity, 1).contentDescription.contains(activity.getString(R.string.work_profile)))
     }
 
-    private fun fakeApp(label: String, user: UserHandle = Process.myUserHandle()) = AppModel.App(
+    private fun fakeApp(
+        label: String,
+        user: UserHandle = Process.myUserHandle(),
+        category: AppCategory = AppCategory.OTHER,
+    ) = AppModel.App(
         appLabel = label,
         key = null,
         appPackage = "com.example.${label.lowercase().replace(" ", "")}",
         activityClassName = "Main",
         user = user,
-        category = AppCategory.OTHER,
+        category = category,
     )
 
-    private fun homeWithApps(vararg labels: String): MainActivity {
+    private fun homeWithApps(vararg labels: String): MainActivity =
+        homeWithApps(*labels.map { it to AppCategory.OTHER }.toTypedArray())
+
+    private fun homeWithApps(vararg apps: Pair<String, AppCategory>): MainActivity {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         idle()
-        setApps(activity, *labels)
+        setApps(activity, *apps)
         return activity
     }
 
     /** Opening the sheet reloads the real (empty) app list, so the fakes go in afterwards. */
-    private fun openSheetWithApps(vararg labels: String): MainActivity {
+    private fun openSheetWithApps(vararg labels: String): MainActivity =
+        openSheetWithApps(*labels.map { it to AppCategory.OTHER }.toTypedArray())
+
+    private fun openSheetWithApps(vararg apps: Pair<String, AppCategory>): MainActivity {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         idle()
         activity.findViewById<View>(R.id.mainLayout).dispatchGenericMotionEvent(wheelEvent())
         settle()
         assertTrue(isSheetOpen(activity))
-        setApps(activity, *labels)
+        setApps(activity, *apps)
         return activity
     }
 
-    private fun setApps(activity: MainActivity, vararg labels: String) {
-        ViewModelProvider(activity)[MainViewModel::class.java].appList.value = labels.map { fakeApp(it) }
+    private fun setApps(activity: MainActivity, vararg apps: Pair<String, AppCategory>) {
+        ViewModelProvider(activity)[MainViewModel::class.java].appList.value =
+            apps.map { (label, category) -> fakeApp(label, category = category) }
         idle()
     }
 
@@ -307,8 +369,21 @@ class HomeSearchTest {
             .map { it.appLabel }
             .filter { it.isNotEmpty() }
 
-    /** The title of the row at [position], once the list has caught up and laid it out. */
-    private fun rowTitle(activity: MainActivity, position: Int): View {
+    /** "Places 2" for each category header listed, in order. */
+    private fun headerSummaries(activity: MainActivity): List<String> =
+        adapter(activity).appFilteredList
+            .filterIsInstance<AppModel.GroupHeader>()
+            .map { "${it.group.displayName} ${it.appCount}" }
+
+    private fun headerPosition(activity: MainActivity, group: AppCategory): Int =
+        adapter(activity).appFilteredList.indexOfFirst { it is AppModel.GroupHeader && it.group == group }
+
+    /** The title of the app row at [position], once the list has caught up and laid it out. */
+    private fun rowTitle(activity: MainActivity, position: Int): View =
+        rowView(activity, position).findViewById(R.id.appTitle)
+
+    /** The row at [position], once the list has caught up and laid it out. */
+    private fun rowView(activity: MainActivity, position: Int): View {
         val list = activity.findViewById<RecyclerView>(R.id.appList)
         val deadline = SystemClock.uptimeMillis() + 5_000
         while (true) {
@@ -320,7 +395,7 @@ class HomeSearchTest {
                     View.MeasureSpec.makeMeasureSpec(list.height, View.MeasureSpec.EXACTLY),
                 )
                 list.layout(list.left, list.top, list.right, list.bottom)
-                list.findViewHolderForAdapterPosition(position)?.let { return it.itemView.findViewById(R.id.appTitle) }
+                list.findViewHolderForAdapterPosition(position)?.let { return it.itemView }
             }
             check(SystemClock.uptimeMillis() < deadline) { "row $position never appeared" }
             Thread.sleep(10)

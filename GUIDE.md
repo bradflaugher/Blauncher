@@ -19,8 +19,8 @@ full tour, and [Questions](#questions) answers the usual ones.
 A fresh install shows a small card above the search bar that teaches one
 thing at a time:
 
-1. **Tap the search bar for your apps.** Every app is listed under it, and
-   typing narrows the list. Tap the bar, or just tap the card.
+1. **Tap the search bar for your apps.** Your app categories are listed
+   under it, and typing finds any app. Tap the bar, or just tap the card.
 2. **Long-press for settings.** Touch and hold any empty spot, or tap the
    card.
 3. **Tap the date or the shortcut.** The date opens your calendar and the
@@ -52,15 +52,15 @@ choose otherwise). The notification bar is always visible and the middle of
 the screen is empty on purpose: everything else is gestures.
 
 Home and the app drawer are one surface. The search bar sits on top of a
-sheet holding every app: tap the bar and the sheet lifts, the bar riding up
-to the top of the screen with the keyboard up and your apps filling in below
-it while the date fades away. Swipe up, left and right are yours for three
+sheet holding your apps: tap the bar and the sheet lifts, the bar riding up
+to the top of the screen with the keyboard up and your app categories filling
+in below it while the date fades away. Swipe up, left and right are yours for three
 apps of your choice.
 
 | Gesture | What it does |
 | --- | --- |
 | **Long-press empty space** | Opens **Settings** — this is the big one to know |
-| Tap the search bar | Your apps, listed under the bar, with the keyboard up |
+| Tap the search bar | Your app categories, listed under the bar, with the keyboard up |
 | Swipe up | Opens an app you choose |
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens an app you choose |
@@ -126,47 +126,42 @@ Settings → Gestures.
 
 ## Your apps
 
-Tap the search bar on the home screen. Apps are listed in **groups** (AI Agents,
-People, Focus, News, Media, and so on), each marked with a small colored
-glyph (a deeper shade of the same color in the light theme, so it stays
-legible), alphabetical within the group. An **emphasized** app is bold and
-sits at the top of its group. Once a group has one, its other apps fold
-into a single faded line under the bold ones — `+5 · Gemini · Perplexity ·
-Poe…`, the count in the group's color — so the apps you chose stand out
-without a long tail below them.
+Tap the search bar on the home screen. With the keyboard up there is room
+for a short list, so your apps come up as **categories** (AI Agents, People,
+Focus, News, Media, and so on): one row each, with its small colored glyph
+(a deeper shade of the same color in the light theme, so it stays legible),
+its name and how many apps it holds.
 
-- **Tap the folded line** to expand the group in place; the row turns into
-  **− fewer** and tapping it again folds the group back. Expansion lasts
-  for the current visit only: your apps always come up compact.
-- Folded apps are never out of reach: **search matches every app**, folded
-  or not, and a freshly installed app (marked ✦) stays visible in its group
-  until it is an hour old — listed just above the folded line, never counted
-  in it.
-- Groups without an emphasized app list every app as before.
+- **Tap a category** to list its apps under it, the ones you open most on
+  top (apps you have not opened from here follow, alphabetically); its name
+  turns bold. Tap another and that one opens instead, so the list never
+  outgrows the room above the keyboard. Tap the open one to close it. Every
+  category starts closed each time your apps come up.
+- The categories are in **smart order** (below): pinned ones first, then
+  the ones the launcher guesses you want right now.
+- A freshly installed app (marked ✦) shows its ✦ on its category too, until
+  it is an hour old.
+- An app can sit in several categories; it is listed in each.
 
-- **Search** is the bar above the list. Type and the list narrows to the
-  matches, best first; an app opens only when you tap it. Enter always
-  searches the web.
+- **Search** is the bar above the list. Type and the categories give way to
+  the apps that match, best first, each with its category's glyph; an app
+  opens only when you tap it. Enter always searches the web.
 - Scrolling the list puts the keyboard away so you can browse; the text
   stays.
 - **Long-press an app** for its menu: **Uninstall · Rename · Group ·
   Info**. Saving an empty name in **Rename** brings back the original one.
-  - **Group** opens a sheet named after the app, with two parts:
-    - **Emphasize** (the switch at the top) makes the app bold and first
-      in its group; the other apps in that group fold into one line. It
-      does not change which group the app is in.
-    - **Groups** lists every group with its glyph and shows where the app
-      is now — the automatic pick is already ticked. Tick several to have
-      the app appear under each, then **Save**. **Automatic** clears your
-      picks and lets the launcher decide again.
-  - **Long-press the colored glyph** next to any app to toggle emphasis
-    without opening the menu; a short toast confirms it. Tapping the glyph
-    launches the app like the rest of the row.
-- With **TalkBack**, each app reads its name with its group and whether it
-  is new, in a work profile, or in Private Space. The menu items and the
-  emphasis toggle are offered as actions on the app, no long-press needed.
+  - **Group** opens a sheet named after the app that lists every category
+    with its glyph and shows where the app is now — the automatic pick is
+    already ticked. Tick several to have the app appear under each, then
+    **Save**. **Automatic** clears your picks and lets the launcher decide
+    again.
+- With **TalkBack**, each category reads its name, its app count and whether
+  it is open; each app reads its name with its group and whether it is new,
+  in a work profile, or in Private Space. The menu items are offered as
+  actions on the app, no long-press needed.
 - If your device has a **Private Space**, it appears at the bottom of the
-  drawer with a tap-to-unlock row.
+  list with a tap-to-unlock row; once unlocked, its apps are listed in their
+  own categories below it.
 - Swipe down from the search bar or the top of the list, or go back, to put
   your apps away. Pressing the home button or opening an app does too.
 
@@ -176,8 +171,10 @@ The order of the groups is not fixed — it follows the time of day (news
 surfaces in the morning, focus apps during work hours, media in the evening,
 sleep and meditation apps such as Headspace or Calm from about 8:30 pm)
 and quietly learns from what you actually open. Learning happens entirely on
-this device, is never sent anywhere, and fades after a couple of weeks. Apps
-stay alphabetical inside each group, with emphasized apps first.
+this device, is never sent anywhere, and fades after a couple of weeks.
+Inside each category the apps you open most come first, learned the same
+way; if you know an app's name, searching is quicker than scrolling anyway.
+**Reset** (below) forgets both.
 
 In **Settings → Smart ordering**:
 
@@ -230,9 +227,8 @@ The same answers are in **Settings → Help and FAQ**.
 - **Why did the order of the groups change?** Smart ordering follows the
   time of day and the apps you open. Pin groups or reset the learning in
   Settings → Smart ordering.
-- **Can I see fewer apps?** Emphasize the ones you use (long-press, Group,
-  Emphasize). The rest of that group folds into one line, and search still
-  finds them.
+- **Can I see fewer apps?** Your apps open as a short list of categories.
+  Tap one to see its apps, or type a few letters to find any app at once.
 - **Does Blauncher go online?** No. It has no internet permission. A search
   opens in your browser, which does the searching.
 - **Found a bug, or have an idea?** Settings → **Send feedback** opens a new

@@ -36,9 +36,10 @@ gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher
   rules exclude every domain from both cloud backup and device-to-device
   transfer (which ignores `allowBackup`), so app data (including locally
   learned launch weights) is never included in a backup or device migration.
-- Smart ordering learns only from launches made inside the launcher and
-  stores its data in local app preferences; the system usage-stats API is
-  never used.
+- Smart ordering learns only from launches made inside the launcher (which
+  groups, at which hours, and a decaying launch count per app to order apps
+  inside their groups) and stores its data in local app preferences; the
+  system usage-stats API is never used.
 - The home-screen search bar keeps unsent text as a draft in the same local
   preferences (excluded from backups) until it is sent or cleared. Matching
   the text against app names happens in memory, against the app list shown

@@ -8,13 +8,16 @@ import android.os.UserHandle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.EditorInfo
 import androidx.core.view.ViewCompat
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -22,10 +25,10 @@ import app.olauncher.R
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.databinding.AdapterAppDrawerBinding
-import app.olauncher.databinding.AdapterGroupToggleBinding
+import app.olauncher.databinding.AdapterGroupHeaderBinding
 import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
 import app.olauncher.helper.AppSearch
-import app.olauncher.helper.GroupCollapse
+import app.olauncher.helper.GroupSections
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPrivateSpaceProfile
 import app.olauncher.helper.isSystemApp
@@ -40,7 +43,6 @@ class AppDrawerAdapter(
     private val appDeleteListener: (AppModel) -> Unit,
     private val appRenameListener: (AppModel, String) -> Unit,
     private val appCategoryListener: (AppModel) -> Unit,
-    private val appEmphasisListener: (AppModel) -> Unit = {},
     private val privateSpaceToggleListener: () -> Unit = {},
     private val privateSpaceSettingsListener: () -> Unit = {},
     private val appMenuOpenedListener: () -> Unit = {},
@@ -49,15 +51,11 @@ class AppDrawerAdapter(
     companion object {
         const val VIEW_TYPE_APP = 0
         const val VIEW_TYPE_PRIVATE_HEADER = 1
-        const val VIEW_TYPE_GROUP_TOGGLE = 2
+        const val VIEW_TYPE_GROUP_HEADER = 2
 
-        /**
-         * Dimmed rows fade to about two-thirds strength, light enough to recede yet still
-         * readable. Applied through the text color and the drawable alpha, never View.alpha:
-         * the row layout animates visibility changes, and that transition drives View.alpha
-         * back to 1 whenever the title reappears after the menu.
-         */
-        private const val DIMMED_ALPHA_255 = 166
+        /** The app count beside a category's name: smaller, and faded to about two-thirds. */
+        private const val COUNT_ALPHA_255 = 166
+        private const val COUNT_SIZE = 0.6f
 
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppModel>() {
             override fun areItemsTheSame(oldItem: AppModel, newItem: AppModel): Boolean = when {
@@ -74,8 +72,8 @@ class AppDrawerAdapter(
 
                 oldItem is AppModel.PrivateSpaceHeader && newItem is AppModel.PrivateSpaceHeader -> true
 
-                oldItem is AppModel.GroupToggle && newItem is AppModel.GroupToggle ->
-                    oldItem.toggleKey == newItem.toggleKey
+                oldItem is AppModel.GroupHeader && newItem is AppModel.GroupHeader ->
+                    oldItem.sectionKey == newItem.sectionKey
 
                 else -> false
             }
@@ -88,11 +86,15 @@ class AppDrawerAdapter(
     /** The search text the list is narrowed to; blank lists every app in its groups. */
     private var query: String = ""
 
+    /** Whether the list on screen (not the one being diffed in) holds search results. */
+    private var showingSearchResults = false
+
     /**
-     * Groups the user has expanded during this drawer visit (see [GroupCollapse.toggleKey]).
-     * The drawer calls [collapseGroups] whenever it is put away, so each visit starts compact.
+     * The one category open in the drawer (see [GroupSections.key]), or null with all closed.
+     * Opening another closes it, so the list never outgrows the room above the keyboard. The
+     * drawer calls [collapseGroups] whenever it is put away, so each visit starts closed.
      */
-    private val expandedGroups = mutableSetOf<String>()
+    private var expandedGroup: String? = null
     private val myUserHandle = android.os.Process.myUserHandle()
 
     /** Spoken name of each other profile ("Work profile" / "Private space"), looked up once. */
@@ -110,10 +112,12 @@ class AppDrawerAdapter(
     var appsList: MutableList<AppModel> = mutableListOf()
     var appFilteredList: MutableList<AppModel> = mutableListOf()
 
+    // Types and binds read the list the adapter is showing, which the diff swaps in a moment after
+    // [appFilteredList] is replaced: between the two they can be different lengths and kinds.
     override fun getItemViewType(position: Int): Int {
-        return when (appFilteredList.getOrNull(position)) {
+        return when (currentList.getOrNull(position)) {
             is AppModel.PrivateSpaceHeader -> VIEW_TYPE_PRIVATE_HEADER
-            is AppModel.GroupToggle -> VIEW_TYPE_GROUP_TOGGLE
+            is AppModel.GroupHeader -> VIEW_TYPE_GROUP_HEADER
             else -> VIEW_TYPE_APP
         }
     }
@@ -128,8 +132,8 @@ class AppDrawerAdapter(
                 )
             )
 
-            VIEW_TYPE_GROUP_TOGGLE -> GroupToggleViewHolder(
-                AdapterGroupToggleBinding.inflate(
+            VIEW_TYPE_GROUP_HEADER -> GroupHeaderViewHolder(
+                AdapterGroupHeaderBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
@@ -148,8 +152,8 @@ class AppDrawerAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         try {
-            if (appFilteredList.isEmpty() || position == RecyclerView.NO_POSITION) return
-            val appModel = appFilteredList[holder.bindingAdapterPosition]
+            if (position == RecyclerView.NO_POSITION) return
+            val appModel = currentList.getOrNull(position) ?: return
             when (holder) {
                 is PrivateSpaceHeaderViewHolder -> {
                     holder.bind(
@@ -160,14 +164,17 @@ class AppDrawerAdapter(
                     )
                 }
 
-                is GroupToggleViewHolder -> {
-                    if (appModel is AppModel.GroupToggle) {
+                is GroupHeaderViewHolder -> {
+                    if (appModel is AppModel.GroupHeader) {
                         holder.bind(appLabelGravity, appModel, ::toggleGroup)
                     }
                 }
 
                 is ViewHolder -> holder.bind(
                     flag,
+                    // Search results name their category with its glyph; under an open
+                    // category's header the glyph would only repeat it.
+                    showCategoryMarker = showingSearchResults,
                     appLabelGravity,
                     myUserHandle,
                     profileLabel(holder.itemView.context, appModel.user),
@@ -177,7 +184,6 @@ class AppDrawerAdapter(
                     appInfoListener,
                     appRenameListener,
                     appCategoryListener,
-                    appEmphasisListener,
                     appMenuOpenedListener,
                 )
             }
@@ -198,10 +204,10 @@ class AppDrawerAdapter(
         refresh()
     }
 
-    /** Folds every expanded group again. */
+    /** Closes the open category, if any. */
     fun collapseGroups() {
-        if (expandedGroups.isEmpty()) return
-        expandedGroups.clear()
+        if (expandedGroup == null) return
+        expandedGroup = null
         refresh()
     }
 
@@ -216,47 +222,52 @@ class AppDrawerAdapter(
                 key = { it.searchKey() },
             ).mapTo(mutableListOf()) { it.first }
         }
-        submitList(appFilteredList)
+        val searching = query.isNotEmpty()
+        submitList(appFilteredList) {
+            if (showingSearchResults == searching) return@submitList
+            showingSearchResults = searching
+            // A row listed in both modes is the same item to the diff and keeps its old look.
+            notifyItemRangeChanged(0, itemCount)
+        }
     }
 
     private fun AppModel.isLaunchable(): Boolean =
         this is AppModel.App || this is AppModel.PinnedShortcut
 
     /**
-     * The rows shown with an empty search: the full list, with each emphasized group's faded
-     * apps folded behind a toggle row. Pickers list every app plainly. Search always filters the
-     * full list, so collapsed apps stay one keystroke away.
+     * The rows shown with an empty search: one header per category, the open one's apps under
+     * it (see [GroupSections]). Pickers list every app plainly. Search always covers every app.
      */
     private fun displayRows(): MutableList<AppModel> {
         if (flag != Constants.FLAG_LAUNCH_APP) return appsList
-        return GroupCollapse.collapse(
-            appsList,
-            expandedGroups,
+        // The blank row that pads the list's end belongs to no category.
+        val padding = appsList.filter { it is AppModel.App && it.appPackage.isEmpty() }
+        return GroupSections.build(
+            appsList - padding.toSet(),
+            expandedGroup,
             describe = { row ->
-                GroupCollapse.Row(
+                GroupSections.Input(
                     group = row.category,
-                    dimmed = row.dimmed,
                     isNew = row.isNew,
                     startsSection = row is AppModel.PrivateSpaceHeader,
                 )
             },
-            toggle = { key, group, collapsedApps, isExpanded ->
-                AppModel.GroupToggle(key, group, collapsedApps, isExpanded, collapsedApps.first().user)
-            },
-        ).toMutableList()
+            header = { h -> AppModel.GroupHeader(h.group, h.key, h.appCount, h.hasNewApp, h.expanded) },
+        ).plus(padding).toMutableList()
     }
 
-    private fun toggleGroup(toggle: AppModel.GroupToggle) {
-        if (!expandedGroups.remove(toggle.toggleKey)) expandedGroups.add(toggle.toggleKey)
+    private fun toggleGroup(header: AppModel.GroupHeader) {
+        // Against what is open now, not the row's own flag: a quick second tap can land before
+        // the diff has rebound the row it hit.
+        expandedGroup = if (expandedGroup == header.sectionKey) null else header.sectionKey
         refresh()
     }
-
 
     private fun AppModel.searchKey(): String = when (this) {
         is AppModel.App -> "app:$appPackage|$user"
         is AppModel.PinnedShortcut -> "shortcut:$appPackage/$shortcutId|$user"
         is AppModel.PrivateSpaceHeader -> "private-space"
-        is AppModel.GroupToggle -> "toggle:$toggleKey"
+        is AppModel.GroupHeader -> "group:$sectionKey"
     }
 
     fun setAppList(appsList: MutableList<AppModel>) {
@@ -276,54 +287,46 @@ class AppDrawerAdapter(
     }
 
     /**
-     * The toggle row for a collapsed group. Collapsed it reads "+N · App · App · …", the count
-     * in the group's color and the names faded like the rows they stand for; expanded it offers
-     * "fewer" in the same spot, so the finger that opened the group can close it.
+     * A category's row: its colored glyph in the gutter the app glyphs use, its name, and a
+     * small faded count (with ✦ while it holds a newly installed app). The open category's name
+     * turns medium weight; its apps follow it, indented to its name.
      */
-    class GroupToggleViewHolder(private val binding: AdapterGroupToggleBinding) :
+    class GroupHeaderViewHolder(private val binding: AdapterGroupHeaderBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        private val dimmedColors: ColorStateList = binding.root.textColors.withAlpha(DIMMED_ALPHA_255)
 
         fun bind(
             appLabelGravity: Int,
-            toggle: AppModel.GroupToggle,
-            toggleListener: (AppModel.GroupToggle) -> Unit,
-        ) = with(binding.root) {
+            header: AppModel.GroupHeader,
+            toggleListener: (AppModel.GroupHeader) -> Unit,
+        ) = with(binding.groupTitle) {
             gravity = appLabelGravity
-            val density = resources.displayMetrics.density
-            val basePadding = (24 * density).toInt()
-            val markerPadding = (48 * density).toInt()
-            setPaddingRelative(
-                if (appLabelGravity == android.view.Gravity.START) markerPadding else basePadding,
-                paddingTop,
-                basePadding,
-                paddingBottom,
-            )
-            setTextColor(dimmedColors)
-            val count = toggle.collapsedApps.size
-            text = if (toggle.expanded) {
-                context.getString(R.string.group_show_fewer)
-            } else {
-                val names = toggle.collapsedApps.joinToString(" · ") { it.appLabel }
-                val summary = context.getString(R.string.group_collapsed_summary, count, names)
-                val countLabel = "+$count"
-                SpannableString(summary).apply {
-                    val start = summary.indexOf(countLabel)
-                    if (start >= 0) setSpan(
-                        ForegroundColorSpan(toggle.group.colorFor(context)),
-                        start,
-                        start + countLabel.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-                    )
-                }
+            val name = header.group.displayName
+            val count = buildString {
+                append("  ").append(header.appCount)
+                if (header.hasNewApp) append(" ✦")
             }
-            contentDescription = if (toggle.expanded)
-                context.getString(R.string.group_collapse_description, toggle.group.displayName)
-            else
-                resources.getQuantityString(
-                    R.plurals.group_expand_description, count, count, toggle.group.displayName
-                )
-            setOnClickListener { toggleListener(toggle) }
+            text = SpannableString(name + count).apply {
+                val faded = textColors.defaultColor.let { (it and 0x00FFFFFF) or (COUNT_ALPHA_255 shl 24) }
+                setSpan(ForegroundColorSpan(faded), name.length, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(RelativeSizeSpan(COUNT_SIZE), name.length, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            typeface = Typefaces.forWeight(header.expanded)
+            // 20dp, like the app rows' glyph, so 24 + 20 + 4dp puts the name where theirs start.
+            val glyphSize = (20 * resources.displayMetrics.density).toInt()
+            val glyph = AppCompatResources.getDrawable(context, header.group.iconRes)?.mutate()
+            glyph?.setBounds(0, 0, glyphSize, glyphSize)
+            setCompoundDrawablesRelative(glyph, null, null, null)
+            TextViewCompat.setCompoundDrawableTintList(
+                this, ColorStateList.valueOf(header.group.colorFor(context))
+            )
+            contentDescription = listOfNotNull(
+                resources.getQuantityString(R.plurals.group_header_description, header.appCount, name, header.appCount),
+                context.getString(R.string.group_has_new_app).takeIf { header.hasNewApp },
+            ).joinToString(", ")
+            ViewCompat.setStateDescription(
+                this, context.getString(if (header.expanded) R.string.expanded else R.string.collapsed)
+            )
+            setOnClickListener { toggleListener(header) }
         }
     }
 
@@ -350,15 +353,12 @@ class AppDrawerAdapter(
 
     class ViewHolder(private val binding: AdapterAppDrawerBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        /** The style's color state list (keeps pressed feedback) and its half-strength twin. */
-        private val titleColors: ColorStateList = binding.appTitle.textColors
-        private val dimmedTitleColors: ColorStateList = titleColors.withAlpha(DIMMED_ALPHA_255)
-
         /** TalkBack actions standing in for the long-press menu; replaced on every bind. */
         private val accessibilityActionIds = mutableListOf<Int>()
 
         fun bind(
             flag: Int,
+            showCategoryMarker: Boolean,
             appLabelGravity: Int,
             myUserHandle: UserHandle,
             profileLabel: String?,
@@ -368,7 +368,6 @@ class AppDrawerAdapter(
             appInfoListener: (AppModel) -> Unit,
             appRenameListener: (AppModel, String) -> Unit,
             appCategoryListener: (AppModel) -> Unit,
-            appEmphasisListener: (AppModel) -> Unit,
             appMenuOpenedListener: () -> Unit,
         ) = with(binding) {
             appMenuLayout.visibility = View.GONE
@@ -381,8 +380,7 @@ class AppDrawerAdapter(
                 if (appModel.isNew) append(" ✦")
             }
             appTitle.gravity = appLabelGravity
-            appTitle.typeface = Typefaces.forEmphasis(appModel.emphasized)
-            appTitle.setTextColor(if (appModel.dimmed) dimmedTitleColors else titleColors)
+            appTitle.typeface = Typefaces.LIGHT
             val basePadding = (24 * appTitle.resources.displayMetrics.density).toInt()
             val markerPadding = (48 * appTitle.resources.displayMetrics.density).toInt()
             appTitle.setPaddingRelative(
@@ -392,11 +390,10 @@ class AppDrawerAdapter(
                 appTitle.paddingBottom,
             )
             val showProfileIndicator = appModel.user != myUserHandle
-            val showCategoryMarker =
-                flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
+            val showCategoryMarker = showCategoryMarker &&
+                    flag == Constants.FLAG_LAUNCH_APP && appModel.appPackage.isNotEmpty()
             otherProfileIndicator.isVisible = showProfileIndicator
             categoryMarker.isVisible = showCategoryMarker
-            categoryMarker.imageAlpha = if (appModel.dimmed) DIMMED_ALPHA_255 else 255
             appModel.category?.let { category ->
                 categoryMarker.setImageResource(category.iconRes)
                 categoryMarker.contentDescription = category.displayName
@@ -415,18 +412,11 @@ class AppDrawerAdapter(
                 if (appModel.appPackage.isEmpty()) View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
             // The glyph sits on top of the title, so it must keep behaving like the row on tap.
-            // Long-press is the quick emphasis toggle.
             if (showCategoryMarker) {
                 categoryMarker.setOnClickListener { clickListener(appModel) }
-                categoryMarker.setOnLongClickListener {
-                    appEmphasisListener(appModel)
-                    true
-                }
             } else {
                 categoryMarker.setOnClickListener(null)
-                categoryMarker.setOnLongClickListener(null)
                 categoryMarker.isClickable = false
-                categoryMarker.isLongClickable = false
             }
             fun closeRenameEditor() {
                 renameLayout.visibility = View.GONE
@@ -501,7 +491,7 @@ class AppDrawerAdapter(
                 closeRenameEditor()
             }
 
-            // TalkBack users get the long-press menu (and the glyph's emphasis toggle) as actions.
+            // TalkBack users get the long-press menu as actions.
             accessibilityActionIds.forEach { ViewCompat.removeAccessibilityAction(appTitle, it) }
             accessibilityActionIds.clear()
             if (appModel.appPackage.isNotEmpty()) {
@@ -517,11 +507,6 @@ class AppDrawerAdapter(
                 addAction(R.string.rename) { openRenameEditor() }
                 addAction(R.string.category) { appCategoryListener(appModel) }
                 addAction(R.string.info) { appInfoListener(appModel) }
-                if (showCategoryMarker && appModel.emphasisKey.isNotBlank()) {
-                    addAction(if (appModel.emphasized) R.string.unemphasize else R.string.emphasize) {
-                        appEmphasisListener(appModel)
-                    }
-                }
             }
         }
 

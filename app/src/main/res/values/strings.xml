@@ -78,16 +78,14 @@
     <string name="groups">Groups</string>
     <string name="groups_automatic_summary">Chosen automatically. Tick groups to choose them yourself.</string>
     <string name="groups_manual_summary">Chosen by you. Automatic lets the launcher decide again.</string>
-    <string name="emphasize">Emphasize</string>
-    <string name="emphasize_summary">Bold and first in its group; the rest of the group folds into one line. Long-press an app\'s glyph to toggle this quickly.</string>
-    <!-- The one-line stand-in for a group's collapsed apps: "+5 · Gemini · Perplexity · Poe…". -->
-    <string name="group_collapsed_summary">+%1$d · %2$s</string>
-    <string name="group_show_fewer">− fewer</string>
-    <plurals name="group_expand_description">
-        <item quantity="one">Show %1$d more app in %2$s</item>
-        <item quantity="other">Show %1$d more apps in %2$s</item>
+    <!-- A category's row in the drawer: what TalkBack reads, "AI Agents, 6 apps". -->
+    <plurals name="group_header_description">
+        <item quantity="one">%1$s, %2$d app</item>
+        <item quantity="other">%1$s, %2$d apps</item>
     </plurals>
-    <string name="group_collapse_description">Show fewer in %1$s</string>
+    <string name="group_has_new_app">has a new app</string>
+    <string name="expanded">Expanded</string>
+    <string name="collapsed">Collapsed</string>
     <string name="bold_date">Bold date</string>
     <string name="search_the_web">Search</string>
     <string name="clear_search">Clear search text</string>
@@ -102,8 +100,6 @@
     <string name="swipe_up_app_enabled">Swipe up app enabled</string>
     <string name="swipe_up_app_disabled">Swipe up app disabled</string>
     <string name="password_manager_needs_app">Pick an app, not a shortcut</string>
-    <string name="emphasized_toast">%1$s emphasized</string>
-    <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>
     <string name="none">None</string>
 
@@ -112,7 +108,7 @@
     <string name="tip_welcome_step">Welcome · tip %1$d of %2$d</string>
     <string name="tip_step">Tip %1$d of %2$d</string>
     <string name="tip_open_drawer_title">Tap the search bar for your apps</string>
-    <string name="tip_open_drawer_body">Every app is listed under it, and typing narrows the list. Or tap here.</string>
+    <string name="tip_open_drawer_body">Your app categories are listed under it, and typing finds any app. Or tap here.</string>
     <string name="tip_open_drawer_action">Open apps</string>
     <string name="tip_open_settings_title">Long-press for settings</string>
     <string name="tip_open_settings_body">Touch and hold any empty spot, or tap here.</string>
@@ -129,7 +125,7 @@
     <string name="tips_reset">Tips are back on the home screen</string>
     <!-- The quick guide. The swipe lines name the app or action the user has set. -->
     <string name="guide_home_heading">Home screen</string>
-    <string name="guide_search_apps">Tap the search bar: all your apps, listed under it</string>
+    <string name="guide_search_apps">Tap the search bar: your app categories, listed under it</string>
     <string name="guide_swipe_up">Swipe up: %1$s</string>
     <string name="guide_long_press">Long-press empty space: settings</string>
     <string name="guide_swipe_down">Swipe down: %1$s</string>
@@ -138,12 +134,12 @@
     <string name="guide_gesture_off">off</string>
     <string name="guide_date">Tap the date: calendar (long-press to change the app)</string>
     <string name="guide_key">Shortcut button by the search bar: your chosen app, a password manager to start (long-press to change the app; pick its icon in Settings)</string>
-    <string name="guide_search">Search bar: type to narrow your apps to the ones that match (tap one to open it), or press enter to search the web</string>
+    <string name="guide_search">Search bar: type to find any app (tap it to open it), or press enter to search the web</string>
     <string name="guide_drawer_heading">App drawer</string>
     <string name="guide_type">Type in the search bar: the apps below narrow to the matches, best first</string>
     <string name="guide_enter">Tap an app to open it; enter always searches the web</string>
     <string name="guide_app_menu">Long-press an app: uninstall, rename, group, info</string>
-    <string name="guide_emphasize">Long-press a colored glyph: make that app bold and first</string>
+    <string name="guide_categories">Tap a category to list its apps; tap another to switch</string>
     <string name="guide_close_drawer">Swipe down from the search bar or the top of the list, or go back, to close it</string>
     <!-- Questions people ask about a launcher with nothing on it; each is a bold line, then its answer. -->
     <string name="guide_faq_heading">Questions</string>
@@ -156,7 +152,7 @@
     <string name="faq_order_q">Why did the order of the groups change?</string>
     <string name="faq_order_a">Smart ordering follows the time of day and the apps you open. Pin groups or reset the learning in Settings → Smart ordering.</string>
     <string name="faq_fewer_apps_q">Can I see fewer apps?</string>
-    <string name="faq_fewer_apps_a">Emphasize the ones you use (long-press, Group, Emphasize). The rest of that group folds into one line, and search still finds them.</string>
+    <string name="faq_fewer_apps_a">Your apps open as a short list of categories. Tap one to see its apps, or type a few letters to find any app at once.</string>
     <string name="faq_online_q">Does Blauncher go online?</string>
     <string name="faq_online_a">No. It has no internet permission. A search opens in your browser, which does the searching.</string>
     <string name="faq_feedback_q">Found a bug, or have an idea?</string>
@@ -187,7 +183,6 @@
     <string name="work_profile">Work profile</string>
     <string name="locked">Locked</string>
     <string name="unlocked">Unlocked</string>
-    <string name="unemphasize">Remove emphasis</string>
     <string name="browser_default">Browser default</string>
     <string name="pin_invalid_request">Invalid pin request</string>
     <string name="pin_widgets_not_supported">Widgets are not supported</string>

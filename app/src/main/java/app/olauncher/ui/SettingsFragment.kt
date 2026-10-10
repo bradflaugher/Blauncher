@@ -204,7 +204,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
         binding.smartOrderSettings.resetLearning.setOnClickListener {
             confirmSmartOrderAction(R.string.usage_learning, R.string.confirm_reset_learning, R.string.reset) {
-                prefs.clearCategoryUsageData()
+                prefs.clearUsageLearning()
                 viewModel.getAppList()
                 populateSmartOrdering()
                 requireContext().showToast(R.string.learning_reset)
@@ -329,7 +329,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         line(getString(R.string.guide_type))
         line(getString(R.string.guide_enter))
         line(getString(R.string.guide_app_menu))
-        line(getString(R.string.guide_emphasize))
+        line(getString(R.string.guide_categories))
         line(getString(R.string.guide_close_drawer))
         heading(R.string.guide_faq_heading)
         fun question(q: Int, a: Int) {

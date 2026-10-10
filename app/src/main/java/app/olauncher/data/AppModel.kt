@@ -10,43 +10,28 @@ sealed class AppModel : Comparable<AppModel> {
     abstract val user: UserHandle
     abstract val isNew: Boolean
     abstract val category: AppCategory?
-    abstract val emphasized: Boolean
 
     /**
-     * True when this row is not emphasized but another row in the same group is; the drawer
-     * renders it lighter. Carried on the model so list diffing rebinds every affected row.
+     * Stable prefs key for one app or pinned shortcut in one profile: a shortcut's rename is
+     * stored under it, and search uses it to list each app once. Empty for rows that are not apps.
      */
-    abstract val dimmed: Boolean
-
-    /** Stable prefs key for per-app emphasis. Empty for rows that cannot be emphasized. */
-    val emphasisKey: String
+    val identityKey: String
         get() = when (this) {
-            is App -> emphasisKeyFor(appPackage, user.toString(), null)
-            is PinnedShortcut -> emphasisKeyFor(appPackage, user.toString(), shortcutId)
-            is PrivateSpaceHeader, is GroupToggle -> ""
+            is App -> identityKeyFor(appPackage, user.toString(), null)
+            is PinnedShortcut -> identityKeyFor(appPackage, user.toString(), shortcutId)
+            is PrivateSpaceHeader, is GroupHeader -> ""
         }
 
     companion object {
         /**
-         * The emphasis key for an app or pinned shortcut stored as package + user string. A
-         * shortcut's key also names its package, since shortcut ids are only unique per app;
-         * it doubles as the shortcut's rename key.
+         * The identity key for an app or pinned shortcut stored as package + user string. A
+         * shortcut's key also names its package, since shortcut ids are only unique per app.
          */
-        fun emphasisKeyFor(appPackage: String, userString: String, shortcutId: String?): String = when {
+        fun identityKeyFor(appPackage: String, userString: String, shortcutId: String?): String = when {
             appPackage.isBlank() -> ""
             shortcutId.isNullOrBlank() -> "$appPackage|$userString"
             else -> "shortcut:$appPackage/$shortcutId|$userString"
         }
-
-        /** The package-less shortcut emphasis key older versions stored; see [Prefs.migrateShortcutKeys]. */
-        fun legacyShortcutKey(shortcutId: String, userString: String): String =
-            "shortcut:$shortcutId|$userString"
-    }
-
-    fun withDimmed(dimmed: Boolean): AppModel = when (this) {
-        is App -> if (this.dimmed == dimmed) this else copy(dimmed = dimmed)
-        is PinnedShortcut -> if (this.dimmed == dimmed) this else copy(dimmed = dimmed)
-        is PrivateSpaceHeader, is GroupToggle -> this
     }
 
     data class App(
@@ -57,8 +42,6 @@ sealed class AppModel : Comparable<AppModel> {
         override val isNew: Boolean = false,
         override val user: UserHandle,
         override val category: AppCategory = AppCategory.OTHER,
-        override val emphasized: Boolean = false,
-        override val dimmed: Boolean = false,
     ) : AppModel()
 
     data class PinnedShortcut(
@@ -69,8 +52,6 @@ sealed class AppModel : Comparable<AppModel> {
         override val isNew: Boolean = false,
         override val user: UserHandle,
         override val category: AppCategory = AppCategory.OTHER,
-        override val emphasized: Boolean = false,
-        override val dimmed: Boolean = false,
     ) : AppModel()
 
     data class PrivateSpaceHeader(
@@ -82,30 +63,26 @@ sealed class AppModel : Comparable<AppModel> {
         override val appPackage: String = ""
         override val isNew: Boolean = false
         override val category: AppCategory? = null
-        override val emphasized: Boolean = false
-        override val dimmed: Boolean = false
     }
 
     /**
-     * One row standing in for a group's collapsed apps: the non-emphasized rows of a group that
-     * has an emphasized one. Collapsed, it lists their names on one line; expanded, it reads
-     * "fewer" and the rows follow. Built by the drawer adapter, never stored, and skipped by
-     * search, which always matches against the full list.
+     * A category's row in the drawer while nothing is typed: its glyph, name and app count. A
+     * tap opens it to list its apps below, closing whichever other was open. [sectionKey] tells
+     * the main list's groups from Private Space's. Built by the drawer adapter, never stored.
      */
-    data class GroupToggle(
-        val toggleKey: String,
+    data class GroupHeader(
         val group: AppCategory,
-        val collapsedApps: List<AppModel>,
+        val sectionKey: String,
+        val appCount: Int,
+        val hasNewApp: Boolean,
         val expanded: Boolean,
         override val user: UserHandle = android.os.Process.myUserHandle(),
     ) : AppModel() {
-        override val appLabel: String = ""
+        override val appLabel: String = group.displayName
         override val key: CollationKey? = null
         override val appPackage: String = ""
         override val isNew: Boolean = false
         override val category: AppCategory = group
-        override val emphasized: Boolean = false
-        override val dimmed: Boolean = false
     }
 
     override fun compareTo(other: AppModel): Int = when {

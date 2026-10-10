@@ -53,13 +53,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         when (flag) {
             Constants.FLAG_LAUNCH_APP -> {
                 SmartOrder.recordLaunch(prefs, appModel.category)
-                when (appModel) {
+                val launched = when (appModel) {
                     is AppModel.PinnedShortcut -> launchShortcut(appModel)
                     is AppModel.App ->
                         launchApp(appModel.appPackage, appModel.activityClassName, appModel.user)
 
-                    else -> {}
+                    else -> false
                 }
+                // Only an app that actually opened rises in its group; a stale shortcut or a
+                // paused profile tried again and again must not climb.
+                if (launched) SmartOrder.recordAppLaunch(prefs, appModel.identityKey)
             }
 
             Constants.FLAG_SET_SWIPE_UP_APP -> saveSwipeUpApp(appModel)
@@ -70,7 +73,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun launchShortcut(appModel: AppModel.PinnedShortcut) {
+    /** Starts a pinned shortcut; returns whether the system accepted it. */
+    private fun launchShortcut(appModel: AppModel.PinnedShortcut): Boolean {
         val launcher = appContext.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         // Shortcut ids are only unique within their app, so match the package too.
         val query = LauncherApps.ShortcutQuery().apply {
@@ -82,20 +86,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 ?.find { it.id == appModel.shortcutId }
             if (shortcut == null) {
                 appContext.showToast(appContext.getString(R.string.app_not_found))
-                return
+                return false
             }
             launcher.startShortcut(shortcut, null, null)
+            return true
         } catch (e: Exception) {
             // A paused profile, a disabled shortcut or a missing target activity all throw here.
             e.printStackTrace()
             appContext.showToast(appContext.getString(R.string.unable_to_open_app))
+            return false
         }
     }
 
     private fun saveSwipeUpApp(appModel: AppModel) {
         val shortcut = appModel as? AppModel.PinnedShortcut
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> return
             else -> {
                 prefs.appNameSwipeUp = appModel.appLabel
                 prefs.appPackageSwipeUp = appModel.appPackage
@@ -110,7 +116,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupToggle -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> return
             is AppModel.App -> {
                 if (isLeft) {
                     prefs.appNameSwipeLeft = appModel.appLabel
@@ -180,7 +186,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateSwipeApps.postValue(Unit)
     }
 
-    private fun launchApp(packageName: String, activityClassName: String?, userHandle: UserHandle) {
+    /** Starts an app's activity; returns whether the system accepted it. */
+    private fun launchApp(packageName: String, activityClassName: String?, userHandle: UserHandle): Boolean {
         val launcher = appContext.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         val activityInfo = launcher.getActivityList(packageName, userHandle)
 
@@ -193,7 +200,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             when (activityInfo.size) {
                 0 -> {
                     appContext.showToast(appContext.getString(R.string.app_not_found))
-                    return
+                    return false
                 }
 
                 1 -> ComponentName(packageName, activityInfo[0].name)
@@ -201,16 +208,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }.also { prefs.updateAppActivityClassName(packageName, it.className) }
         }
 
-        try {
+        return try {
             launcher.startMainActivity(component, userHandle, null, null)
+            true
         } catch (e: SecurityException) {
             try {
                 launcher.startMainActivity(component, android.os.Process.myUserHandle(), null, null)
+                true
             } catch (e: Exception) {
                 appContext.showToast(appContext.getString(R.string.unable_to_open_app))
+                false
             }
         } catch (e: Exception) {
             appContext.showToast(appContext.getString(R.string.unable_to_open_app))
+            false
         }
     }
 

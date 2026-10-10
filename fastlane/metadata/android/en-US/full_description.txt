@@ -4,19 +4,19 @@ Blauncher is a minimalist, gesture-driven home screen launcher for Android: free
 
 HOME SCREEN
 • Tap the date for your calendar, or long-press it to choose another app. Place the date left, center, or right.
-• One search bar for your apps and the web: tap it and every app is listed under it, narrowing to the matches as you type. Tap an app to open it; Enter searches the web. The bar grows to a few lines, then scrolls, and unsent text stays as a draft. A web search opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. Or choose Browser default and let the browser search. The launcher itself makes no network request.
+• One search bar for your apps and the web: tap it and your app categories are listed under it, giving way to the matching apps as you type. Tap an app to open it; Enter searches the web. The bar grows to a few lines, then scrolls, and unsent text stays as a draft. A web search opens your default browser on the engine you picked: divid3, a private search router, by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity, or ChatGPT. Or choose Browser default and let the browser search. The launcher itself makes no network request.
 • The shortcut button beside the search bar opens your password manager. It binds to one you already have (Bitwarden, 1Password, Proton Pass, KeePassDX, and others); point it at any app and pick from some thirty glyphs.
 • Swipe up, left and right open three apps you choose; the first swipe each way asks which. Swipe down for notifications, or for search.
 
 YOUR APPS
-• Home and the app drawer are one surface: tap the search bar and it rides to the top with every app below it. Swipe down or go back to close.
+• Home and the app drawer are one surface: tap the search bar and it rides to the top with your categories below it. Swipe down or go back to close.
 • An app opens only when you tap it, so Enter always searches the web.
-• Apps are grouped on the device, such as AI Agents, People, Focus, News, Media, and Tools. Each group has a small colored glyph. Apps stay alphabetical inside the group, with emphasized ones first.
-• Long-press an app to rename it, set its groups (more than one, if you like), or emphasize it. Emphasized apps go bold and first. The rest of that group folds into a single line that opens when you tap it. Search still reaches the folded apps.
+• With nothing typed, your apps are a short list of categories sorted on the device, such as AI Agents, People, Focus, News, Media, and Tools, each with a colored glyph. Tap one to list its apps.
+• Long-press an app to rename it or set its categories (more than one, if you like).
 • A Private Space, when the device has one, sits at the bottom of the drawer behind a tap to unlock.
 
 THROUGH THE DAY
-• Groups shift with the time of day: news in the morning, focus apps during work hours, media in the evening, then sharpen from the apps you actually open.
+• Groups shift with the time of day: news in the morning, focus apps during work hours, media in the evening, then sharpen from the apps you actually open. Inside each group, the apps you open most come first.
 • Learning stays on this device. It uses only launches made inside the launcher, never the system usage-stats API, and fades after a couple of weeks.
 • Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
 

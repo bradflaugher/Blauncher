@@ -14,7 +14,8 @@ import kotlin.math.pow
  * built-in smooth time-of-day curves (weekday and weekend variants) provide a
  * sensible default, and locally recorded launches sharpen it over time. Launch
  * counts live in a small preference blob, bucketed by hour and day type, and
- * fade with a two-week half-life so old habits stop steering the order.
+ * fade with a two-week half-life so old habits stop steering the order. Inside each
+ * group, apps are ordered the same way by how often each one was opened (see [AppUsage]).
  * Nothing is read from the system usage stats and nothing leaves the device.
  */
 object SmartOrder {
@@ -91,51 +92,101 @@ object SmartOrder {
         AppCategory.OTHER to Curve(0.0, listOf()),
     )
 
-    /** Sorts the drawer: pinned groups first in the user's order, the rest by score, emphasized then A-Z inside. */
+    /**
+     * Sorts the drawer: pinned groups first in the user's order, the rest by score; inside a
+     * group, the apps opened most lately first, then A-Z (every app never opened from here sits
+     * below them, alphabetically). Anyone who knows an app's name searches for it, so a
+     * category lists what is likely wanted rather than what comes first in the alphabet.
+     */
     fun sort(prefs: Prefs, apps: MutableList<AppModel>) {
         val order = currentOrder(prefs).withIndex().associate { it.value to it.index }
-        apps.sortWith(drawerComparator(order))
+        val usage = parseAppUsage(prefs.appUsageData)?.let { currentWeights(it, System.currentTimeMillis()) }.orEmpty()
+        apps.sortWith(drawerComparator(order, usage))
     }
 
-    /** Group rank, then emphasized apps above the rest, then A-Z. */
-    fun drawerComparator(order: Map<AppCategory, Int>): Comparator<AppModel> = Comparator { a, b ->
+    /** Group rank, then launch weight (highest first), then A-Z. */
+    fun drawerComparator(
+        order: Map<AppCategory, Int>,
+        usage: Map<String, Double> = emptyMap(),
+    ): Comparator<AppModel> = Comparator { a, b ->
         compareDrawerRows(
-            order[a.category] ?: Int.MAX_VALUE, a.emphasized, a.appLabel,
-            order[b.category] ?: Int.MAX_VALUE, b.emphasized, b.appLabel,
+            order[a.category] ?: Int.MAX_VALUE, usage[a.identityKey] ?: 0.0, a.appLabel,
+            order[b.category] ?: Int.MAX_VALUE, usage[b.identityKey] ?: 0.0, b.appLabel,
         )
     }
 
     fun compareDrawerRows(
         groupRankA: Int,
-        emphasizedA: Boolean,
+        usageA: Double,
         labelA: String,
         groupRankB: Int,
-        emphasizedB: Boolean,
+        usageB: Double,
         labelB: String,
     ): Int {
         val byGroup = groupRankA.compareTo(groupRankB)
         if (byGroup != 0) return byGroup
-        val byEmphasis = emphasizedA.not().compareTo(emphasizedB.not())
-        if (byEmphasis != 0) return byEmphasis
+        val byUsage = usageB.compareTo(usageA)
+        if (byUsage != 0) return byUsage
         return labelA.compareTo(labelB, ignoreCase = true)
     }
 
     /**
-     * Marks the rows that should fade back: any non-emphasized row whose group has at least one
-     * emphasized row. Applied per list (drawer, private space) right after loading, so the flag
-     * travels with the row and flipping one app re-renders every row in its group.
+     * Launch weight per app (by [AppModel.identityKey]): each launch adds one, and every
+     * weight halves over [HALF_LIFE_DAYS] like the group buckets. All weights decay together
+     * from [updatedAt], so stored values compare directly without decaying them first.
      */
-    fun applyGroupEmphasis(apps: MutableList<AppModel>) {
-        val groups = groupsWithEmphasis(apps.map { it.category to it.emphasized })
-        for (index in apps.indices) {
-            val app = apps[index]
-            apps[index] = app.withDimmed(!app.emphasized && app.category in groups)
-        }
+    internal class AppUsage(
+        var updatedAt: Long = 0L,
+        val weights: MutableMap<String, Double> = mutableMapOf(),
+    )
+
+    /** Below this an app has not been opened from here for months; its entry is dropped. */
+    private const val APP_WEIGHT_FLOOR = 0.01
+
+    /**
+     * The weights as they stand at [nowMillis]: decayed since they were stored, with any that
+     * have faded below the floor gone, so an app not opened for months sinks back among the
+     * never-opened ones even before the next launch is recorded.
+     */
+    internal fun currentWeights(usage: AppUsage, nowMillis: Long): Map<String, Double> {
+        val factor = decayFactor(usage.updatedAt, nowMillis)
+        return usage.weights.mapValues { it.value * factor }.filterValues { it >= APP_WEIGHT_FLOOR }
     }
 
-    /** From (group, emphasized) rows, the groups that contain at least one emphasized row. */
-    fun groupsWithEmphasis(rows: List<Pair<AppCategory?, Boolean>>): Set<AppCategory> =
-        rows.filter { it.second }.mapNotNullTo(HashSet()) { it.first }
+    /** Records one launch of the app with [identityKey], so it rises within its groups. */
+    fun recordAppLaunch(prefs: Prefs, identityKey: String, nowMillis: Long = System.currentTimeMillis()) {
+        if (identityKey.isBlank()) return
+        val usage = parseAppUsage(prefs.appUsageData) ?: AppUsage(nowMillis)
+        recordAppLaunch(usage, identityKey, nowMillis)
+        prefs.appUsageData = serializeAppUsage(usage)
+    }
+
+    internal fun recordAppLaunch(usage: AppUsage, identityKey: String, nowMillis: Long) {
+        val factor = decayFactor(usage.updatedAt, nowMillis)
+        if (factor < 1.0) usage.weights.replaceAll { _, weight -> weight * factor }
+        usage.weights.values.removeAll { it < APP_WEIGHT_FLOOR }
+        usage.updatedAt = maxOf(usage.updatedAt, nowMillis)
+        usage.weights[identityKey] = (usage.weights[identityKey] ?: 0.0) + 1.0
+    }
+
+    // Plain-text blob: first line "updated=<millis>", then "<identity key>\t<weight>" per app.
+    internal fun serializeAppUsage(usage: AppUsage): String =
+        (listOf("updated=${usage.updatedAt}") +
+            usage.weights.map { (key, weight) -> "$key\t${"%.4f".format(java.util.Locale.US, weight)}" })
+            .joinToString("\n")
+
+    internal fun parseAppUsage(data: String?): AppUsage? {
+        if (data.isNullOrBlank()) return null
+        return runCatching {
+            val lines = data.lines().filter { it.isNotBlank() }
+            val usage = AppUsage(lines.first().substringAfter("updated=").toLong())
+            lines.drop(1).forEach { line ->
+                val key = line.substringBeforeLast('\t')
+                usage.weights[key] = line.substringAfterLast('\t').toDouble()
+            }
+            usage
+        }.getOrNull()
+    }
 
     /** The full group order for the current moment. */
     fun currentOrder(
