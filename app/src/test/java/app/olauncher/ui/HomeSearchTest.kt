@@ -96,6 +96,23 @@ class HomeSearchTest {
     }
 
     @Test
+    fun theBarKeepsItsSizeUntilTheTextWraps() {
+        val activity = homeWithApps("Maps")
+        val bar = activity.findViewById<View>(R.id.searchBar)
+        val empty = measuredHeight(activity, bar)
+
+        type(activity, "m")
+        assertEquals(empty, measuredHeight(activity, bar))
+
+        type(activity, "weather in lisbon")
+        assertEquals(empty, measuredHeight(activity, bar))
+
+        // Only a second line of text grows the bar.
+        type(activity, "first line\nsecond line")
+        assertTrue(measuredHeight(activity, bar) > empty)
+    }
+
+    @Test
     fun theSheetRestsWithOnlyTheSearchBarShowing() {
         val activity = homeWithApps("Maps")
 
@@ -246,6 +263,17 @@ class HomeSearchTest {
             check(SystemClock.uptimeMillis() < deadline) { "row $position never appeared" }
             Thread.sleep(10)
         }
+    }
+
+    /** Lays out the whole screen again and returns [view]'s height. */
+    private fun measuredHeight(activity: MainActivity, view: View): Int {
+        val root = activity.findViewById<View>(R.id.mainLayout)
+        root.measure(
+            View.MeasureSpec.makeMeasureSpec(root.width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(root.height, View.MeasureSpec.EXACTLY),
+        )
+        root.layout(root.left, root.top, root.right, root.bottom)
+        return view.height
     }
 
     private fun isSheetOpen(activity: MainActivity): Boolean =
