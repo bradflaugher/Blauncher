@@ -647,6 +647,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             // While composing, the slot beside the bar becomes the send button.
             binding.searchSend.isVisible = hasText
             binding.passwordManager.isVisible = !hasText
+            // An unseen hint still sizes a TextView: with the clear button taking width, the long
+            // hint would wrap and make the bar a line taller around a one-line search. Only an
+            // empty bar has one.
+            binding.searchInput.hint = if (text.isNullOrEmpty()) getString(R.string.search_hint) else null
             drawerList.filter(text ?: "")
         }
         // The field stays multi-line, so long text wraps and grows the bar, but the keyboard is

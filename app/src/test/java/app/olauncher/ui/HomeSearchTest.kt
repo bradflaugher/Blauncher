@@ -30,6 +30,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowToast
 import java.time.Duration
 
@@ -95,7 +96,9 @@ class HomeSearchTest {
         assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
     }
 
+    // Real text measurement: the default stand-in never wraps, which hid this bug once.
     @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun theBarKeepsItsSizeUntilTheTextWraps() {
         val activity = homeWithApps("Maps")
         val bar = activity.findViewById<View>(R.id.searchBar)
@@ -107,9 +110,13 @@ class HomeSearchTest {
         type(activity, "weather in lisbon")
         assertEquals(empty, measuredHeight(activity, bar))
 
-        // Only a second line of text grows the bar.
-        type(activity, "first line\nsecond line")
+        // Only text that runs onto another line grows the bar.
+        type(activity, "a question long enough that it cannot possibly fit on one line of the bar")
         assertTrue(measuredHeight(activity, bar) > empty)
+
+        // Cleared, the bar is back to its resting size.
+        type(activity, "")
+        assertEquals(empty, measuredHeight(activity, bar))
     }
 
     @Test
