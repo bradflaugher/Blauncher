@@ -21,8 +21,10 @@ object AppSearch {
 
     /** How [label] matches [query], or null when it does not. */
     fun match(label: String, query: CharSequence): Match? {
+        if (query.isBlank()) return null
         val q = normalize(query)
-        if (q.isEmpty()) return null
+        // A query of separators alone ("+", ".") normalizes away; it can still find "C++".
+        if (q.isEmpty()) return if (label.contains(query.trim(), ignoreCase = true)) Match.CONTAINS else null
         val l = normalize(label)
         return when {
             l == q -> Match.EXACT

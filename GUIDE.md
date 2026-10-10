@@ -82,8 +82,9 @@ everything else is gestures.
     why it is not the default. Failing everything, DuckDuckGo opens.
   - Unsent text is a **draft**: it stays if you tap elsewhere, open the
     drawer or settings, switch apps to copy something, rotate, or the
-    launcher restarts. Only a successful send or the **×** button empties
-    the bar, and if no app could take the search the text stays put.
+    launcher restarts. Only a successful web search, opening an app from the
+    list above the bar, or the **×** button empties the bar, and if no app
+    could take the search the text stays put.
 - **Password manager** — the key glyph beside the search bar launches your
   password manager. On first run it binds to a known password manager
   already installed (Bitwarden, 1Password, Proton Pass, KeePassDX,

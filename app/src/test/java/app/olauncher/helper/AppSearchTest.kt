@@ -19,6 +19,10 @@ class AppSearchTest {
         assertEquals(Match.CONTAINS, AppSearch.match("Showtime", "how"))
         assertNull(AppSearch.match("Maps", "maps of italy"))
         assertNull(AppSearch.match("Maps", "   "))
+        // Separators alone normalize away but still find names made of them.
+        assertEquals(Match.CONTAINS, AppSearch.match("C++", "+"))
+        assertEquals(Match.CONTAINS, AppSearch.match("1.1.1.1", "."))
+        assertNull(AppSearch.match("Maps", "+"))
     }
 
     @Test

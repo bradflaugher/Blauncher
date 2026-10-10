@@ -136,15 +136,25 @@
         </LinearLayout>
 
         <!-- Unified search: while the composer holds text, the apps it matches, best first.
-             A tap opens one; enter still searches the web. Filled in by HomeFragment. -->
-        <LinearLayout
-            android:id="@+id/searchSuggestions"
+             A tap opens one; enter still searches the web. Filled in by HomeFragment. The
+             weight lets the list shrink and scroll, rather than push the bar off a short
+             window, when the keyboard leaves too little room. -->
+        <ScrollView
+            android:id="@+id/searchSuggestionsScroll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginBottom="8dp"
-            android:orientation="vertical"
+            android:layout_weight="1"
+            android:scrollbars="none"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/searchSuggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
 
         <!-- Bottom row: the search composer and the password-manager glyph, aligned to the
              composer's bottom edge so the glyph stays put while the composer grows upward. -->

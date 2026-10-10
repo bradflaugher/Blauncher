@@ -62,7 +62,7 @@ class HomeSearchTest {
 
         type(activity, "maps of italy")
 
-        assertEquals(View.GONE, activity.findViewById<View>(R.id.searchSuggestions).visibility)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.searchSuggestionsScroll).visibility)
     }
 
     @Test
@@ -102,7 +102,30 @@ class HomeSearchTest {
 
         type(activity, "slack")
 
-        assertEquals(listOf("Slack", "Slack  ·  Work profile"), suggestionTexts(activity))
+        assertEquals(listOf("Slack", "Slack · Work profile"), suggestionTexts(activity))
+    }
+
+    @Test
+    @Config(qualifiers = "w411dp-h260dp-xxhdpi")
+    fun onAShortWindowTheListScrollsAndTheBarStaysOnScreen() {
+        val activity = homeWithApps("Maps", "Mapper", "Maps.me", "Google Maps")
+
+        type(activity, "map")
+        val root = activity.findViewById<View>(R.id.mainLayout)
+        root.measure(
+            View.MeasureSpec.makeMeasureSpec(root.width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(root.height, View.MeasureSpec.EXACTLY),
+        )
+        root.layout(root.left, root.top, root.right, root.bottom)
+
+        val bar = activity.findViewById<View>(R.id.searchBar)
+        val list = activity.findViewById<View>(R.id.searchSuggestionsScroll)
+        val barBox = android.graphics.Rect().also { bar.getGlobalVisibleRect(it) }
+        assertEquals(bar.height, barBox.height())
+        // Rows that do not fit stay reachable by scrolling instead of being cut off.
+        val rows = activity.findViewById<LinearLayout>(R.id.searchSuggestions)
+        assertTrue(list.height < rows.height)
+        assertTrue(list.canScrollVertically(1))
     }
 
     private fun fakeApp(label: String, user: UserHandle = Process.myUserHandle()) = AppModel.App(
@@ -130,9 +153,14 @@ class HomeSearchTest {
     }
 
     private fun suggestionTexts(activity: MainActivity): List<String> {
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.searchSuggestionsScroll).visibility)
         val rows = activity.findViewById<LinearLayout>(R.id.searchSuggestions)
-        assertEquals(View.VISIBLE, rows.visibility)
-        return (0 until rows.childCount).map { (rows.getChildAt(it) as TextView).text.toString() }
+        return (0 until rows.childCount).map { i ->
+            val row = rows.getChildAt(i)
+            val label = row.findViewById<TextView>(R.id.suggestionLabel).text.toString()
+            val profile = row.findViewById<TextView>(R.id.suggestionProfile)
+            if (profile.visibility == View.VISIBLE) "$label · ${profile.text}" else label
+        }
     }
 
     private fun assertNoWebSearch(activity: MainActivity) {

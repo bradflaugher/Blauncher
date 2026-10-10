@@ -6,9 +6,6 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
 import android.os.Process
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.text.InputType
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -20,11 +17,9 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
@@ -123,6 +118,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         super.onResume()
         populateHomeScreen()
         restoreSearchDraft()
+        // Apps may have been installed, removed or paused while Home was away; a draft's
+        // suggestions have to follow, even though the field may never have lost focus.
+        if (binding.searchInput.text?.isNotBlank() == true) viewModel.getAppList()
         populateCoachCard()
         updateAccessibilityActions()
         viewModel.isOlauncherDefault()
@@ -500,34 +498,28 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 .take(MAX_APP_SUGGESTIONS)
         val list = binding.searchSuggestions
         list.removeAllViews()
-        list.isVisible = matches.isNotEmpty()
+        binding.searchSuggestionsScroll.isVisible = matches.isNotEmpty()
         val inflater = layoutInflater
         matches.forEach { (app, _) ->
-            suggestionRow(inflater, list).apply {
-                text = suggestionText(app, textColors.defaultColor)
-                setOnClickListener { openSearchedApp(app) }
-            }
+            val row = ItemSearchSuggestionBinding.inflate(inflater, list, true)
+            row.suggestionLabel.text = app.appLabel
+            val profile = profileLabel(app)
+            row.suggestionProfile.text = profile
+            row.suggestionProfile.isVisible = profile != null
+            row.root.setOnClickListener { openSearchedApp(app) }
         }
     }
 
     /**
-     * The app's name, then, for a work-profile or Private Space copy, a faded "· Work profile"
-     * so two copies of one app can be told apart by sight and by TalkBack alike.
+     * "Work profile" or "Private space" for an app outside the main profile, so two copies of one
+     * app can be told apart by sight and by TalkBack alike; null for the main profile.
      */
-    private fun suggestionText(app: AppModel, color: Int): CharSequence {
-        if (app.user == Process.myUserHandle()) return app.appLabel
-        val profile = getString(
+    private fun profileLabel(app: AppModel): String? {
+        if (app.user == Process.myUserHandle()) return null
+        return getString(
             if (isPrivateSpaceProfile(requireContext(), app.user)) R.string.private_space else R.string.work_profile
         )
-        return SpannableStringBuilder(app.appLabel).append(
-            "  ·  $profile",
-            ForegroundColorSpan(ColorUtils.setAlphaComponent(color, 0x99)),
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-        )
     }
-
-    private fun suggestionRow(inflater: LayoutInflater, parent: ViewGroup): TextView =
-        ItemSearchSuggestionBinding.inflate(inflater, parent, true).root
 
     /** Focuses the composer and raises the keyboard, verifying that it actually came up. */
     private fun focusSearch() {
