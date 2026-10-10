@@ -103,7 +103,7 @@
     <string name="none">None</string>
 
     <!-- First-run tips. -->
-    <string name="search_hint">Search the web</string>
+    <string name="search_hint">Search apps and the web</string>
     <string name="tip_welcome_step">Welcome · tip %1$d of %2$d</string>
     <string name="tip_step">Tip %1$d of %2$d</string>
     <string name="tip_open_drawer_title">Swipe up for your apps</string>
@@ -132,7 +132,7 @@
     <string name="guide_gesture_off">off</string>
     <string name="guide_date">Tap the date: calendar (long-press to change the app)</string>
     <string name="guide_key">Key button: password manager (long-press to change the app)</string>
-    <string name="guide_search">Search bar: type, then tap the arrow to search the web</string>
+    <string name="guide_search">Search bar: type to find an app (tap it to open) or press enter to search the web</string>
     <string name="guide_drawer_heading">App drawer</string>
     <string name="guide_type">Type a few letters: a single match opens by itself</string>
     <string name="guide_enter">Enter opens the first match, or searches the web if nothing matches</string>

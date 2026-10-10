@@ -101,7 +101,9 @@ class MainActivity : AppCompatActivity() {
         profileReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 viewModel.isPrivateSpaceToggling = false
-                viewModel.getPrivateSpaceAppList()
+                // Work-profile apps live in the main list, Private Space apps in their own; a
+                // profile turning on or off changes one of them, and Home's search reads both.
+                viewModel.getAppList()
             }
         }
         registerReceiver(

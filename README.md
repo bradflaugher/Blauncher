@@ -17,7 +17,7 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 
 <p align="center">
   <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Swipe up for your apps">
-  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar reading Search the web beside a round key glyph for the password manager">
+  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar beside a round key glyph for the password manager">
   <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: a one-line tip under the search field, then apps in groups, each marked by its own colored glyph; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
   <img width="24%" src="docs/screenshots/settings.png" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering">
 </p>
@@ -28,9 +28,12 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 
 - **A home screen with almost nothing on it.** The date up top; along the
   bottom, a search bar and a key glyph that opens your password manager. The
-  search bar sends your query to the engine you choose (divid3 by default, or
-  DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity,
-  ChatGPT) in your default browser, or hands it to the browser's own engine.
+  search bar is one search for apps and the web: the apps your text matches
+  are listed above it to tap, and Enter sends your query to the engine you
+  choose
+  (divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage,
+  Ecosia, Perplexity, ChatGPT) in your default browser, or hands it to the
+  browser's own engine.
   The key glyph finds an installed password manager (Bitwarden, 1Password,
   Proton Pass, KeePassDX, and others) on its own and can be pointed at any
   app. Swipe down for notifications, swipe left or right for two apps of your

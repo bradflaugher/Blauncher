@@ -59,13 +59,18 @@ everything else is gestures.
 | Swipe right | Opens the phone dialer (configurable) |
 | Tap the date | Opens your calendar |
 
-- **Search bar** — the pill reading *Search the web*. Tap it and type. It is a small composer, not a one-line
-  field: enter starts a new line, the box grows to a few lines and then
-  scrolls, and there is no length limit, so whole paragraphs are fine. While
-  there is text, the key glyph beside the bar becomes a filled **send**
-  button; tap it (or Ctrl+Enter / Shift+Enter on a hardware keyboard) and
-  the results page opens in your default browser in one step. An **×** at
-  the end of the bar clears the text.
+- **Search bar** — the pill reading *Search apps and the web*: one search
+  for both. Tap it and type.
+  - The apps your text matches are listed just above the bar, best match
+    first (a name that starts with your text beats one that only contains
+    it). Tap any of them to open it.
+  - **Enter** (the keyboard's Go key) or the filled **send** button that
+    replaces the key glyph while there is text always searches the web, even
+    when an app matches: an app opens only when you tap it. So you can search
+    for `weather` with a Weather app installed.
+  - The box grows to a few lines and then scrolls, and there is no length
+    limit, so whole paragraphs are fine. Shift+Enter on a hardware keyboard
+    starts a new line. An **×** at the end of the bar clears the text.
   - The results come from the **search engine** picked in Settings → Home
     screen: divid3 (a private search router) by default, or DuckDuckGo,
     Google, Bing, Brave Search, Kagi, Startpage, Ecosia, Perplexity, or
@@ -77,8 +82,9 @@ everything else is gestures.
     why it is not the default. Failing everything, DuckDuckGo opens.
   - Unsent text is a **draft**: it stays if you tap elsewhere, open the
     drawer or settings, switch apps to copy something, rotate, or the
-    launcher restarts. Only a successful send or the **×** button empties
-    the bar, and if no app could take the search the text stays put.
+    launcher restarts. Only a successful web search, opening an app from the
+    list above the bar, or the **×** button empties the bar, and if no app
+    could take the search the text stays put.
 - **Password manager** — the key glyph beside the search bar launches your
   password manager. On first run it binds to a known password manager
   already installed (Bitwarden, 1Password, Proton Pass, KeePassDX,
@@ -122,8 +128,8 @@ without a long tail below them.
 - Groups without an emphasized app list every app as before.
 
 - **Search first**: the keyboard opens automatically. Type a few letters —
-  if exactly one app matches, it launches by itself. Press enter to launch
-  the first match. Start with a space to browse without auto-launch.
+  if exactly one app matches, it launches by itself. Matches are listed best
+  first, as on the home screen; press enter to launch the first one. Start with a space to browse without auto-launch.
 - No matches? Enter searches the web. Start the query with `!` to search
   DuckDuckGo directly.
 - **Long-press an app** for its menu: **Uninstall · Rename · Group ·
@@ -182,7 +188,7 @@ Long-press anywhere on the home screen to get here.
     Blauncher never asks you to rate it; this is only here if you want it.
 - **Smart ordering** — see above.
 - **Home screen** — **Password manager** (the app the key glyph opens),
-  **Search engine** (where the search bar sends its text), **Bold date**,
+  **Search engine** (where the search bar sends web searches), **Bold date**,
   and the date's alignment (long-press *Date alignment* to also apply it to
   the app drawer).
 - **Appearance** — theme (long-press *Theme* for the System option) and

@@ -5,6 +5,8 @@ import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
+import android.os.Process
+import android.text.InputType
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -13,6 +15,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -33,6 +36,8 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
+import app.olauncher.databinding.ItemSearchSuggestionBinding
+import app.olauncher.helper.AppSearch
 import app.olauncher.helper.Onboarding
 import app.olauncher.helper.Tip
 import app.olauncher.helper.Typefaces
@@ -41,6 +46,7 @@ import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
+import app.olauncher.helper.isPrivateSpaceProfile
 import app.olauncher.helper.isProfileAvailable
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
@@ -57,9 +63,13 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * The home screen: the date on top, and along the bottom a search bar that hands the query
- * to the default browser's search engine next to a key glyph that opens the password
- * manager. Everything else is gestures on the empty space.
+ * The home screen: the date on top, and along the bottom a unified search bar next to a key
+ * glyph that opens the password manager. Everything else is gestures on the empty space.
+ *
+ * The search bar finds apps and the web in one place. The apps its text matches are listed
+ * above it, best first, and open with a tap; enter (or the send button) always hands the text
+ * to the chosen search engine. An app never opens without being tapped, unlike in the drawer:
+ * "weather" may name an installed app and still be meant for the web.
  *
  * Until the user has found the drawer, settings, and what the date and key do, a tip card above
  * the search bar teaches them one at a time (see [Onboarding]).
@@ -73,6 +83,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private companion object {
         const val MAX_KEYBOARD_ATTEMPTS = 3
         const val KEYBOARD_RETRY_DELAY_MS = 120L
+        const val MAX_APP_SUGGESTIONS = 4
     }
 
     private lateinit var prefs: Prefs
@@ -107,6 +118,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         super.onResume()
         populateHomeScreen()
         restoreSearchDraft()
+        // Apps may have been installed, removed or paused while Home was away; a draft's
+        // suggestions have to follow, even though the field may never have lost focus.
+        if (binding.searchInput.text?.isNotBlank() == true) viewModel.getAppList()
         populateCoachCard()
         updateAccessibilityActions()
         viewModel.isOlauncherDefault()
@@ -199,6 +213,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
             setHomeAlignment(it)
         }
+        // The search bar matches the same apps the drawer lists, unlocked Private Space included.
+        viewModel.appList.observe(viewLifecycleOwner) { updateSearchSuggestions() }
+        viewModel.privateSpaceApps.observe(viewLifecycleOwner) { updateSearchSuggestions() }
+        viewModel.privateSpaceLocked.observe(viewLifecycleOwner) { updateSearchSuggestions() }
         // Home button for recents feature disabled
         // viewModel.showRecentApps.observe(viewLifecycleOwner) {
         //     binding.recents.performClick()
@@ -311,8 +329,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             populateCoachCard()
             requireContext().showToast(R.string.tips_skipped, Toast.LENGTH_LONG)
         }
-        // While composing a search the card would only crowd the keyboard.
-        binding.searchInput.setOnFocusChangeListener { _, _ -> populateCoachCard() }
+        binding.searchInput.setOnFocusChangeListener { _, hasFocus ->
+            // While composing a search the card would only crowd the keyboard.
+            populateCoachCard()
+            // Pick up apps installed or renamed since the list was last loaded.
+            if (hasFocus) viewModel.getAppList()
+        }
     }
 
     /** Shows the next unlearned home-screen tip, or hides the card once there is none. */
@@ -436,16 +458,69 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             // While composing, the slot beside the bar becomes the send button.
             binding.searchSend.isVisible = hasText
             binding.passwordManager.isVisible = !hasText
+            updateSearchSuggestions()
         }
-        // Enter adds a line, as in any composer. Ctrl+Enter or Shift+Enter sends, for hardware
-        // keyboards; on-screen keyboards use the send button beside the bar.
-        binding.searchInput.setOnKeyListener { _, keyCode, event ->
-            val enter = keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
-            if (enter && event.action == KeyEvent.ACTION_DOWN && (event.isCtrlPressed || event.isShiftPressed)) {
+        // The field stays multi-line, so long text wraps and grows the bar, but the keyboard is
+        // told it is a one-line field: its enter key becomes Go and submits instead of adding
+        // a line break.
+        binding.searchInput.setRawInputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
+        binding.searchInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
                 submitSearch()
                 true
             } else false
         }
+        // Hardware keyboards: enter submits too, and Shift+Enter still starts a new line.
+        binding.searchInput.setOnKeyListener { _, keyCode, event ->
+            val enter = keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
+            if (!enter || event.isShiftPressed) return@setOnKeyListener false
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) submitSearch()
+            true
+        }
+    }
+
+    /** Every app the drawer would list right now: the main list, plus Private Space while unlocked. */
+    private fun searchableApps(): List<AppModel> {
+        val apps = viewModel.appList.value.orEmpty()
+        val privateApps =
+            if (viewModel.privateSpaceLocked.value == false) viewModel.privateSpaceApps.value.orEmpty()
+            else emptyList()
+        return apps + privateApps
+    }
+
+    /** Lists the apps the search text matches above the bar, best first; a tap opens one. */
+    private fun updateSearchSuggestions() {
+        val binding = _binding ?: return
+        val query = binding.searchInput.text?.toString()?.trim().orEmpty()
+        val matches =
+            if (query.isEmpty()) emptyList()
+            else AppSearch.search(searchableApps(), query, label = { it.appLabel }, key = { it.emphasisKey })
+                .take(MAX_APP_SUGGESTIONS)
+        val list = binding.searchSuggestions
+        list.removeAllViews()
+        // Each new result set starts at its best match, even if the last one was scrolled.
+        binding.searchSuggestionsScroll.scrollTo(0, 0)
+        binding.searchSuggestionsScroll.isVisible = matches.isNotEmpty()
+        val inflater = layoutInflater
+        matches.forEach { (app, _) ->
+            val row = ItemSearchSuggestionBinding.inflate(inflater, list, true)
+            row.suggestionLabel.text = app.appLabel
+            val profile = profileLabel(app)
+            row.suggestionProfile.text = profile
+            row.suggestionProfile.isVisible = profile != null
+            row.root.setOnClickListener { openSearchedApp(app) }
+        }
+    }
+
+    /**
+     * "Work profile" or "Private space" for an app outside the main profile, so two copies of one
+     * app can be told apart by sight and by TalkBack alike; null for the main profile.
+     */
+    private fun profileLabel(app: AppModel): String? {
+        if (app.user == Process.myUserHandle()) return null
+        return getString(
+            if (isPrivateSpaceProfile(requireContext(), app.user)) R.string.private_space else R.string.work_profile
+        )
     }
 
     /** Focuses the composer and raises the keyboard, verifying that it actually came up. */
@@ -509,20 +584,26 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
     }
 
+    private fun openSearchedApp(app: AppModel) {
+        viewModel.selectedApp(app, Constants.FLAG_LAUNCH_APP)
+        clearSearch()
+    }
+
     /**
-     * Sends the composed text to the chosen search engine. The field is emptied only after an
-     * app accepted the query, so a missing browser never eats the text.
+     * Enter and the send button: sends the composed text to the chosen search engine. The field
+     * is emptied only after an app accepted the query, so a missing browser never eats the text.
      */
     private fun submitSearch() {
         val query = binding.searchInput.text?.toString()?.trim().orEmpty()
         if (query.isEmpty()) return
-        if (sendSearch(requireContext(), prefs.searchEngine, query)) {
-            binding.searchInput.text?.clear()
-            prefs.searchDraft = ""
-            binding.searchInput.hideKeyboard()
-        } else {
-            requireContext().showToast(R.string.search_not_available)
-        }
+        if (sendSearch(requireContext(), prefs.searchEngine, query)) clearSearch()
+        else requireContext().showToast(R.string.search_not_available)
+    }
+
+    private fun clearSearch() {
+        binding.searchInput.text?.clear()
+        prefs.searchDraft = ""
+        binding.searchInput.hideKeyboard()
     }
 
     private fun saveSearchDraft() {
