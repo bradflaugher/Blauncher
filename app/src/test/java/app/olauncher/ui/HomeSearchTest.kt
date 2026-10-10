@@ -3,6 +3,7 @@ package app.olauncher.ui
 import android.content.Intent
 import android.os.Looper
 import android.os.Process
+import android.os.UserHandle
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -92,19 +93,31 @@ class HomeSearchTest {
         assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
     }
 
+    @Test
+    fun aWorkProfileCopyIsLabelledWithItsProfile() {
+        val activity = homeWithApps("Slack")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        viewModel.appList.value = viewModel.appList.value!! + fakeApp("Slack", UserHandle.getUserHandleForUid(10 * 100000))
+        idle()
+
+        type(activity, "slack")
+
+        assertEquals(listOf("Slack", "Slack  ·  Work profile"), suggestionTexts(activity))
+    }
+
+    private fun fakeApp(label: String, user: UserHandle = Process.myUserHandle()) = AppModel.App(
+        appLabel = label,
+        key = null,
+        appPackage = "com.example.${label.lowercase().replace(" ", "")}",
+        activityClassName = "Main",
+        user = user,
+        category = AppCategory.OTHER,
+    )
+
     private fun homeWithApps(vararg labels: String): MainActivity {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         idle()
-        val apps = labels.map { label ->
-            AppModel.App(
-                appLabel = label,
-                key = null,
-                appPackage = "com.example.${label.lowercase().replace(" ", "")}",
-                activityClassName = "Main",
-                user = Process.myUserHandle(),
-                category = AppCategory.OTHER,
-            )
-        }
+        val apps = labels.map { fakeApp(it) }
         ViewModelProvider(activity)[MainViewModel::class.java].appList.value = apps
         idle()
         return activity

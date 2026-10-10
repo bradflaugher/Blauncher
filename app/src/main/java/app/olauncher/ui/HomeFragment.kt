@@ -5,6 +5,10 @@ import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
+import android.os.Process
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.InputType
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -20,6 +24,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
@@ -46,6 +51,7 @@ import app.olauncher.helper.expandNotificationDrawer
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
+import app.olauncher.helper.isPrivateSpaceProfile
 import app.olauncher.helper.isProfileAvailable
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
@@ -498,10 +504,26 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         val inflater = layoutInflater
         matches.forEach { (app, _) ->
             suggestionRow(inflater, list).apply {
-                text = app.appLabel
+                text = suggestionText(app, textColors.defaultColor)
                 setOnClickListener { openSearchedApp(app) }
             }
         }
+    }
+
+    /**
+     * The app's name, then, for a work-profile or Private Space copy, a faded "· Work profile"
+     * so two copies of one app can be told apart by sight and by TalkBack alike.
+     */
+    private fun suggestionText(app: AppModel, color: Int): CharSequence {
+        if (app.user == Process.myUserHandle()) return app.appLabel
+        val profile = getString(
+            if (isPrivateSpaceProfile(requireContext(), app.user)) R.string.private_space else R.string.work_profile
+        )
+        return SpannableStringBuilder(app.appLabel).append(
+            "  ·  $profile",
+            ForegroundColorSpan(ColorUtils.setAlphaComponent(color, 0x99)),
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
     }
 
     private fun suggestionRow(inflater: LayoutInflater, parent: ViewGroup): TextView =
