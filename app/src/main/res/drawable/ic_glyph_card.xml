@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/primaryColor">
+    <!-- A payment card with its stripe. -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M3,6 L21,6 L21,18 L3,18 Z M3,10 L21,10 M6.5,14.5 L10,14.5"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+</vector>

@@ -19,10 +19,12 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.time.Duration
 
 /**
  * Input arrives in bursts: one mouse-wheel flick is several scroll events, and a quick double
- * tap is two clicks. Each burst must open exactly one screen, never a stack of copies.
+ * tap is two clicks. Each burst must open exactly one screen (or the app sheet once), never a
+ * stack of copies.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w411dp-h891dp-xxhdpi")
@@ -38,16 +40,17 @@ class NavigationBurstTest {
     }
 
     @Test
-    fun aWheelFlickOpensOneDrawer() {
+    fun aWheelFlickLiftsTheAppSheetInPlace() {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         val home = activity.findViewById<View>(R.id.mainLayout)
 
         repeat(6) { home.dispatchGenericMotionEvent(wheelEvent(home)) }
-        idle()
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1))
 
+        // The apps live on Home's own sheet: nothing is pushed onto the back stack.
         val navController = activity.findNavController(R.id.nav_host_fragment)
-        assertEquals(R.id.appListFragment, navController.currentDestination?.id)
-        assertEquals(listOf(R.id.mainFragment, R.id.appListFragment), navController.stackIds())
+        assertEquals(listOf(R.id.mainFragment), navController.stackIds())
+        assertEquals(0f, activity.findViewById<View>(R.id.sheet).translationY)
     }
 
     @Test

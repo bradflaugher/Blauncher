@@ -3,4 +3,8 @@
     <dimen name="text_large">30sp</dimen>
     <dimen name="text_small">18sp</dimen>
     <dimen name="app_padding_vertical">12dp</dimen>
+    <dimen name="home_margin_horizontal">24dp</dimen>
+    <dimen name="home_date_margin_top">24dp</dimen>
+    <dimen name="drawer_margin_horizontal">0dp</dimen>
+    <dimen name="search_row_margin_bottom">16dp</dimen>
 </resources>

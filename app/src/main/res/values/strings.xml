@@ -21,7 +21,6 @@
     <string name="swipe_right_app">Swipe right app</string>
     <string name="okay">Okay</string>
     <string name="cool">Cool!</string>
-    <string name="auto_show_keyboard">Auto show keyboard</string>
     <string name="status_bar">Status bar on top</string>
     <string name="rename">Rename</string>
     <string name="appearance">Appearance</string>
@@ -93,8 +92,9 @@
     <string name="clear_search">Clear search text</string>
     <string name="search_engine">Search engine</string>
     <string name="search_not_available">No browser or search app could take this search</string>
-    <string name="password_manager">Password manager</string>
-    <string name="choose_password_manager">Choose your password manager</string>
+    <string name="password_manager">Shortcut app</string>
+    <string name="shortcut_glyph">Shortcut icon</string>
+    <string name="choose_password_manager">Choose your shortcut app</string>
     <string name="password_manager_needs_app">Pick an app, not a shortcut</string>
     <string name="long_press_to_change_app">Long press to change the app</string>
     <string name="emphasized_toast">%1$s emphasized</string>
@@ -112,9 +112,9 @@
     <string name="tip_open_settings_title">Long-press for settings</string>
     <string name="tip_open_settings_body">Touch and hold any empty spot, or tap here.</string>
     <string name="tip_open_settings_action">Open settings</string>
-    <string name="tip_home_shortcuts_title">Tap the date or the key</string>
-    <string name="tip_home_shortcuts_body">The date opens your calendar, the key your password manager. Hold either to pick the app.</string>
-    <string name="tip_app_menu">Type to find an app. Long-press any app to rename, regroup, or uninstall it.</string>
+    <string name="tip_home_shortcuts_title">Tap the date or the shortcut</string>
+    <string name="tip_home_shortcuts_body">The date opens your calendar, the button by the search bar your shortcut app (a password manager to start). Hold either to pick the app.</string>
+    <string name="tip_app_menu">Type above to find an app. Long-press any app to rename, regroup, or uninstall it.</string>
     <string name="tips_skip">Skip tips</string>
     <string name="tips_skipped">Tips off. Settings → Help and FAQ has them all.</string>
     <string name="how_it_works">Help and FAQ</string>
@@ -124,21 +124,21 @@
     <string name="tips_reset">Tips are back on the home screen</string>
     <!-- The quick guide. The swipe lines name the app or action the user has set. -->
     <string name="guide_home_heading">Home screen</string>
-    <string name="guide_swipe_up">Swipe up: all your apps</string>
+    <string name="guide_swipe_up">Swipe up: all your apps, under the search bar</string>
     <string name="guide_long_press">Long-press empty space: settings</string>
     <string name="guide_swipe_down">Swipe down: %1$s</string>
     <string name="guide_swipe_left">Swipe left: %1$s</string>
     <string name="guide_swipe_right">Swipe right: %1$s</string>
     <string name="guide_gesture_off">off</string>
     <string name="guide_date">Tap the date: calendar (long-press to change the app)</string>
-    <string name="guide_key">Key button: password manager (long-press to change the app)</string>
-    <string name="guide_search">Search bar: type to find an app (tap it to open) or press enter to search the web</string>
+    <string name="guide_key">Shortcut button by the search bar: your chosen app, a password manager to start (long-press to change the app; pick its icon in Settings)</string>
+    <string name="guide_search">Search bar: type to narrow your apps to the ones that match (tap one to open it), or press enter to search the web</string>
     <string name="guide_drawer_heading">App drawer</string>
-    <string name="guide_type">Type a few letters: a single match opens by itself</string>
-    <string name="guide_enter">Enter opens the first match, or searches the web if nothing matches</string>
+    <string name="guide_type">Type in the search bar: the apps below narrow to the matches, best first</string>
+    <string name="guide_enter">Tap an app to open it; enter always searches the web</string>
     <string name="guide_app_menu">Long-press an app: uninstall, rename, group, info</string>
     <string name="guide_emphasize">Long-press a colored glyph: make that app bold and first</string>
-    <string name="guide_close_drawer">Swipe down from the top of the list, or go back, to close it</string>
+    <string name="guide_close_drawer">Swipe down from the search bar or the top of the list, or go back, to close it</string>
     <!-- Questions people ask about a launcher with nothing on it; each is a bold line, then its answer. -->
     <string name="guide_faq_heading">Questions</string>
     <string name="faq_old_launcher_q">How do I go back to my old launcher?</string>
@@ -176,7 +176,6 @@
     <string name="not_pinned">Not pinned</string>
     <!-- A pinned group in the pin chooser, with its position: "1 · People". -->
     <string name="pinned_group_order">%1$d · %2$s</string>
-    <string name="search_apps">Search apps</string>
     <string name="select_an_app">Please select an app</string>
     <string name="app_new">New</string>
     <string name="work_profile">Work profile</string>

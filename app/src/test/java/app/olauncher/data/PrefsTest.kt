@@ -98,4 +98,19 @@ class PrefsTest {
         upgraded.resetTips()
         assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(Prefs(context).learnedTips))
     }
+
+    @Test
+    fun theShortcutButtonWearsTheKeyUntilAnotherGlyphIsPicked() {
+        assertEquals(ShortcutGlyph.KEY, prefs.shortcutGlyph)
+
+        prefs.shortcutGlyph = ShortcutGlyph.CAMERA
+
+        assertEquals(ShortcutGlyph.CAMERA, Prefs(ApplicationProvider.getApplicationContext()).shortcutGlyph)
+    }
+
+    @Test
+    fun aGlyphNoLongerOfferedFallsBackToTheKey() {
+        assertEquals(ShortcutGlyph.KEY, ShortcutGlyph.fromName("RETIRED"))
+        assertEquals(ShortcutGlyph.KEY, ShortcutGlyph.fromName(null))
+    }
 }

@@ -13,8 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.EditorInfo
-import android.widget.Filter
-import android.widget.Filterable
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
@@ -46,7 +44,7 @@ class AppDrawerAdapter(
     private val privateSpaceToggleListener: () -> Unit = {},
     private val privateSpaceSettingsListener: () -> Unit = {},
     private val appMenuOpenedListener: () -> Unit = {},
-) : ListAdapter<AppModel, RecyclerView.ViewHolder>(DIFF_CALLBACK), Filterable {
+) : ListAdapter<AppModel, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
 
     companion object {
         const val VIEW_TYPE_APP = 0
@@ -87,16 +85,14 @@ class AppDrawerAdapter(
         }
     }
 
-    private var autoLaunch = true
-    private var isBangSearch = false
-    var allowAutoLaunch = true
+    /** The search text the list is narrowed to; blank lists every app in its groups. */
+    private var query: String = ""
 
     /**
      * Groups the user has expanded during this drawer visit (see [GroupCollapse.toggleKey]).
-     * Lives with the adapter, which the drawer recreates on every open, so it resets by itself.
+     * The drawer calls [collapseGroups] whenever it is put away, so each visit starts compact.
      */
     private val expandedGroups = mutableSetOf<String>()
-    private val appFilter = createAppFilter()
     private val myUserHandle = android.os.Process.myUserHandle()
 
     /** Spoken name of each other profile ("Work profile" / "Private space"), looked up once. */
@@ -190,59 +186,37 @@ class AppDrawerAdapter(
         }
     }
 
-    override fun getFilter(): Filter = this.appFilter
-
-    private fun createAppFilter(): Filter {
-        return object : Filter() {
-            override fun performFiltering(charSearch: CharSequence?): FilterResults {
-                isBangSearch = charSearch?.startsWith("!") ?: false
-                // Only a typed query launches its lone match; merely opening the drawer on a
-                // profile with a single app must not launch it.
-                autoLaunch = allowAutoLaunch && !charSearch.isNullOrBlank() && !charSearch.startsWith(" ")
-
-                val appFilteredList = if (charSearch.isNullOrBlank()) {
-                    displayRows()
-                } else {
-                    // Best match first, so enter and auto-launch pick what the user meant; each
-                    // app is one result even when it is listed under several groups.
-                    AppSearch.search(
-                        appsList.filter { it.isLaunchable() },
-                        charSearch,
-                        label = { it.appLabel },
-                        key = { it.searchKey() },
-                    ).mapTo(mutableListOf()) { it.first }
-                }
-
-                val filterResults = FilterResults()
-                filterResults.values = appFilteredList
-                return filterResults
-            }
-
-            @Suppress("UNCHECKED_CAST")
-            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                results?.values?.let {
-                    val items = it as MutableList<AppModel>
-                    appFilteredList = items
-                    submitList(appFilteredList) {
-                        autoLaunch()
-                    }
-                }
-            }
-        }
+    /**
+     * Narrows the list to the apps [text] matches, best first (each app once, even when it is
+     * listed under several groups), or lists everything in its groups when [text] is blank.
+     * Computed right away: matching a few hundred labels is cheap, and the rows a caller reads
+     * back are then always the ones for the text it just set. Nothing opens by itself; an app
+     * opens only when tapped.
+     */
+    fun search(text: CharSequence) {
+        query = text.trim().toString()
+        refresh()
     }
 
-    private fun autoLaunch() {
-        try {
-            if (itemCount == 1
-                && autoLaunch
-                && isBangSearch.not()
-                && flag == Constants.FLAG_LAUNCH_APP
-                && appFilteredList.isNotEmpty()
-                && appFilteredList[0].isLaunchable()
-            ) appClickListener(appFilteredList[0])
-        } catch (e: Exception) {
-            e.printStackTrace()
+    /** Folds every expanded group again. */
+    fun collapseGroups() {
+        if (expandedGroups.isEmpty()) return
+        expandedGroups.clear()
+        refresh()
+    }
+
+    private fun refresh() {
+        appFilteredList = if (query.isEmpty()) {
+            displayRows()
+        } else {
+            AppSearch.search(
+                appsList.filter { it.isLaunchable() },
+                query,
+                label = { it.appLabel },
+                key = { it.searchKey() },
+            ).mapTo(mutableListOf()) { it.first }
         }
+        submitList(appFilteredList)
     }
 
     private fun AppModel.isLaunchable(): Boolean =
@@ -255,11 +229,9 @@ class AppDrawerAdapter(
      */
     private fun displayRows(): MutableList<AppModel> {
         if (flag != Constants.FLAG_LAUNCH_APP) return appsList
-        // Snapshot: the filter calls this from its worker thread while taps edit the set.
-        val expanded = expandedGroups.toSet()
         return GroupCollapse.collapse(
             appsList,
-            expanded,
+            expandedGroups,
             describe = { row ->
                 GroupCollapse.Row(
                     group = row.category,
@@ -276,8 +248,7 @@ class AppDrawerAdapter(
 
     private fun toggleGroup(toggle: AppModel.GroupToggle) {
         if (!expandedGroups.remove(toggle.toggleKey)) expandedGroups.add(toggle.toggleKey)
-        appFilteredList = displayRows()
-        submitList(appFilteredList)
+        refresh()
     }
 
 
@@ -301,13 +272,7 @@ class AppDrawerAdapter(
             )
         )
         this.appsList = appsList
-        this.appFilteredList = displayRows()
-        submitList(appFilteredList)
-    }
-
-    fun launchFirstInList() {
-        val first = appFilteredList.firstOrNull { it.isLaunchable() }
-        if (first != null) appClickListener(first)
+        refresh()
     }
 
     /**
