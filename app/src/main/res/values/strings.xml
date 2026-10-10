@@ -108,7 +108,7 @@
     <string name="tip_welcome_step">Welcome · tip %1$d of %2$d</string>
     <string name="tip_step">Tip %1$d of %2$d</string>
     <string name="tip_open_drawer_title">Tap the search bar for your apps</string>
-    <string name="tip_open_drawer_body">Every app is listed under it, and typing narrows the list. Or tap here.</string>
+    <string name="tip_open_drawer_body">Your app categories are listed under it, and typing finds any app. Or tap here.</string>
     <string name="tip_open_drawer_action">Open apps</string>
     <string name="tip_open_settings_title">Long-press for settings</string>
     <string name="tip_open_settings_body">Touch and hold any empty spot, or tap here.</string>

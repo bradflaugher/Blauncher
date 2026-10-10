@@ -40,8 +40,8 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   Swipe down for notifications; swipe up, left or right for three apps of
   your choice (the first swipe each way asks which).
 - **Home and the drawer are one surface.** Tap the search bar and it rides
-  up to the top of the screen with the keyboard, every app filling in below
-  it: type a few letters and the list narrows to the matches, best first. There is one
+  up to the top of the screen with the keyboard, your app categories below
+  it: type a few letters and they give way to the matching apps, best first. There is one
   search with one rule: an app opens only when you tap it, and Enter always
   searches the web. Swipe down from the bar or the top of the list, or go
   back, and it all settles back to the quiet home screen.

@@ -19,8 +19,8 @@ full tour, and [Questions](#questions) answers the usual ones.
 A fresh install shows a small card above the search bar that teaches one
 thing at a time:
 
-1. **Tap the search bar for your apps.** Every app is listed under it, and
-   typing narrows the list. Tap the bar, or just tap the card.
+1. **Tap the search bar for your apps.** Your app categories are listed
+   under it, and typing finds any app. Tap the bar, or just tap the card.
 2. **Long-press for settings.** Touch and hold any empty spot, or tap the
    card.
 3. **Tap the date or the shortcut.** The date opens your calendar and the
@@ -52,9 +52,9 @@ choose otherwise). The notification bar is always visible and the middle of
 the screen is empty on purpose: everything else is gestures.
 
 Home and the app drawer are one surface. The search bar sits on top of a
-sheet holding every app: tap the bar and the sheet lifts, the bar riding up
-to the top of the screen with the keyboard up and your apps filling in below
-it while the date fades away. Swipe up, left and right are yours for three
+sheet holding your apps: tap the bar and the sheet lifts, the bar riding up
+to the top of the screen with the keyboard up and your app categories filling
+in below it while the date fades away. Swipe up, left and right are yours for three
 apps of your choice.
 
 | Gesture | What it does |
