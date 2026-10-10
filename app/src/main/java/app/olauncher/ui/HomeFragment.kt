@@ -498,6 +498,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 .take(MAX_APP_SUGGESTIONS)
         val list = binding.searchSuggestions
         list.removeAllViews()
+        // Each new result set starts at its best match, even if the last one was scrolled.
+        binding.searchSuggestionsScroll.scrollTo(0, 0)
         binding.searchSuggestionsScroll.isVisible = matches.isNotEmpty()
         val inflater = layoutInflater
         matches.forEach { (app, _) ->
