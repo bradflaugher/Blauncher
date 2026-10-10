@@ -17,7 +17,6 @@ import android.net.Uri
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.CalendarContract
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
@@ -421,22 +420,6 @@ fun expandNotificationDrawer(context: Context) {
         method.invoke(statusBarService)
     } catch (_: ReflectiveOperationException) {
     } catch (_: SecurityException) {
-    }
-}
-
-fun openDialerApp(context: Context) {
-    try {
-        context.startActivity(Intent(Intent.ACTION_DIAL))
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun openCameraApp(context: Context) {
-    try {
-        context.startActivity(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA))
-    } catch (e: Exception) {
-        e.printStackTrace()
     }
 }
 

@@ -131,6 +131,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.textSizeMinus -> adjustTextSizePreview(-0.1f)
             R.id.textSizePlus -> adjustTextSizePreview(0.1f)
 
+            R.id.swipeUpApp -> showAppListIfEnabled(Constants.FLAG_SET_SWIPE_UP_APP)
             R.id.swipeLeftApp -> showAppListIfEnabled(Constants.FLAG_SET_SWIPE_LEFT_APP)
             R.id.swipeRightApp -> showAppListIfEnabled(Constants.FLAG_SET_SWIPE_RIGHT_APP)
             R.id.swipeDownAction -> binding.swipeDownSelectLayout.visibility = View.VISIBLE
@@ -154,6 +155,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 binding.themeSystem.visibility = View.VISIBLE
             }
 
+            R.id.swipeUpApp -> toggleSwipeUp()
             R.id.swipeLeftApp -> toggleSwipeLeft()
             R.id.swipeRightApp -> toggleSwipeRight()
         }
@@ -178,6 +180,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.alignmentCenter.setOnClickListener(this)
         binding.alignmentRight.setOnClickListener(this)
         binding.dateBold.setOnClickListener(this)
+        binding.swipeUpApp.setOnClickListener(this)
         binding.swipeLeftApp.setOnClickListener(this)
         binding.swipeRightApp.setOnClickListener(this)
         binding.swipeDownAction.setOnClickListener(this)
@@ -214,6 +217,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
         binding.alignment.setOnLongClickListener(this)
         binding.appThemeText.setOnLongClickListener(this)
+        binding.swipeUpApp.setOnLongClickListener(this)
         binding.swipeLeftApp.setOnLongClickListener(this)
         binding.swipeRightApp.setOnLongClickListener(this)
     }
@@ -233,6 +237,14 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         viewModel.refreshHome.observe(viewLifecycleOwner) {
             populatePasswordApp()
         }
+    }
+
+    private fun toggleSwipeUp() {
+        prefs.swipeUpEnabled = !prefs.swipeUpEnabled
+        showSwipeAppState(binding.swipeUpApp, prefs.swipeUpEnabled)
+        requireContext().showToast(
+            getString(if (prefs.swipeUpEnabled) R.string.swipe_up_app_enabled else R.string.swipe_up_app_disabled)
+        )
     }
 
     private fun toggleSwipeLeft() {
@@ -285,8 +297,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             if (prefs.swipeDownAction == Constants.SwipeDownAction.SEARCH) R.string.search
             else R.string.notifications
         )
-        val swipeLeft = if (prefs.swipeLeftEnabled) prefs.appNameSwipeLeft else off
-        val swipeRight = if (prefs.swipeRightEnabled) prefs.appNameSwipeRight else off
+        val swipeUp = if (prefs.swipeUpEnabled) prefs.appNameSwipeUp.ifBlank { getString(R.string.none) } else off
+        val none = getString(R.string.none)
+        val swipeLeft = if (prefs.swipeLeftEnabled) prefs.appNameSwipeLeft.ifBlank { none } else off
+        val swipeRight = if (prefs.swipeRightEnabled) prefs.appNameSwipeRight.ifBlank { none } else off
         val guide = SpannableStringBuilder()
         fun heading(res: Int) {
             if (guide.isNotEmpty()) guide.append("\n\n")
@@ -302,7 +316,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             guide.setSpan(BulletSpan(16), start, guide.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         heading(R.string.guide_home_heading)
-        line(getString(R.string.guide_swipe_up))
+        line(getString(R.string.guide_search_apps))
+        line(getString(R.string.guide_swipe_up, swipeUp))
         line(getString(R.string.guide_long_press))
         line(getString(R.string.guide_swipe_down, swipeDown))
         line(getString(R.string.guide_swipe_left, swipeLeft))
@@ -590,8 +605,12 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateSwipeApps() {
-        binding.swipeLeftApp.text = prefs.appNameSwipeLeft
-        binding.swipeRightApp.text = prefs.appNameSwipeRight
+        binding.swipeUpApp.text = prefs.appNameSwipeUp.ifBlank { getString(R.string.none) }
+        binding.swipeUpApp.describeAs(R.string.swipe_up_app)
+        if (!prefs.swipeUpEnabled) showSwipeAppState(binding.swipeUpApp, false)
+        else describeSwipeAppState(binding.swipeUpApp, true)
+        binding.swipeLeftApp.text = prefs.appNameSwipeLeft.ifBlank { getString(R.string.none) }
+        binding.swipeRightApp.text = prefs.appNameSwipeRight.ifBlank { getString(R.string.none) }
         binding.swipeLeftApp.describeAs(R.string.swipe_left_app)
         binding.swipeRightApp.describeAs(R.string.swipe_right_app)
         // Enabled keeps the style's own colors; only a disabled app is recolored (faded).
@@ -602,6 +621,10 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun showAppListIfEnabled(flag: Int) {
+        if ((flag == Constants.FLAG_SET_SWIPE_UP_APP) and !prefs.swipeUpEnabled) {
+            requireContext().showToast(getString(R.string.long_press_to_enable))
+            return
+        }
         if ((flag == Constants.FLAG_SET_SWIPE_LEFT_APP) and !prefs.swipeLeftEnabled) {
             requireContext().showToast(getString(R.string.long_press_to_enable))
             return

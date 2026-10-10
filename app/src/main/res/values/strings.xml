@@ -17,6 +17,7 @@
     <string name="right">Right</string>
     <string name="center">Center</string>
     <string name="home_layout_alignment">Date alignment</string>
+    <string name="swipe_up_app">Swipe up app</string>
     <string name="swipe_left_app">Swipe left app</string>
     <string name="swipe_right_app">Swipe right app</string>
     <string name="okay">Okay</string>
@@ -95,8 +96,12 @@
     <string name="password_manager">Shortcut app</string>
     <string name="shortcut_glyph">Shortcut icon</string>
     <string name="choose_password_manager">Choose your shortcut app</string>
+    <string name="choose_swipe_up_app">Choose the app a swipe up opens</string>
+    <string name="choose_swipe_left_app">Choose the app a swipe left opens</string>
+    <string name="choose_swipe_right_app">Choose the app a swipe right opens</string>
+    <string name="swipe_up_app_enabled">Swipe up app enabled</string>
+    <string name="swipe_up_app_disabled">Swipe up app disabled</string>
     <string name="password_manager_needs_app">Pick an app, not a shortcut</string>
-    <string name="long_press_to_change_app">Long press to change the app</string>
     <string name="emphasized_toast">%1$s emphasized</string>
     <string name="unemphasized_toast">%1$s back to normal</string>
     <string name="app_groups">App groups</string>
@@ -106,8 +111,8 @@
     <string name="search_hint">Search apps and the web</string>
     <string name="tip_welcome_step">Welcome · tip %1$d of %2$d</string>
     <string name="tip_step">Tip %1$d of %2$d</string>
-    <string name="tip_open_drawer_title">Swipe up for your apps</string>
-    <string name="tip_open_drawer_body">Start anywhere on the empty screen, or tap here.</string>
+    <string name="tip_open_drawer_title">Tap the search bar for your apps</string>
+    <string name="tip_open_drawer_body">Every app is listed under it, and typing narrows the list. Or tap here.</string>
     <string name="tip_open_drawer_action">Open apps</string>
     <string name="tip_open_settings_title">Long-press for settings</string>
     <string name="tip_open_settings_body">Touch and hold any empty spot, or tap here.</string>
@@ -124,7 +129,8 @@
     <string name="tips_reset">Tips are back on the home screen</string>
     <!-- The quick guide. The swipe lines name the app or action the user has set. -->
     <string name="guide_home_heading">Home screen</string>
-    <string name="guide_swipe_up">Swipe up: all your apps, under the search bar</string>
+    <string name="guide_search_apps">Tap the search bar: all your apps, listed under it</string>
+    <string name="guide_swipe_up">Swipe up: %1$s</string>
     <string name="guide_long_press">Long-press empty space: settings</string>
     <string name="guide_swipe_down">Swipe down: %1$s</string>
     <string name="guide_swipe_left">Swipe left: %1$s</string>
@@ -144,7 +150,7 @@
     <string name="faq_old_launcher_q">How do I go back to my old launcher?</string>
     <string name="faq_old_launcher_a">Settings → Change default launcher, then pick it. Android\'s own Settings → Apps → Default apps → Home app works too.</string>
     <string name="faq_icons_q">Where are the icons and widgets?</string>
-    <string name="faq_icons_a">There are none, on purpose. Swipe up and type a few letters instead.</string>
+    <string name="faq_icons_a">There are none, on purpose. Tap the search bar and type a few letters instead.</string>
     <string name="faq_wrong_group_q">An app is in the wrong group</string>
     <string name="faq_wrong_group_a">Long-press it, choose Group, and tick the groups you want.</string>
     <string name="faq_order_q">Why did the order of the groups change?</string>

@@ -46,16 +46,26 @@ class OnboardingTest {
     }
 
     @Test
-    fun anUpgradeFromTheFinishedTwoStepTourAddsNoNewTip() {
-        val upgraded = Onboarding.tipsLearnedOnUpgrade(setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS, Tip.APP_MENU))
-        assertNull(Onboarding.nextHomeTip(upgraded))
+    fun anUpgradeFromTheFinishedTwoStepTourOnlyTeachesTheSearchBar() {
+        val upgraded = Onboarding.tipsLearnedOnUpgrade(setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS, Tip.APP_MENU), 1)
+        // The date-and-key tip is skipped, but the moved way to the apps is taught.
+        assertEquals(setOf(Tip.OPEN_SETTINGS, Tip.HOME_SHORTCUTS, Tip.APP_MENU), upgraded)
+        assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(upgraded))
     }
 
     @Test
     fun anUpgradePartWayThroughTheTourKeepsTeaching() {
-        val upgraded = Onboarding.tipsLearnedOnUpgrade(setOf(Tip.OPEN_DRAWER))
-        assertEquals(setOf(Tip.OPEN_DRAWER), upgraded)
-        assertEquals(Tip.OPEN_SETTINGS, Onboarding.nextHomeTip(upgraded))
+        val upgraded = Onboarding.tipsLearnedOnUpgrade(setOf(Tip.OPEN_SETTINGS), 1)
+        assertEquals(setOf(Tip.OPEN_SETTINGS), upgraded)
+        assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(upgraded))
+    }
+
+    @Test
+    fun whoeverLearnedToSwipeUpIsTaughtTheSearchBar() {
+        val finished = setOf(Tip.OPEN_DRAWER, Tip.OPEN_SETTINGS, Tip.HOME_SHORTCUTS, Tip.APP_MENU)
+        val upgraded = Onboarding.tipsLearnedOnUpgrade(finished, 2)
+        assertEquals(finished - Tip.OPEN_DRAWER, upgraded)
+        assertEquals(Tip.OPEN_DRAWER, Onboarding.nextHomeTip(upgraded))
     }
 
     @Test

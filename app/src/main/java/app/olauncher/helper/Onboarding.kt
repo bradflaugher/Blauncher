@@ -6,7 +6,7 @@ package app.olauncher.helper
  * tip never disappears before it has done its job.
  */
 enum class Tip {
-    /** Home screen: swipe up for the app drawer. */
+    /** Home screen: tap the search bar for the apps. (Once "swipe up"; the name is stored.) */
     OPEN_DRAWER,
 
     /** Home screen: long-press empty space for settings. */
@@ -38,12 +38,23 @@ object Onboarding {
     private val addedInRevision2 = setOf(Tip.HOME_SHORTCUTS)
 
     /**
-     * What an install that stored [learned] under an older tips revision should have learned
-     * now: the newer tips are added for anyone who had learned (or skipped) every older home
-     * tip, and left for everyone still part-way through.
+     * Tips whose gesture changed in revision 3: swipe up became an app of the user's own, and
+     * the apps moved behind the search bar. Whoever learned the old gesture is taught the new one.
      */
-    fun tipsLearnedOnUpgrade(learned: Set<Tip>): Set<Tip> =
-        if (learned.containsAll(homeTips - addedInRevision2)) learned + addedInRevision2 else learned
+    private val relearnInRevision3 = setOf(Tip.OPEN_DRAWER)
+
+    /**
+     * What an install that stored [learned] under tips revision [fromRevision] should have
+     * learned now. Revision 2's new tip is added for anyone who had learned (or skipped) every
+     * older home tip, and left for everyone still part-way through; revision 3's changed tip is
+     * taught again to everyone.
+     */
+    fun tipsLearnedOnUpgrade(learned: Set<Tip>, fromRevision: Int): Set<Tip> {
+        var upgraded = learned
+        if (fromRevision < 2 && upgraded.containsAll(homeTips - addedInRevision2)) upgraded = upgraded + addedInRevision2
+        if (fromRevision < 3) upgraded = upgraded - relearnInRevision3
+        return upgraded
+    }
 
     /** Stored names back to tips; names from a newer or older build are dropped. */
     fun parse(stored: Set<String>): Set<Tip> =

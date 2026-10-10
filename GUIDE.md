@@ -19,8 +19,8 @@ full tour, and [Questions](#questions) answers the usual ones.
 A fresh install shows a small card above the search bar that teaches one
 thing at a time:
 
-1. **Swipe up for your apps.** The arrow on the card nudges upward. Swipe up
-   anywhere (the card included), or just tap the card.
+1. **Tap the search bar for your apps.** Every app is listed under it, and
+   typing narrows the list. Tap the bar, or just tap the card.
 2. **Long-press for settings.** Touch and hold any empty spot, or tap the
    card.
 3. **Tap the date or the shortcut.** The date opens your calendar and the
@@ -52,18 +52,23 @@ choose otherwise). The notification bar is always visible and the middle of
 the screen is empty on purpose: everything else is gestures.
 
 Home and the app drawer are one surface. The search bar sits on top of a
-sheet holding every app: swipe up and the sheet follows your finger, the bar
-riding up to the top of the screen and your apps filling in below it while
-the date fades away. Let go past a short pull (or flick) and it settles open;
-anything less and it settles back.
+sheet holding every app: tap the bar and the sheet lifts, the bar riding up
+to the top of the screen with the keyboard up and your apps filling in below
+it while the date fades away. Swipe up, left and right are yours for three
+apps of your choice.
 
 | Gesture | What it does |
 | --- | --- |
 | **Long-press empty space** | Opens **Settings** — this is the big one to know |
-| Swipe up | Lifts the search bar to the top with your apps below it |
+| Tap the search bar | Your apps, listed under the bar, with the keyboard up |
+| Swipe up | Opens an app you choose |
 | Swipe down | Notification shade (or search — configurable) |
-| Swipe left | Opens the camera (configurable) |
-| Swipe right | Opens the phone dialer (configurable) |
+| Swipe left | Opens an app you choose |
+| Swipe right | Opens an app you choose |
+
+Until a swipe has an app, swiping that way opens the app picker so you can
+choose one; after that it opens your app. Change or turn off any of them in
+Settings → Gestures.
 | Tap the date | Opens your calendar |
 
 - **Search bar** — the pill reading *Search apps and the web*: one search
@@ -121,7 +126,7 @@ anything less and it settles back.
 
 ## Your apps
 
-Swipe up from the home screen (or tap the search bar). Apps are listed in **groups** (AI Agents,
+Tap the search bar on the home screen. Apps are listed in **groups** (AI Agents,
 People, Focus, News, Media, and so on), each marked with a small colored
 glyph (a deeper shade of the same color in the light theme, so it stays
 legible), alphabetical within the group. An **emphasized** app is bold and
@@ -139,10 +144,11 @@ without a long tail below them.
   in it.
 - Groups without an emphasized app list every app as before.
 
-- **Search** is the bar above the list. Swiping up leaves the keyboard down
-  so you can browse; tap the bar to type. Matches are listed best first, and
-  an app opens only when you tap it. Enter always searches the web.
-- Scrolling the list puts the keyboard away; the text stays.
+- **Search** is the bar above the list. Type and the list narrows to the
+  matches, best first; an app opens only when you tap it. Enter always
+  searches the web.
+- Scrolling the list puts the keyboard away so you can browse; the text
+  stays.
 - **Long-press an app** for its menu: **Uninstall · Rename · Group ·
   Info**. Saving an empty name in **Rename** brings back the original one.
   - **Group** opens a sheet named after the app, with two parts:
@@ -206,9 +212,9 @@ Long-press anywhere on the home screen to get here.
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size, which scales on top of the system font size rather than
   replacing it.
-- **Gestures** — the swipe-left and swipe-right apps (long-press either row
-  to disable that gesture) and what swipe-down does (notifications or
-  search).
+- **Gestures** — the swipe-up, swipe-left and swipe-right apps (long-press
+  any of these rows to disable that gesture) and what swipe-down does
+  (notifications or search).
 
 ## Questions
 
@@ -217,8 +223,8 @@ The same answers are in **Settings → Help and FAQ**.
 - **How do I go back to my old launcher?** Settings → Change default
   launcher, then pick it. Android's own Settings → Apps → Default apps →
   Home app works too.
-- **Where are the icons and widgets?** There are none, on purpose. Swipe up
-  and type a few letters instead.
+- **Where are the icons and widgets?** There are none, on purpose. Tap the
+  search bar and type a few letters instead.
 - **An app is in the wrong group.** Long-press it, choose **Group**, and
   tick the groups you want.
 - **Why did the order of the groups change?** Smart ordering follows the

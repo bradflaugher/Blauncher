@@ -26,9 +26,10 @@ object Constants {
     const val FLAG_SET_SWIPE_RIGHT_APP = 12
     const val FLAG_SET_CALENDAR_APP = 13
     const val FLAG_SET_PASSWORD_APP = 14
+    const val FLAG_SET_SWIPE_UP_APP = 15
 
     /** Flags whose drawer visit picks an app for a slot rather than launching one. */
-    val APP_PICKER_FLAGS = FLAG_SET_SWIPE_LEFT_APP..FLAG_SET_PASSWORD_APP
+    val APP_PICKER_FLAGS = FLAG_SET_SWIPE_LEFT_APP..FLAG_SET_SWIPE_UP_APP
 
     /**
      * Password managers the home-screen shortcut binds to on its own when none has been

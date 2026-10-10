@@ -30,6 +30,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowToast
 import java.time.Duration
 
@@ -95,7 +96,9 @@ class HomeSearchTest {
         assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
     }
 
+    // Real text measurement: the default stand-in never wraps, which hid this bug once.
     @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun theBarKeepsItsSizeUntilTheTextWraps() {
         val activity = homeWithApps("Maps")
         val bar = activity.findViewById<View>(R.id.searchBar)
@@ -107,9 +110,24 @@ class HomeSearchTest {
         type(activity, "weather in lisbon")
         assertEquals(empty, measuredHeight(activity, bar))
 
-        // Only a second line of text grows the bar.
-        type(activity, "first line\nsecond line")
+        // Only text that runs onto another line grows the bar.
+        type(activity, "a question long enough that it cannot possibly fit on one line of the bar")
         assertTrue(measuredHeight(activity, bar) > empty)
+
+        // Cleared, the bar is back to its resting size.
+        type(activity, "")
+        assertEquals(empty, measuredHeight(activity, bar))
+    }
+
+    @Test
+    fun talkBackStillNamesTheBarOnceItHoldsText() {
+        val activity = homeWithApps("Maps")
+        val input = activity.findViewById<EditText>(R.id.searchInput)
+
+        type(activity, "maps")
+
+        val info = androidx.core.view.accessibility.AccessibilityNodeInfoCompat.wrap(input.createAccessibilityNodeInfo())
+        assertEquals(activity.getString(R.string.search_hint), info.hintText?.toString())
     }
 
     @Test
@@ -126,11 +144,11 @@ class HomeSearchTest {
     }
 
     @Test
-    fun aSwipeUpLiftsTheSheetAndBackPutsItAway() {
+    fun tappingTheBarLiftsTheSheetAndBackPutsItAway() {
         val activity = homeWithApps("Maps")
         val root = activity.findViewById<View>(R.id.mainLayout)
 
-        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        activity.findViewById<EditText>(R.id.searchInput).performClick()
         settle()
 
         assertTrue(isSheetOpen(activity))
@@ -150,7 +168,7 @@ class HomeSearchTest {
     fun aSwipeDownFromTheBarPutsTheSheetAway() {
         val activity = homeWithApps("Maps")
         val root = activity.findViewById<View>(R.id.mainLayout)
-        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        activity.findViewById<EditText>(R.id.searchInput).performClick()
         settle()
 
         val bar = Rect().also { activity.findViewById<View>(R.id.searchBar).getGlobalVisibleRect(it) }
@@ -161,13 +179,57 @@ class HomeSearchTest {
     }
 
     @Test
-    fun tappingTheBarLiftsTheSheet() {
+    fun aSwipeUpOpensTheSwipeUpAppNotTheSheet() {
+        Prefs(app).apply {
+            appNameSwipeUp = "Notes"
+            appPackageSwipeUp = "com.example.notes"
+            appActivityClassNameSwipeUp = "Main"
+            appUserSwipeUp = Process.myUserHandle().toString()
+        }
         val activity = homeWithApps("Maps")
+        val root = activity.findViewById<View>(R.id.mainLayout)
 
-        activity.findViewById<EditText>(R.id.searchInput).performClick()
+        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
         settle()
 
-        assertTrue(isSheetOpen(activity))
+        assertFalse(isSheetOpen(activity))
+        // The fake app is not really installed, so the launch itself reports it is missing.
+        assertEquals(activity.getString(R.string.app_not_found), ShadowToast.getTextOfLatestToast())
+    }
+
+    @Test
+    fun aSwipeUpWithNoAppChosenOpensThePickerForIt() {
+        val activity = homeWithApps("Maps")
+        val root = activity.findViewById<View>(R.id.mainLayout)
+
+        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        settle()
+
+        assertPickerOpen(activity, R.string.choose_swipe_up_app)
+    }
+
+    @Test
+    fun aSwipeLeftOrRightWithNoAppChosenOpensThePickerForIt() {
+        val left = homeWithApps("Maps")
+        val root = left.findViewById<View>(R.id.mainLayout)
+        swipeAcross(root, fromX = root.width * 0.9f, toX = root.width * 0.1f)
+        settle()
+        assertPickerOpen(left, R.string.choose_swipe_left_app)
+
+        val right = homeWithApps("Maps")
+        val rightRoot = right.findViewById<View>(R.id.mainLayout)
+        swipeAcross(rightRoot, fromX = rightRoot.width * 0.1f, toX = rightRoot.width * 0.9f)
+        settle()
+        assertPickerOpen(right, R.string.choose_swipe_right_app)
+    }
+
+    @Test
+    fun anOlderUnchosenCameraSwipeCountsAsNothingChosen() {
+        // Builds before this one stored a "Camera" label with no app behind it.
+        app.getSharedPreferences("app.olauncher", android.content.Context.MODE_PRIVATE)
+            .edit().putString("APP_NAME_SWIPE_LEFT", "Camera").commit()
+
+        assertEquals("", Prefs(app).appNameSwipeLeft)
     }
 
     @Test
@@ -274,6 +336,23 @@ class HomeSearchTest {
         )
         root.layout(root.left, root.top, root.right, root.bottom)
         return view.height
+    }
+
+    private fun assertPickerOpen(activity: MainActivity, prompt: Int) {
+        val navController = androidx.navigation.Navigation.findNavController(activity, R.id.nav_host_fragment)
+        assertEquals(R.id.appListFragment, navController.currentDestination?.id)
+        assertEquals(activity.getString(prompt), ShadowToast.getTextOfLatestToast())
+    }
+
+    private fun swipeAcross(target: View, fromX: Float, toX: Float) {
+        val y = target.height / 2f
+        val start = SystemClock.uptimeMillis()
+        fun event(action: Int, x: Float, t: Long) = MotionEvent.obtain(start, start + t, action, x, y, 0)
+        target.dispatchTouchEvent(event(MotionEvent.ACTION_DOWN, fromX, 0))
+        for (step in 1..10) {
+            target.dispatchTouchEvent(event(MotionEvent.ACTION_MOVE, fromX + (toX - fromX) * step / 10, step * 16L))
+        }
+        target.dispatchTouchEvent(event(MotionEvent.ACTION_UP, toX, 176))
     }
 
     private fun isSheetOpen(activity: MainActivity): Boolean =

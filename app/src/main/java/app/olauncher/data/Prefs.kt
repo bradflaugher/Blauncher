@@ -15,7 +15,7 @@ class Prefs(context: Context) {
     private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
     private val LEARNED_TIPS = "LEARNED_TIPS"
     private val TIPS_REVISION = "TIPS_REVISION"
-    private val CURRENT_TIPS_REVISION = 2
+    private val CURRENT_TIPS_REVISION = 3
     private val USER_STATE = "USER_STATE"
     private val SEARCH_DRAFT = "SEARCH_DRAFT"
     private val SEARCH_ENGINE = "SEARCH_ENGINE"
@@ -54,6 +54,13 @@ class Prefs(context: Context) {
     private val PASSWORD_APP_CLASS_NAME = "PASSWORD_APP_CLASS_NAME"
     private val SHORTCUT_GLYPH = "SHORTCUT_GLYPH"
 
+    private val SWIPE_UP_ENABLED = "SWIPE_UP_ENABLED"
+    private val APP_NAME_SWIPE_UP = "APP_NAME_SWIPE_UP"
+    private val APP_PACKAGE_SWIPE_UP = "APP_PACKAGE_SWIPE_UP"
+    private val APP_ACTIVITY_CLASS_NAME_SWIPE_UP = "APP_ACTIVITY_CLASS_NAME_SWIPE_UP"
+    private val APP_USER_SWIPE_UP = "APP_USER_SWIPE_UP"
+    private val SHORTCUT_ID_SWIPE_UP = "SHORTCUT_ID_SWIPE_UP"
+    private val IS_SHORTCUT_SWIPE_UP = "IS_SHORTCUT_SWIPE_UP"
     private val SHORTCUT_ID_SWIPE_LEFT = "SHORTCUT_ID_SWIPE_LEFT"
     private val IS_SHORTCUT_SWIPE_LEFT = "IS_SHORTCUT_SWIPE_LEFT"
     private val SHORTCUT_ID_SWIPE_RIGHT = "SHORTCUT_ID_SWIPE_RIGHT"
@@ -120,10 +127,12 @@ class Prefs(context: Context) {
         prefs.edit { remove(FIRST_SETTINGS_OPEN) }
     }
 
-    // The home tour grew a third tip (the date and the key). Whoever finished the old tour skips it.
+    // The home tour grew a third tip (the date and the key) in revision 2, and its first tip changed
+    // from swiping up to tapping the search bar in revision 3; see Onboarding.tipsLearnedOnUpgrade.
     private fun migrateTipsRevision() {
-        if (prefs.getInt(TIPS_REVISION, 1) >= CURRENT_TIPS_REVISION) return
-        if (prefs.contains(LEARNED_TIPS)) storeLearnedTips(Onboarding.tipsLearnedOnUpgrade(learnedTips))
+        val stored = prefs.getInt(TIPS_REVISION, 1)
+        if (stored >= CURRENT_TIPS_REVISION) return
+        if (prefs.contains(LEARNED_TIPS)) storeLearnedTips(Onboarding.tipsLearnedOnUpgrade(learnedTips, stored))
         prefs.edit { putInt(TIPS_REVISION, CURRENT_TIPS_REVISION) }
     }
 
@@ -249,12 +258,14 @@ class Prefs(context: Context) {
         get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.NOTIFICATIONS)
         set(value) = prefs.edit { putInt(SWIPE_DOWN_ACTION, value).apply() }
 
+    // Blank until an app is chosen; the swipe then opens the picker. Older builds stored "Camera"
+    // and "Phone" here with no app behind them, which counts as nothing chosen.
     var appNameSwipeLeft: String
-        get() = prefs.getString(APP_NAME_SWIPE_LEFT, "Camera").toString()
+        get() = if (appPackageSwipeLeft.isBlank()) "" else prefs.getString(APP_NAME_SWIPE_LEFT, "").toString()
         set(value) = prefs.edit { putString(APP_NAME_SWIPE_LEFT, value).apply() }
 
     var appNameSwipeRight: String
-        get() = prefs.getString(APP_NAME_SWIPE_RIGHT, "Phone").toString()
+        get() = if (appPackageSwipeRight.isBlank()) "" else prefs.getString(APP_NAME_SWIPE_RIGHT, "").toString()
         set(value) = prefs.edit { putString(APP_NAME_SWIPE_RIGHT, value).apply() }
 
     var appPackageSwipeLeft: String
@@ -341,11 +352,44 @@ class Prefs(context: Context) {
         get() = prefs.getBoolean(IS_SHORTCUT_SWIPE_RIGHT, false)
         set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_RIGHT, value) }
 
+    /**
+     * The app (or pinned shortcut) a swipe up on Home opens. Blank until chosen: the apps
+     * themselves are behind the search bar, so the swipe is free for one app of the user's own.
+     */
+    var swipeUpEnabled: Boolean
+        get() = prefs.getBoolean(SWIPE_UP_ENABLED, true)
+        set(value) = prefs.edit { putBoolean(SWIPE_UP_ENABLED, value) }
+
+    var appNameSwipeUp: String
+        get() = prefs.getString(APP_NAME_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_NAME_SWIPE_UP, value) }
+
+    var appPackageSwipeUp: String
+        get() = prefs.getString(APP_PACKAGE_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_PACKAGE_SWIPE_UP, value) }
+
+    var appActivityClassNameSwipeUp: String?
+        get() = prefs.getString(APP_ACTIVITY_CLASS_NAME_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_ACTIVITY_CLASS_NAME_SWIPE_UP, value) }
+
+    var appUserSwipeUp: String
+        get() = prefs.getString(APP_USER_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(APP_USER_SWIPE_UP, value) }
+
+    var shortcutIdSwipeUp: String
+        get() = prefs.getString(SHORTCUT_ID_SWIPE_UP, "").toString()
+        set(value) = prefs.edit { putString(SHORTCUT_ID_SWIPE_UP, value) }
+
+    var isShortcutSwipeUp: Boolean
+        get() = prefs.getBoolean(IS_SHORTCUT_SWIPE_UP, false)
+        set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_UP, value) }
+
     fun updateAppActivityClassName(packageName: String, activityClassName: String) {
         if (calendarAppPackage == packageName) calendarAppClassName = activityClassName
         if (passwordAppPackage == packageName) passwordAppClassName = activityClassName
         if (appPackageSwipeLeft == packageName) appActivityClassNameSwipeLeft = activityClassName
         if (appPackageSwipeRight == packageName) appActivityClassNameRight = activityClassName
+        if (appPackageSwipeUp == packageName) appActivityClassNameSwipeUp = activityClassName
     }
 
     fun getAppRenameLabel(appPackage: String): String = prefs.getString(appPackage, "").toString()

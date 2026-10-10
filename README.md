@@ -6,8 +6,8 @@ button (your password manager to start, any app you like after). No app
 icons, dock, or widgets. Everything else is a
 gesture away.
 
-**Swipe up** for your apps. **Long-press** for settings. That is the whole
-interface. On first run a small tip card teaches those two gestures, then
+**Tap the search bar** for your apps. **Long-press** for settings. That is
+the whole interface. On first run a small tip card teaches those two gestures, then
 what the date and the shortcut do, one at a time, and gets out of the way;
 **Settings → Help and FAQ** has the rest on one page, and the
 **[user guide](GUIDE.md)** covers everything. Settings also has **Send
@@ -36,12 +36,12 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   browser's own engine.
   The shortcut button finds an installed password manager (Bitwarden,
   1Password, Proton Pass, KeePassDX, and others) on its own and wears a key;
-  point it at any app and give it any of some thirty line-art glyphs. Swipe down for notifications, swipe left or right for two apps of your
-  choice.
-- **Home and the drawer are one surface.** Swipe up anywhere and the search
-  bar rides up to the top of the screen under your finger, with every app
-  filling in below it. Tap the bar instead and the keyboard comes up too: type
-  a few letters and the list narrows to the matches, best first. There is one
+  point it at any app and give it any of some thirty line-art glyphs.
+  Swipe down for notifications; swipe up, left or right for three apps of
+  your choice (the first swipe each way asks which).
+- **Home and the drawer are one surface.** Tap the search bar and it rides
+  up to the top of the screen with the keyboard, every app filling in below
+  it: type a few letters and the list narrows to the matches, best first. There is one
   search with one rule: an app opens only when you tap it, and Enter always
   searches the web. Swipe down from the bar or the top of the list, or go
   back, and it all settles back to the quiet home screen.
