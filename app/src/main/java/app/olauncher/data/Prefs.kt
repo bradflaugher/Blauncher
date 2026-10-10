@@ -349,8 +349,8 @@ class Prefs(context: Context) {
         set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_RIGHT, value) }
 
     /**
-     * The app (or pinned shortcut) a swipe up on Home opens. Blank until chosen: the apps
-     * themselves are behind the search bar, so the swipe is free for one app of the user's own.
+     * The app (or pinned shortcut) a swipe up on Home opens. Blank until chosen, meaning the
+     * default browser: the apps themselves are behind the search bar, so the swipe is free.
      */
     var swipeUpEnabled: Boolean
         get() = prefs.getBoolean(SWIPE_UP_ENABLED, true)

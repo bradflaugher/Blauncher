@@ -54,13 +54,14 @@ the screen is empty on purpose: everything else is gestures.
 Home and the app drawer are one surface. The search bar sits on top of a
 sheet holding every app: tap the bar and the sheet lifts, the bar riding up
 to the top of the screen with the keyboard up and your apps filling in below
-it while the date fades away. Swipe up is yours for one app of your choice.
+it while the date fades away. Swipe up opens your browser, or any app you
+choose instead.
 
 | Gesture | What it does |
 | --- | --- |
 | **Long-press empty space** | Opens **Settings** — this is the big one to know |
 | Tap the search bar | Your apps, listed under the bar, with the keyboard up |
-| Swipe up | Opens the app you choose (the first swipe asks which) |
+| Swipe up | Opens your browser (Chrome on most phones; configurable) |
 | Swipe down | Notification shade (or search — configurable) |
 | Swipe left | Opens the camera (configurable) |
 | Swipe right | Opens the phone dialer (configurable) |
@@ -207,8 +208,9 @@ Long-press anywhere on the home screen to get here.
 - **Appearance** — theme (long-press *Theme* for the System option) and
   text size, which scales on top of the system font size rather than
   replacing it.
-- **Gestures** — the swipe-up, swipe-left and swipe-right apps (long-press
-  any of these rows to disable that gesture) and what swipe-down does
+- **Gestures** — the swipe-up app (your default browser until you pick
+  one), the swipe-left and swipe-right apps (long-press any of these rows to
+  disable that gesture) and what swipe-down does
   (notifications or search).
 
 ## Questions

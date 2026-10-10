@@ -198,16 +198,44 @@ class HomeSearchTest {
     }
 
     @Test
-    fun aSwipeUpWithNoAppChosenOpensThePickerForIt() {
+    fun aSwipeUpWithNoAppChosenOpensTheBrowser() {
         val activity = homeWithApps("Maps")
         val root = activity.findViewById<View>(R.id.mainLayout)
 
         swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
         settle()
 
-        val navController = androidx.navigation.Navigation.findNavController(activity, R.id.nav_host_fragment)
-        assertEquals(R.id.appListFragment, navController.currentDestination?.id)
-        assertEquals(activity.getString(R.string.choose_swipe_up_app), ShadowToast.getTextOfLatestToast())
+        val started = shadowOf(activity).nextStartedActivity
+        assertTrue(started.selector!!.hasCategory(Intent.CATEGORY_APP_BROWSER))
+        assertFalse(isSheetOpen(activity))
+    }
+
+    @Test
+    fun aSwipeUpWithNoAppChosenOpensTheDefaultBrowsersOwnApp() {
+        // Chrome, installed and set to open web links.
+        val chrome = android.content.pm.ResolveInfo().apply {
+            activityInfo = android.content.pm.ActivityInfo().apply {
+                packageName = "com.android.chrome"
+                name = "com.google.android.apps.chrome.Main"
+            }
+        }
+        val packages = shadowOf(app.packageManager)
+        packages.addResolveInfoForIntent(
+            Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://example.com"))
+                .addCategory(Intent.CATEGORY_BROWSABLE),
+            chrome,
+        )
+        packages.addResolveInfoForIntent(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setPackage("com.android.chrome"),
+            chrome,
+        )
+        val activity = homeWithApps("Maps")
+        val root = activity.findViewById<View>(R.id.mainLayout)
+
+        swipe(root, fromY = root.height * 0.6f, toY = root.height * 0.2f)
+        settle()
+
+        assertEquals("com.android.chrome", shadowOf(activity).nextStartedActivity.component?.packageName)
     }
 
     @Test

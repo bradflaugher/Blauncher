@@ -52,6 +52,7 @@ import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.isProfileAvailable
+import app.olauncher.helper.openBrowser
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
@@ -318,8 +319,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             }
         }
         add(getString(R.string.tip_open_drawer_action)) { openSheet() }
-        if (prefs.swipeUpEnabled && prefs.appPackageSwipeUp.isNotBlank())
-            add(getString(R.string.open_app_named, prefs.appNameSwipeUp)) { openSwipeUpApp() }
+        if (prefs.swipeUpEnabled)
+            add(getString(R.string.open_app_named, prefs.appNameSwipeUp.ifBlank { getString(R.string.browser) })) {
+                openSwipeUpApp()
+            }
         add(getString(R.string.tip_open_settings_action)) { openSettings() }
         if (prefs.swipeLeftEnabled)
             add(swipeAppLabel(prefs.appNameSwipeLeft, R.string.swipe_left_app)) { openSwipeLeftApp() }
@@ -924,13 +927,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     /**
-     * The swipe-up app. Until one is chosen the swipe opens the picker for it, so the gesture
-     * never does nothing.
+     * The swipe-up app. Until one is chosen it is the default browser; with no browser at all
+     * the swipe opens the picker instead, so the gesture never does nothing.
      */
     private fun openSwipeUpApp() {
         if (!prefs.swipeUpEnabled) return
         if (prefs.appPackageSwipeUp.isBlank()) {
-            if (openPicker(Constants.FLAG_SET_SWIPE_UP_APP))
+            if (!openBrowser(requireContext()) && openPicker(Constants.FLAG_SET_SWIPE_UP_APP))
                 requireContext().showToast(R.string.choose_swipe_up_app)
             return
         }

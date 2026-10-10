@@ -297,7 +297,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             if (prefs.swipeDownAction == Constants.SwipeDownAction.SEARCH) R.string.search
             else R.string.notifications
         )
-        val swipeUp = if (prefs.swipeUpEnabled) prefs.appNameSwipeUp.ifBlank { getString(R.string.none) } else off
+        val swipeUp = if (prefs.swipeUpEnabled) prefs.appNameSwipeUp.ifBlank { getString(R.string.browser) } else off
         val swipeLeft = if (prefs.swipeLeftEnabled) prefs.appNameSwipeLeft else off
         val swipeRight = if (prefs.swipeRightEnabled) prefs.appNameSwipeRight else off
         val guide = SpannableStringBuilder()
@@ -604,7 +604,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateSwipeApps() {
-        binding.swipeUpApp.text = prefs.appNameSwipeUp.ifBlank { getString(R.string.none) }
+        // Until an app is picked, swipe up opens the default browser.
+        binding.swipeUpApp.text = prefs.appNameSwipeUp.ifBlank { getString(R.string.browser) }
         binding.swipeUpApp.describeAs(R.string.swipe_up_app)
         if (!prefs.swipeUpEnabled) showSwipeAppState(binding.swipeUpApp, false)
         else describeSwipeAppState(binding.swipeUpApp, true)
