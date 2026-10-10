@@ -86,6 +86,9 @@ class AppDrawerAdapter(
     /** The search text the list is narrowed to; blank lists every app in its groups. */
     private var query: String = ""
 
+    /** Whether the list on screen (not the one being diffed in) holds search results. */
+    private var showingSearchResults = false
+
     /**
      * The one category open in the drawer (see [GroupSections.key]), or null with all closed.
      * Opening another closes it, so the list never outgrows the room above the keyboard. The
@@ -109,8 +112,10 @@ class AppDrawerAdapter(
     var appsList: MutableList<AppModel> = mutableListOf()
     var appFilteredList: MutableList<AppModel> = mutableListOf()
 
+    // Types and binds read the list the adapter is showing, which the diff swaps in a moment after
+    // [appFilteredList] is replaced: between the two they can be different lengths and kinds.
     override fun getItemViewType(position: Int): Int {
-        return when (appFilteredList.getOrNull(position)) {
+        return when (currentList.getOrNull(position)) {
             is AppModel.PrivateSpaceHeader -> VIEW_TYPE_PRIVATE_HEADER
             is AppModel.GroupHeader -> VIEW_TYPE_GROUP_HEADER
             else -> VIEW_TYPE_APP
@@ -147,8 +152,8 @@ class AppDrawerAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         try {
-            if (appFilteredList.isEmpty() || position == RecyclerView.NO_POSITION) return
-            val appModel = appFilteredList[holder.bindingAdapterPosition]
+            if (position == RecyclerView.NO_POSITION) return
+            val appModel = currentList.getOrNull(position) ?: return
             when (holder) {
                 is PrivateSpaceHeaderViewHolder -> {
                     holder.bind(
@@ -169,7 +174,7 @@ class AppDrawerAdapter(
                     flag,
                     // Search results name their category with its glyph; under an open
                     // category's header the glyph would only repeat it.
-                    showCategoryMarker = query.isNotEmpty(),
+                    showCategoryMarker = showingSearchResults,
                     appLabelGravity,
                     myUserHandle,
                     profileLabel(holder.itemView.context, appModel.user),
@@ -217,7 +222,13 @@ class AppDrawerAdapter(
                 key = { it.searchKey() },
             ).mapTo(mutableListOf()) { it.first }
         }
-        submitList(appFilteredList)
+        val searching = query.isNotEmpty()
+        submitList(appFilteredList) {
+            if (showingSearchResults == searching) return@submitList
+            showingSearchResults = searching
+            // A row listed in both modes is the same item to the diff and keeps its old look.
+            notifyItemRangeChanged(0, itemCount)
+        }
     }
 
     private fun AppModel.isLaunchable(): Boolean =

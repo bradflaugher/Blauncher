@@ -191,6 +191,18 @@ class SmartOrderTest {
     }
 
     @Test
+    fun weightsAreReadAsTheyStandNotAsTheyWereStored() {
+        val usage = SmartOrder.AppUsage(updatedAt = dayMillis)
+        usage.weights["maps"] = 2.0
+        usage.weights["uber"] = 0.015
+
+        val later = SmartOrder.currentWeights(usage, nowMillis = dayMillis + 14 * dayMillis)
+
+        // Two weeks halve Maps; Uber fades below the floor and drops back among the unopened.
+        assertEquals(mapOf("maps" to 1.0), later)
+    }
+
+    @Test
     fun appUsageSurvivesARoundTripThroughPrefs() {
         val usage = SmartOrder.AppUsage(updatedAt = 42L)
         usage.weights["shortcut:com.example.mail/compose|UserHandle{0}"] = 2.5

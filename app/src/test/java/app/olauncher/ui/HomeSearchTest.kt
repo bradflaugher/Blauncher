@@ -280,6 +280,8 @@ class HomeSearchTest {
         assertEquals(activity.getString(R.string.app_not_found), ShadowToast.getTextOfLatestToast())
         assertNoWebSearch(activity)
         assertEquals("", activity.findViewById<EditText>(R.id.searchInput).text.toString())
+        // An app that did not open does not climb its category.
+        assertEquals(null, Prefs(app).appUsageData)
     }
 
     @Test

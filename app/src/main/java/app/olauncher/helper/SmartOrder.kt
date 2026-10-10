@@ -100,7 +100,7 @@ object SmartOrder {
      */
     fun sort(prefs: Prefs, apps: MutableList<AppModel>) {
         val order = currentOrder(prefs).withIndex().associate { it.value to it.index }
-        val usage = parseAppUsage(prefs.appUsageData)?.weights.orEmpty()
+        val usage = parseAppUsage(prefs.appUsageData)?.let { currentWeights(it, System.currentTimeMillis()) }.orEmpty()
         apps.sortWith(drawerComparator(order, usage))
     }
 
@@ -142,6 +142,16 @@ object SmartOrder {
 
     /** Below this an app has not been opened from here for months; its entry is dropped. */
     private const val APP_WEIGHT_FLOOR = 0.01
+
+    /**
+     * The weights as they stand at [nowMillis]: decayed since they were stored, with any that
+     * have faded below the floor gone, so an app not opened for months sinks back among the
+     * never-opened ones even before the next launch is recorded.
+     */
+    internal fun currentWeights(usage: AppUsage, nowMillis: Long): Map<String, Double> {
+        val factor = decayFactor(usage.updatedAt, nowMillis)
+        return usage.weights.mapValues { it.value * factor }.filterValues { it >= APP_WEIGHT_FLOOR }
+    }
 
     /** Records one launch of the app with [identityKey], so it rises within its groups. */
     fun recordAppLaunch(prefs: Prefs, identityKey: String, nowMillis: Long = System.currentTimeMillis()) {
