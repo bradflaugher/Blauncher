@@ -257,7 +257,9 @@ class AppDrawerAdapter(
     }
 
     private fun toggleGroup(header: AppModel.GroupHeader) {
-        expandedGroup = if (header.expanded) null else header.sectionKey
+        // Against what is open now, not the row's own flag: a quick second tap can land before
+        // the diff has rebound the row it hit.
+        expandedGroup = if (expandedGroup == header.sectionKey) null else header.sectionKey
         refresh()
     }
 
