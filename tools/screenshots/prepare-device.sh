@@ -34,22 +34,30 @@ fi
 "${adb[@]}" install -r "$root/app/build/outputs/apk/debug/app-debug.apk" >/dev/null
 "${adb[@]}" shell cmd role add-role-holder android.app.role.HOME "$pkg"
 "${adb[@]}" shell cmd wallpaper set-dim-amount 1
+# No animations, so a capture never catches a half-finished transition.
+for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+  "${adb[@]}" shell settings put global "$scale" 0
+done
 # A dark keyboard and system dialogs, to match the black home screen.
 "${adb[@]}" shell cmd uimode night yes >/dev/null
 
 # A fresh emulator boots with every app installed "just now", so the drawer would mark them all
 # new (✦). Move the clock a few hours on (needs a google_apis image, where adb root works).
 "${adb[@]}" root >/dev/null && "${adb[@]}" wait-for-device
+# Three hours past the host clock, not the emulator's, so re-running doesn't keep moving the date.
 "${adb[@]}" shell settings put global auto_time 0
-"${adb[@]}" shell 'date @$(( $(date +%s) + 3 * 3600 ))' >/dev/null
+"${adb[@]}" shell "date @$(( $(date +%s) + 3 * 3600 ))" >/dev/null
 
 # Demo mode: 9:00, full battery and signal, no notification icons.
 "${adb[@]}" shell settings put global sysui_demo_allowed 1
 demo() { "${adb[@]}" shell am broadcast -a com.android.systemui.demo -e command "$@" >/dev/null; }
+# Leave any earlier demo session first: re-running this script on the same emulator otherwise
+# stacks an extra network icon each time.
+demo exit
 demo enter
 demo clock -e hhmm 0900
 demo battery -e level 100 -e plugged false
-demo network -e wifi show -e level 4
+demo network -e wifi show -e level 4 -e fully true
 demo network -e mobile hide
 demo notifications -e visible false
 
