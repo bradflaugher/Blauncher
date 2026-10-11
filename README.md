@@ -164,9 +164,10 @@ release notes) lives in `fastlane/metadata/android/en-US` in the layout
    the swipe-down-for-notifications gesture.
 4. **Screenshots** must be 9:16 or 16:9 PNG or JPEG without alpha. Tablet
    screenshots must be real tablet captures. The ones in `images/` are
-   captioned captures of a debug build on the Android emulator (Pixel 8,
-   Nexus 7 and Pixel Tablet images), made with the scripts in
-   `tools/screenshots/`:
+   captioned captures of a debug build on an Android emulator with a
+   `google_apis` image (so `adb root` works), which `prepare-device.sh`
+   sizes as a phone, 7-inch or 10-inch screen, made with the scripts in
+   `tools/screenshots/` (all safe to re-run on the same emulator):
    - `prepare-device.sh <serial> phone|seven|ten [landscape]` sizes the
      screen to 9:16 or 16:9, installs the debug APK, makes it the home app,
      blacks out the wallpaper, sets dark mode and System UI demo mode, and
