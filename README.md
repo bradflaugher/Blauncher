@@ -17,9 +17,9 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
 ## Screens
 
 <p align="center">
-  <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Swipe up for your apps">
-  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar beside a round shortcut button wearing a key glyph">
-  <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: a one-line tip under the search field, then apps in groups, each marked by its own colored glyph; emphasized apps are bold and first while the rest of the group folds into one faded line counting the hidden apps">
+  <img width="24%" src="docs/screenshots/tips.png" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Tap the search bar for your apps">
+  <img width="24%" src="docs/screenshots/home.png" alt="Home screen: the date at the top, and at the bottom a search bar reading Search apps and the web, beside a round shortcut button wearing a key glyph">
+  <img width="24%" src="docs/screenshots/drawer.png" alt="App drawer: the search bar at the top, a one-line tip, then categories, each with its own colored glyph and a small app count; People is open, its apps listed under it">
   <img width="24%" src="docs/screenshots/settings.png" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering">
 </p>
 
