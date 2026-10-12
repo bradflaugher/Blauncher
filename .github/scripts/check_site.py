@@ -74,6 +74,11 @@ class Page(HTMLParser):
                 self.refs.extend((f"<{tag} style>", u, True) for u in css_urls(value))
             elif tag == "meta" and name == "content" and a.get("property") == "og:image":
                 self.refs.append(("og:image", value, False))
+            elif tag == "meta" and name == "content" and (a.get("http-equiv") or "").lower() == "refresh":
+                # "5; url=..." navigates by itself, so its target counts as a load.
+                target = re.search(r"url\s*=\s*['\"]?([^'\";]*)", value, re.I)
+                if target:
+                    self.refs.append(("<meta refresh>", target.group(1).strip(), True))
 
     def handle_startendtag(self, tag, attrs):
         # <x/>: an element that is opened and closed at once.
