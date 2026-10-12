@@ -3,79 +3,175 @@ package app.olauncher.helper
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import app.olauncher.data.AppCategory
+import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 
 object AppCategorizer {
-    private val packageCategories = linkedMapOf(
-        "com.openai.chatgpt" to AppCategory.AI_AGENTS,
-        "com.anthropic.claude" to AppCategory.AI_AGENTS,
-        "com.google.android.apps.bard" to AppCategory.AI_AGENTS,
-        "ai.perplexity.app.android" to AppCategory.AI_AGENTS,
-        "com.microsoft.copilot" to AppCategory.AI_AGENTS,
-        "com.nytimes.android" to AppCategory.NEWS,
-        "wsj.reader_sp" to AppCategory.NEWS,
-        "com.economist.lamarr" to AppCategory.NEWS,
-        "com.google.android.apps.magazines" to AppCategory.NEWS,
-        "flipboard.app" to AppCategory.NEWS,
-        "com.devhd.feedly" to AppCategory.NEWS,
-        "com.bbc.news" to AppCategory.NEWS,
-        "com.cnn.mobile.android.phone" to AppCategory.NEWS,
-        "com.npr.nprnews" to AppCategory.NEWS,
-        "com.groundnews" to AppCategory.NEWS,
-        "com.medium.reader" to AppCategory.NEWS,
-        "com.reddit.frontpage" to AppCategory.NEWS,
-        "com.spotify.music" to AppCategory.MEDIA,
-        "com.google.android.youtube" to AppCategory.MEDIA,
-        "com.netflix.mediaclient" to AppCategory.MEDIA,
-        "com.amazon.kindle" to AppCategory.MEDIA,
-        "com.audible.application" to AppCategory.MEDIA,
-        "com.overdrive.mobile.android.libby" to AppCategory.MEDIA,
-        "com.getsomeheadspace.android" to AppCategory.SLEEP,
-        "com.calm.android" to AppCategory.SLEEP,
-        "com.spotlightsix.zentimerlite2" to AppCategory.SLEEP,
-        "com.urbandroid.sleep" to AppCategory.SLEEP,
-    )
+    /**
+     * Known apps by package, for the ones whose names say little ("Chrome", "Venmo"). A key
+     * matches its own package and any package under it ("com.ubercab" covers "com.ubercab.x"),
+     * and the longest matching key wins, so "com.ubercab.eats" is Shopping while Uber is Places.
+     * Keys are lower case; package names are compared in lower case.
+     */
+    private val packageCategories: Map<String, AppCategory> = buildMap {
+        fun put(category: AppCategory, vararg packages: String) = packages.forEach { put(it, category) }
+
+        put(
+            AppCategory.AI_AGENTS,
+            "com.openai.chatgpt", "com.anthropic.claude", "com.google.android.apps.bard",
+            "ai.perplexity.app.android", "com.microsoft.copilot", "com.deepseek.chat",
+            "ai.x.grok", "ai.mistral.chat",
+        )
+        put(
+            AppCategory.COMMUNICATION,
+            "com.google.android.apps.messaging", "com.google.android.dialer",
+            "com.google.android.contacts", "com.samsung.android.messaging",
+            "com.samsung.android.dialer", "com.samsung.android.app.contacts",
+            "com.google.android.gm", "com.microsoft.office.outlook", "ch.protonmail.android",
+            "com.whatsapp", "org.thoughtcrime.securesms", "org.telegram.messenger",
+            "com.facebook.katana", "com.facebook.orca", "com.instagram.android",
+            "com.instagram.barcelona", "com.snapchat.android", "com.twitter.android",
+            "xyz.blueskyweb.app", "org.joinmastodon.android", "com.linkedin.android",
+            "com.discord", "com.slack", "com.microsoft.teams", "us.zoom.videomeetings",
+            "com.google.android.apps.tachyon", "com.google.android.apps.photos",
+        )
+        put(
+            AppCategory.PRODUCTIVITY,
+            "com.google.android.calendar", "com.samsung.android.calendar",
+            "com.google.android.keep", "com.google.android.apps.docs",
+            "com.google.android.apps.tasks", "com.microsoft.office.word",
+            "com.microsoft.office.excel", "com.microsoft.office.powerpoint",
+            "com.microsoft.office.onenote", "com.microsoft.todos", "com.microsoft.office.officehubrow",
+            "com.todoist", "com.ticktick.task", "md.obsidian", "com.evernote", "notion.id",
+            "com.dropbox.android", "com.github.android", "com.atlassian.android.jira.core",
+            "com.trello", "com.adobe.reader", *Constants.KNOWN_PASSWORD_MANAGERS.toTypedArray(),
+        )
+        put(
+            AppCategory.NEWS,
+            "com.nytimes.android", "wsj.reader_sp", "com.economist.lamarr",
+            "com.google.android.apps.magazines", "flipboard.app", "com.devhd.feedly",
+            "com.bbc.news", "com.cnn.mobile.android.phone", "com.npr.nprnews", "com.groundnews",
+            "com.medium.reader", "com.reddit.frontpage", "com.washingtonpost.rainbow",
+            "com.guardian", "com.foxnews.android", "com.substack.app",
+        )
+        put(
+            AppCategory.MEDIA,
+            "com.spotify.music", "com.google.android.youtube", "com.google.android.apps.youtube.music",
+            "com.netflix.mediaclient", "com.amazon.kindle", "com.audible.application",
+            "com.overdrive.mobile.android.libby", "com.zhiliaoapp.musically", "tv.twitch.android.app",
+            "com.hulu.plus", "com.disney.disneyplus", "com.wbd.stream",
+            "com.amazon.avod.thirdpartyclient", "com.google.android.videos", "com.pandora.android",
+            "com.apple.android.music", "com.soundcloud.android", "com.plexapp.android",
+            "au.com.shiftyjelly.pocketcasts", "com.bambuna.podcastaddict", "com.shazam.android",
+            "com.peacocktv.peacockandroid", "com.cbs.app", "com.crunchyroll.crunchyroid",
+            "com.google.android.apps.youtube.kids",
+        )
+        put(
+            AppCategory.GAMES,
+            "com.nytimes.crossword", "com.chess", "com.roblox.client", "com.mojang.minecraftpe",
+            "com.nianticlabs.pokemongo", "com.king", "com.supercell",
+        )
+        put(
+            AppCategory.FINANCE,
+            "com.venmo", "com.squareup.cash", "com.paypal.android.p2pmobile", "com.zellepay.zelle",
+            "com.chase.sig.android", "com.wf.wellsfargomobile", "com.infonow.bofa",
+            "com.konylabs.capitalone", "com.citi.citimobile", "com.usaa.mobile.android.usaa",
+            "com.americanexpress.android.acctsvcs.us", "com.discoverfinancial.mobile",
+            "com.robinhood.android", "com.coinbase.android", "com.fidelity.android",
+            "com.vanguard", "com.schwab.mobile", "com.google.android.apps.walletnfcrel",
+            "com.samsung.android.spay", "com.creditkarma.mobile", "com.ynab.evergreen.app",
+        )
+        put(
+            AppCategory.SHOPPING,
+            "com.amazon.mshop.android.shopping", "com.ebay.mobile", "com.walmart.android",
+            "com.target.ui", "com.etsy.android", "com.costco.app.android", "com.instacart.client",
+            "com.ubercab.eats", "com.dd.doordash", "com.grubhub.android", "com.starbucks.mobilecard",
+            "com.mcdonalds.app", "com.alibaba.aliexpresshd", "com.einnovation.temu", "com.zzkko",
+            "com.bestbuy.android", "com.shopify.arrive",
+        )
+        put(
+            AppCategory.TRAVEL,
+            "com.google.android.apps.maps", "com.waze", "com.ubercab", "me.lyft.android",
+            "com.airbnb.android", "com.booking", "com.expedia.bookings",
+            "com.tripadvisor.tripadvisor", "com.delta.mobile.android", "com.united.mobile.android",
+            "com.aa.android", "com.southwestairlines.mobile", "com.yelp.android",
+            "com.opentable", "com.citymapper.app.release", "com.thetransitapp.droid",
+        )
+        put(
+            AppCategory.HEALTH,
+            "com.fitbit.fitbitmobile", "com.google.android.apps.fitness", "com.myfitnesspal.android",
+            "com.nike.plusgps", "com.onepeloton.callisto", "com.sec.android.app.shealth",
+            "com.ouraring.oura", "com.whoop.android", "com.garmin.android.apps.connectmobile",
+            "epic.mychart.android", "com.strava",
+        )
+        put(
+            AppCategory.SLEEP,
+            "com.getsomeheadspace.android", "com.calm.android", "com.spotlightsix.zentimerlite2",
+            "com.urbandroid.sleep",
+        )
+        put(
+            AppCategory.TOOLS,
+            "com.android.settings", "com.android.vending", "com.android.chrome",
+            "org.mozilla.firefox", "com.brave.browser", "com.duckduckgo.mobile.android",
+            "com.microsoft.emmx", "com.google.android.googlequicksearchbox",
+            "com.google.android.deskclock", "com.google.android.calculator",
+            "com.google.android.apps.nbu.files", "com.google.android.documentsui",
+            "com.google.android.apps.translate", "com.google.android.apps.authenticator2",
+            "com.google.android.apps.chromecast.app", "com.google.android.apps.weather",
+            "com.sec.android.app.clockpackage", "com.sec.android.app.popupcalculator",
+            "com.sec.android.app.myfiles", "com.google.android.apps.recorder",
+        )
+    }
 
     private val semanticTerms = linkedMapOf(
         AppCategory.AI_AGENTS to setOf(
-            "ai assistant", "chatbot", "chatgpt", "claude", "copilot", "gemini", "grok",
-            "mistral", "perplexity", "poe"
+            "ai assistant", "chatbot", "chatgpt", "claude", "copilot", "deepseek", "gemini",
+            "grok", "mistral", "perplexity", "poe"
         ),
         AppCategory.COMMUNICATION to setOf(
-            "call", "camera", "chat", "class", "community", "companion", "contact", "dialer",
-            "discord", "email", "family", "gmail", "home", "inbox", "mail", "meet", "message",
-            "outlook", "parent", "people", "phone", "photo", "portrait", "school", "signal",
-            "slack", "social", "teams", "telegram", "whatsapp", "zoom"
+            "bluesky", "call", "camera", "chat", "class", "community", "companion", "contact",
+            "dialer", "discord", "email", "facebook", "family", "gmail", "inbox", "instagram",
+            "linkedin", "mail", "mastodon", "meet", "message", "messenger", "outlook", "parent",
+            "people", "phone", "photo", "portrait", "school", "signal", "slack", "snapchat",
+            "social", "teams", "telegram", "threads", "whatsapp", "zoom"
         ),
         AppCategory.PRODUCTIVITY to setOf(
-            "calendar", "credential", "docs", "drive", "github", "keep", "notes", "notion",
-            "office", "password", "print", "recorder", "scan", "sheets", "slides", "task",
-            "terminal", "todo", "trello", "vpn", "work", "writer"
+            "1password", "bitwarden", "calendar", "credential", "docs", "drive", "dropbox",
+            "evernote", "excel", "github", "journal", "keep", "keepass", "notes", "notion",
+            "obsidian", "office", "onenote", "password", "pdf", "planner", "powerpoint", "print",
+            "recorder", "scan", "sheets", "slides", "task", "terminal", "todo", "todoist",
+            "trello", "vpn", "work", "writer"
         ),
         AppCategory.FINANCE to setOf(
-            "account", "bank", "banking", "budget", "card", "cash", "credit", "finance",
-            "insurance", "invest", "money", "mortgage", "pay", "payroll", "retirement", "stock",
-            "tax", "wallet"
+            "account", "bank", "banking", "budget", "card", "cash", "coinbase", "credit",
+            "crypto", "finance", "insurance", "invest", "money", "mortgage", "pay", "paypal",
+            "payroll", "retirement", "robinhood", "stock", "tax", "trading", "venmo", "wallet",
+            "zelle"
         ),
         AppCategory.HEALTH to setOf(
-            "club", "exercise", "fit", "fitness", "gym", "health", "pilates", "run", "strava",
-            "tennis", "workout", "wellness"
+            "calorie", "doctor", "exercise", "fit", "fitbit", "fitness", "gym", "health",
+            "medical", "mychart", "nutrition", "peloton", "pharmacy", "pilates", "run", "steps",
+            "strava", "tennis", "workout", "wellness", "yoga"
         ),
         AppCategory.SLEEP to setOf(
             "bedtime", "breathe", "calm", "headspace", "insight timer", "meditate", "meditation",
             "mindful", "mindfulness", "sleep", "white noise"
         ),
         AppCategory.TRAVEL to setOf(
-            "airline", "ballpark", "bicycle", "bike", "car", "cinema", "dining", "flight",
-            "hotel", "map", "parking", "ranch", "reservation", "resort", "restaurant", "rideshare",
-            "spa", "theater", "theatre", "ticket", "transit", "travel", "uber"
+            "airbnb", "airline", "airport", "ballpark", "bicycle", "bike", "booking", "car",
+            "cinema", "dining", "expedia", "flight", "hotel", "lyft", "map", "opentable",
+            "parking", "rail", "ranch", "reservation", "resort", "restaurant", "rideshare", "spa",
+            "taxi", "theater", "theatre", "ticket", "train", "transit", "travel", "trip", "uber",
+            "waze", "yelp"
         ),
         AppCategory.GAMES to setOf(
-            "arcade", "game", "gaming", "play store", "steam"
+            "arcade", "casino", "chess", "crossword", "game", "gaming", "minecraft", "poker",
+            "puzzle", "roblox", "solitaire", "steam", "sudoku", "wordle"
         ),
         AppCategory.SHOPPING to setOf(
-            "amazon", "cafe", "coffee", "delivery", "doordash", "ebay", "food", "grocery",
-            "instacart", "meal", "pizza", "retail", "shop", "store", "ubereats"
+            "aliexpress", "amazon", "cafe", "coffee", "costco", "delivery", "doordash", "ebay",
+            "etsy", "food", "grocery", "grubhub", "instacart", "meal", "pizza", "retail", "shop",
+            "shopping", "starbucks", "temu", "ubereats", "walmart"
         ),
         AppCategory.NEWS to setOf(
             "ap news", "article", "bbc", "breaking news", "cnn", "daily news", "economist",
@@ -84,13 +180,16 @@ object AppCategorizer {
             "reuters", "rss", "substack", "wsj", "wall street journal"
         ),
         AppCategory.MEDIA to setOf(
-            "audible", "audio", "audiobook", "book", "classical", "gallery", "kindle",
-            "libby", "movie", "music", "netflix", "now playing", "podcast", "radio",
-            "reader", "sonos", "spotify", "stream", "tv", "video", "youtube"
+            "audible", "audio", "audiobook", "book", "classical", "crunchyroll", "disney",
+            "gallery", "hulu", "kindle", "libby", "movie", "music", "netflix", "now playing",
+            "pandora", "plex", "podcast", "radio", "reader", "shazam", "sonos", "soundcloud",
+            "spotify", "stream", "tiktok", "twitch", "tv", "video", "youtube"
         ),
         AppCategory.TOOLS to setOf(
-            "authenticator", "browser", "calculator", "clock", "file", "keyboard", "launcher",
-            "settings", "translate", "utility", "weather"
+            "authenticator", "backup", "battery", "bluetooth", "browser", "calculator", "chrome",
+            "clock", "compass", "file", "firefox", "flashlight", "keyboard", "launcher",
+            "magnifier", "play store", "qr", "remote", "settings", "smart home", "torch",
+            "translate", "utility", "weather", "wifi"
         ),
     )
 
@@ -161,10 +260,13 @@ object AppCategorizer {
             }
             if (semanticScore > 0) scores[category] = scores.getOrDefault(category, 0) + semanticScore
         }
-        return scores.maxByOrNull { it.value }?.key
-            ?: androidCategory(declaredCategory)
-            ?: AppCategory.OTHER
+        // The category the developer declared counts like a word in the app's name: it beats a
+        // stray word in the package name, while a name that says otherwise can still outvote it.
+        androidCategory(declaredCategory)?.let { scores[it] = scores.getOrDefault(it, 0) + DECLARED_WEIGHT }
+        return scores.maxByOrNull { it.value }?.key ?: AppCategory.OTHER
     }
+
+    private const val DECLARED_WEIGHT = 3
 
     private fun androidCategory(declaredCategory: Int): AppCategory? =
         when (declaredCategory) {
@@ -176,16 +278,24 @@ object AppCategorizer {
             ApplicationInfo.CATEGORY_SOCIAL -> AppCategory.COMMUNICATION
             ApplicationInfo.CATEGORY_MAPS -> AppCategory.TRAVEL
             ApplicationInfo.CATEGORY_PRODUCTIVITY -> AppCategory.PRODUCTIVITY
+            ApplicationInfo.CATEGORY_ACCESSIBILITY -> AppCategory.TOOLS
             else -> null
         }
 
+    /** "package Label" in one string, as the tests write apps. */
     internal fun categoryFromText(text: String): AppCategory {
-        packageCategory(text)?.let { return it }
-        return categoryFromEvidence(text.substringBefore(' '), text.substringAfter(' ', ""), -1)
+        val packageName = text.substringBefore(' ')
+        packageCategory(packageName)?.let { return it }
+        return categoryFromEvidence(packageName, text.substringAfter(' ', ""), -1)
     }
 
-    private fun packageCategory(packageName: String): AppCategory? =
-        packageCategories.entries.firstOrNull { packageName.lowercase().contains(it.key) }?.value
+    private fun packageCategory(packageName: String): AppCategory? {
+        val name = packageName.lowercase()
+        return packageCategories.entries
+            .filter { (key, _) -> name == key || name.startsWith("$key.") }
+            .maxByOrNull { it.key.length }
+            ?.value
+    }
 
     private fun normalizeText(text: String): String = text
         .replace(Regex("([a-z])([A-Z])"), "$1 $2")
