@@ -159,11 +159,33 @@ its name and how many apps it holds.
   it is open; each app reads its name with its group and whether it is new,
   in a work profile, or in Private Space. The menu items are offered as
   actions on the app, no long-press needed.
+- **Long-press a web link** (below) for the same menu with **Remove** in
+  place of Uninstall and **Edit** in place of Info.
 - If your device has a **Private Space**, it appears at the bottom of the
   list with a tap-to-unlock row; once unlocked, its apps are listed in their
   own categories below it.
 - Swipe down from the search bar or the top of the list, or go back, to put
   your apps away. Pressing the home button or opening an app does too.
+
+## Web links
+
+Websites can sit in the list with your apps. Add one in **Settings → Web
+links → Add a web link**: type its address (a bare `example.com` is enough;
+`https://` is added for you), give it a name if you like (otherwise it
+shows the site's address), and tick the categories it belongs in (with none
+ticked it goes under Other). Only `http` and `https` addresses are accepted.
+
+- A web link looks exactly like an app: no icon, listed under its
+  categories, ordered by smart ordering, and found by search, by its **name
+  or its address** (typing `ycomb` finds a link named *HN* that points at
+  `news.ycombinator.com`), so sites and apps come up together as you type.
+- **Tap it** and it opens in your default browser (or, with no default set,
+  whichever app Android picks for web pages).
+- Settings → Web links lists every link with its address; tap one to edit
+  its address, name or categories, or to **Remove** it. Long-pressing it in
+  the list works too.
+- Web links are not offered for the swipe gestures, the date or the
+  shortcut button, which open apps.
 
 ## Smart ordering
 
@@ -202,6 +224,8 @@ Long-press anywhere on the home screen to get here.
     Store app, or the browser if there is none) to rate or review it.
     Blauncher never asks you to rate it; this is only here if you want it.
 - **Smart ordering** — see above.
+- **Web links** — add, edit and remove websites listed with your apps; see
+  [Web links](#web-links).
 - **Home screen** — **Shortcut app** (the app the button beside the search
   bar opens), **Shortcut icon** (the glyph it wears), **Search engine**
   (where the search bar sends web searches), **Bold date**, and the date's
@@ -229,6 +253,9 @@ The same answers are in **Settings → Help and FAQ**.
   Settings → Smart ordering.
 - **Can I see fewer apps?** Your apps open as a short list of categories.
   Tap one to see its apps, or type a few letters to find any app at once.
+- **Can I add websites?** Yes: Settings → **Web links** → **Add a web
+  link**. It is listed and searched like an app and opens in your browser.
+  Long-press it to rename, regroup, edit or remove it.
 - **Does Blauncher go online?** No. It has no internet permission. A search
   opens in your browser, which does the searching.
 - **Found a bug, or have an idea?** Settings → **Send feedback** opens a new

@@ -135,6 +135,14 @@
                 android:layout_marginHorizontal="12dp"
                 android:layout_marginTop="12dp" />
 
+            <include
+                android:id="@+id/webLinkSettings"
+                layout="@layout/settings_web_links"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="12dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -34,6 +34,7 @@ class Prefs(context: Context) {
     private val PINNED_CATEGORIES = "PINNED_CATEGORIES"
     private val CATEGORY_USAGE_DATA = "CATEGORY_USAGE_DATA"
     private val APP_USAGE_DATA = "APP_USAGE_DATA"
+    private val WEB_LINKS = "WEB_LINKS"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -236,6 +237,26 @@ class Prefs(context: Context) {
     fun clearUsageLearning() = prefs.edit {
         remove(CATEGORY_USAGE_DATA)
         remove(APP_USAGE_DATA)
+    }
+
+    /** Websites the user added to the drawer, in the order they were added. */
+    var webLinks: List<WebLink>
+        get() = WebLink.fromJson(prefs.getString(WEB_LINKS, null))
+        set(value) = prefs.edit {
+            if (value.isEmpty()) remove(WEB_LINKS) else putString(WEB_LINKS, WebLink.toJson(value))
+        }
+
+    fun webLink(id: String): WebLink? = webLinks.find { it.id == id }
+
+    /** Adds [link], or replaces the stored link with the same id. */
+    fun saveWebLink(link: WebLink) {
+        val links = webLinks
+        webLinks = if (links.any { it.id == link.id }) links.map { if (it.id == link.id) link else it }
+        else links + link
+    }
+
+    fun removeWebLink(id: String) {
+        webLinks = webLinks.filterNot { it.id == id }
     }
 
     var swipeLeftEnabled: Boolean

@@ -20,6 +20,7 @@ import app.olauncher.helper.getPrivateSpaceApps
 import app.olauncher.helper.getPrivateSpaceUserHandle
 import app.olauncher.helper.isOlauncherDefault
 import app.olauncher.helper.isPrivateSpaceLocked
+import app.olauncher.helper.openWebLink
 import app.olauncher.helper.showToast
 import kotlinx.coroutines.launch
 
@@ -57,6 +58,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     is AppModel.PinnedShortcut -> launchShortcut(appModel)
                     is AppModel.App ->
                         launchApp(appModel.appPackage, appModel.activityClassName, appModel.user)
+
+                    is AppModel.Link -> openWebLink(appContext, appModel.url)
 
                     else -> false
                 }
@@ -101,7 +104,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun saveSwipeUpApp(appModel: AppModel) {
         val shortcut = appModel as? AppModel.PinnedShortcut
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader, is AppModel.Link -> return
             else -> {
                 prefs.appNameSwipeUp = appModel.appLabel
                 prefs.appPackageSwipeUp = appModel.appPackage
@@ -116,7 +119,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveSwipeApp(appModel: AppModel, isLeft: Boolean) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> return
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader, is AppModel.Link -> return
             is AppModel.App -> {
                 if (isLeft) {
                     prefs.appNameSwipeLeft = appModel.appLabel

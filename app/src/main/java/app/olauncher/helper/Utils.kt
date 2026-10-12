@@ -97,6 +97,7 @@ suspend fun getAppsList(
                 emptyList()
             }
             appList.addAll(pinned)
+            appList.addAll(webLinkModels(prefs, collator))
 
             SmartOrder.sort(prefs, appList)
         } catch (e: Exception) {
@@ -165,6 +166,51 @@ private suspend fun getPinnedShortcuts(
         }
         pinnedShortcuts
     }
+
+/** One drawer row per web link per group it is listed under, like an app in several groups. */
+fun webLinkModels(prefs: Prefs, collator: Collator = Collator.getInstance()): List<AppModel.Link> =
+    prefs.webLinks.flatMap { link ->
+        val label = link.displayLabel
+        link.groups.map { category ->
+            AppModel.Link(
+                appLabel = label,
+                key = collator.getCollationKey(label),
+                linkId = link.id,
+                url = link.url,
+                category = category,
+            )
+        }
+    }
+
+/**
+ * Opens a web link in the default browser, so a site the user added never jumps into some other
+ * app that claims its address; with no default browser set, Android picks (or asks).
+ *
+ * @return true once some app accepted it.
+ */
+fun openWebLink(context: Context, url: String): Boolean {
+    val view = Intent(Intent.ACTION_VIEW, url.toUri())
+        .addCategory(Intent.CATEGORY_BROWSABLE)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    val browser = defaultBrowserPackage(context)
+    if (browser != null) {
+        try {
+            context.startActivity(Intent(view).setPackage(browser))
+            return true
+        } catch (e: Exception) {
+            // The browser refused this address (an http:// link, say); let Android choose.
+            e.printStackTrace()
+        }
+    }
+    return try {
+        context.startActivity(view)
+        true
+    } catch (e: Exception) {
+        e.printStackTrace()
+        context.showToast(R.string.no_app_for_link)
+        false
+    }
+}
 
 fun isPackageInstalled(context: Context, packageName: String, userString: String): Boolean {
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps

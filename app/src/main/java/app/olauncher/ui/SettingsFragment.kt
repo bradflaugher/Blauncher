@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Process
 import android.text.Spannable
+import android.text.TextUtils
 import android.text.SpannableStringBuilder
 import android.graphics.Typeface
 import android.text.style.BulletSpan
@@ -40,6 +41,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.data.SearchEngine
 import app.olauncher.data.ShortcutGlyph
+import app.olauncher.data.WebLink
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.SmartOrder
 import app.olauncher.helper.getColorFromAttr
@@ -87,6 +89,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateShortcutGlyph()
         populateSearchEngine()
         populateSmartOrdering()
+        populateWebLinks()
         populateSwipeApps()
         populateSwipeDownAction()
         initClickListeners()
@@ -211,6 +214,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             }
         }
         binding.smartOrderSettings.pinnedGroups.setOnClickListener { showPinnedGroupsChooser() }
+        binding.webLinkSettings.addWebLink.setOnClickListener { editWebLink(null) }
 
         binding.textSizeMinus.setOnClickListener(this)
         binding.textSizePlus.setOnClickListener(this)
@@ -344,6 +348,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         question(R.string.faq_wrong_group_q, R.string.faq_wrong_group_a)
         question(R.string.faq_order_q, R.string.faq_order_a)
         question(R.string.faq_fewer_apps_q, R.string.faq_fewer_apps_a)
+        question(R.string.faq_web_links_q, R.string.faq_web_links_a)
         question(R.string.faq_online_q, R.string.faq_online_a)
         question(R.string.faq_feedback_q, R.string.faq_feedback_a)
 
@@ -504,6 +509,47 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.textSizeValue.text = formatted
         binding.textSizeValue.describeAs(R.string.text_size)
         binding.textSizeCurrent.text = formatted
+    }
+
+    /**
+     * One row per web link: its name, then its whole address faded (path included), so two
+     * links with one name, or on one site, can be told apart. A tap edits it (address, name, groups) or removes it.
+     */
+    private fun populateWebLinks() = with(binding.webLinkSettings) {
+        webLinkList.removeAllViews()
+        val padding = (8 * resources.displayMetrics.density).toInt()
+        val faded = requireContext().getColorFromAttr(R.attr.primaryColorTrans50)
+        prefs.webLinks.forEach { link ->
+            val name = link.displayLabel
+            val address = WebLink.shortAddress(link.url)
+            val text = SpannableStringBuilder(name)
+            if (!address.equals(name, ignoreCase = true)) {
+                val start = text.length
+                text.append("  ").append(address)
+                text.setSpan(ForegroundColorSpan(faded), start, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                text.setSpan(RelativeSizeSpan(0.85f), start, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            webLinkList.addView(TextView(requireContext()).apply {
+                setTextAppearance(R.style.TextSmall)
+                setTextColor(requireContext().getColorFromAttr(R.attr.primaryColor))
+                this.text = text
+                ellipsize = TextUtils.TruncateAt.END
+                maxLines = 1
+                minHeight = (48 * resources.displayMetrics.density).toInt()
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, padding, padding, padding)
+                contentDescription = getString(R.string.edit_web_link_named, name)
+                setOnClickListener { editWebLink(link) }
+            })
+        }
+    }
+
+    private fun editWebLink(link: WebLink?) {
+        WebLinkEditor.show(requireContext(), prefs, link) {
+            // The sheet can outlive this screen's views.
+            if (_binding != null) populateWebLinks()
+            viewModel.getAppList()
+        }
     }
 
     private fun populateSmartOrdering() = with(binding.smartOrderSettings) {

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Add or edit a web link: its address, an optional name, and its groups (added in code). -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/webLinkUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="?attr/dialogPreferredPadding"
+            android:hint="@string/web_link_address_hint"
+            android:imeOptions="actionNext"
+            android:importantForAutofill="no"
+            android:inputType="textUri"
+            android:maxLines="1"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/webLinkName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="?attr/dialogPreferredPadding"
+            android:layout_marginTop="4dp"
+            android:hint="@string/web_link_name_hint"
+            android:imeOptions="actionDone"
+            android:importantForAutofill="no"
+            android:inputType="textCapWords"
+            android:maxLength="30"
+            android:maxLines="1"
+            android:minHeight="48dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="?attr/dialogPreferredPadding"
+            android:paddingTop="16dp"
+            android:text="@string/groups"
+            android:textAppearance="?android:attr/textAppearanceListItem"
+            android:textColor="?android:attr/textColorAlertDialogListItem" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.7"
+            android:paddingHorizontal="?attr/dialogPreferredPadding"
+            android:paddingTop="2dp"
+            android:paddingBottom="4dp"
+            android:text="@string/web_link_groups_summary"
+            android:textAppearance="?android:attr/textAppearanceListItemSecondary"
+            android:textColor="?android:attr/textColorAlertDialogListItem" />
+
+        <LinearLayout
+            android:id="@+id/webLinkGroups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="8dp" />
+    </LinearLayout>
+</ScrollView>

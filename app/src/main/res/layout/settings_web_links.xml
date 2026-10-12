@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Web links: websites listed in the drawer with the apps. Their rows are added in code. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_rect_shade_color"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="16dp">
+
+    <TextView
+        style="@style/TextLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/web_links"
+        android:textColor="?attr/primaryColor" />
+
+    <TextView
+        style="@style/TextSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:alpha="0.65"
+        android:text="@string/web_links_summary"
+        android:textColor="?attr/primaryColor" />
+
+    <LinearLayout
+        android:id="@+id/webLinkList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <TextView
+        android:id="@+id/addWebLink"
+        style="@style/TextSmallBold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:padding="8dp"
+        android:text="@string/add_web_link" />
+
+</LinearLayout>

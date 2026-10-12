@@ -52,7 +52,8 @@ class AppDrawerFragment : Fragment() {
         initViews()
         initAdapter()
         viewModel.appList.observe(viewLifecycleOwner) {
-            adapter.setAppList(it.orEmpty().toMutableList())
+            // A gesture, the date or the key opens an app; web links are opened from search.
+            adapter.setAppList(it.orEmpty().filterNot { app -> app is AppModel.Link }.toMutableList())
         }
     }
 
