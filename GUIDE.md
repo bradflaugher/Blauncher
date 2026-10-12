@@ -169,8 +169,17 @@ its name and how many apps it holds.
 
 ## Web links
 
-Websites can sit in the list with your apps. Add one in **Settings → Web
-links → Add a web link**: type its address (a bare `example.com` is enough;
+Websites can sit in the list with your apps. There are three ways to add
+one:
+
+- **Type its address in the search bar** (`nytimes.com`). Under any
+  matching apps a row offers **Add nytimes.com as a web link**; tap it and
+  the address is already filled in. (Enter still searches the web with
+  it.)
+- **Add a web link** (with a +) at the end of your categories in the drawer.
+- **Settings → Web links → Add a web link.**
+
+In the sheet that opens, type its address (a bare `example.com` is enough;
 `https://` is added for you), give it a name if you like (otherwise it
 shows the site's address), and tick the categories it belongs in (with none
 ticked it goes under Other). Only `http` and `https` addresses are accepted.
@@ -253,8 +262,9 @@ The same answers are in **Settings → Help and FAQ**.
   Settings → Smart ordering.
 - **Can I see fewer apps?** Your apps open as a short list of categories.
   Tap one to see its apps, or type a few letters to find any app at once.
-- **Can I add websites?** Yes: Settings → **Web links** → **Add a web
-  link**. It is listed and searched like an app and opens in your browser.
+- **Can I add websites?** Yes: type the address in the search bar and tap
+  **Add … as a web link**, or tap **Add a web link** at the end of your
+  categories (it is in Settings → Web links too). It is listed and searched like an app and opens in your browser.
   Long-press it to rename, regroup, edit or remove it.
 - **Does Blauncher go online?** No. It has no internet permission. A search
   opens in your browser, which does the searching.

@@ -54,8 +54,9 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   Tap one to list its apps; opening another closes it, so the list always
   fits above the keyboard. Long-press an app to change its categories,
   including several at once.
-- **Websites, right beside your apps.** Add a web link in Settings with an
-  address, an optional name and its categories. It is listed, searched (by
+- **Websites, right beside your apps.** Type an address in the search bar
+  and tap **Add … as a web link** (or use **Add a web link** at the end of
+  the categories, or Settings), give it a name and categories if you like. It is listed, searched (by
   name or address) and ordered just like an app, with no icon, and a tap
   opens it in your browser.
 - **An order that follows your day.** Groups shift with the time of day, news

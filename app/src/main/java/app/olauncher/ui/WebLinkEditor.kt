@@ -21,7 +21,14 @@ import app.olauncher.helper.showToast
  */
 object WebLinkEditor {
 
-    fun show(context: Context, prefs: Prefs, existing: WebLink? = null, onChanged: () -> Unit) {
+    /** [address] fills in the address of a new link, as typed in the search bar. */
+    fun show(
+        context: Context,
+        prefs: Prefs,
+        existing: WebLink? = null,
+        address: String? = null,
+        onChanged: () -> Unit,
+    ) {
         val builder = AlertDialog.Builder(context)
         // Inflate against the dialog's own theme so the sheet matches the dialog's colors.
         val inflater = LayoutInflater.from(builder.context)
@@ -31,7 +38,7 @@ object WebLinkEditor {
         existing?.let {
             sheet.webLinkUrl.setText(it.url)
             sheet.webLinkName.setText(it.label)
-        }
+        } ?: address?.let(sheet.webLinkUrl::setText)
         AppCategory.entries.forEach { category ->
             val row = ItemGroupChoiceBinding.inflate(inflater, sheet.webLinkGroups, true).root
             row.text = category.displayName
@@ -57,7 +64,8 @@ object WebLinkEditor {
             }
         }
         val dialog = builder.show()
-        if (existing == null) sheet.webLinkUrl.requestFocus()
+        // With the address filled in, the name is what is left to type.
+        if (existing == null) (if (address == null) sheet.webLinkUrl else sheet.webLinkName).requestFocus()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val url = WebLink.normalizeUrl(sheet.webLinkUrl.text.toString())
             if (url == null) {

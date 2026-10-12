@@ -85,6 +85,12 @@ class AppDrawerList(
             }
         },
         appMenuOpenedListener = onAppMenuOpened,
+        addWebLinkListener = { address ->
+            if (isActive()) {
+                beforeDialog()
+                WebLinkEditor.show(context, prefs, address = address) { viewModel.getAppList() }
+            }
+        },
     )
 
     /** The rows on screen right now, in order; the trailing blank padding row is left out. */
@@ -138,7 +144,7 @@ class AppDrawerList(
 
     private fun uninstall(appModel: AppModel) {
         when (appModel) {
-            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> {}
+            is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader, is AppModel.AddWebLink -> {}
             is AppModel.Link -> {
                 prefs.removeWebLink(appModel.linkId)
                 context.showToast(context.getString(R.string.web_link_removed, appModel.appLabel))

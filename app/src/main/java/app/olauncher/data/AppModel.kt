@@ -20,7 +20,7 @@ sealed class AppModel : Comparable<AppModel> {
             is App -> identityKeyFor(appPackage, user.toString(), null)
             is PinnedShortcut -> identityKeyFor(appPackage, user.toString(), shortcutId)
             is Link -> appPackage
-            is PrivateSpaceHeader, is GroupHeader -> ""
+            is AddWebLink, is PrivateSpaceHeader, is GroupHeader -> ""
         }
 
     companion object {
@@ -75,6 +75,21 @@ sealed class AppModel : Comparable<AppModel> {
             const val PACKAGE_PREFIX = "weblink:"
             fun packageFor(linkId: String) = PACKAGE_PREFIX + linkId
         }
+    }
+
+    /**
+     * The drawer's "Add a web link" row: at the end of the categories, or under search results
+     * when the text typed is a web address, which it then fills in as [url]. Never stored.
+     */
+    data class AddWebLink(
+        val url: String? = null,
+        override val user: UserHandle = android.os.Process.myUserHandle(),
+    ) : AppModel() {
+        override val appLabel: String = ""
+        override val key: CollationKey? = null
+        override val appPackage: String = ""
+        override val isNew: Boolean = false
+        override val category: AppCategory? = null
     }
 
     data class PrivateSpaceHeader(
