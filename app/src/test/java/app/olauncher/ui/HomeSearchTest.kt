@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.os.SystemClock
 import android.view.MotionEvent
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
@@ -31,6 +32,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadows.ShadowDialog
 import org.robolectric.shadows.ShadowToast
 import java.time.Duration
 
@@ -340,6 +342,56 @@ class HomeSearchTest {
         idle()
 
         assertTrue("News 1" in headerSummaries(activity))
+    }
+
+    @Test
+    fun typingAWebAddressOffersToAddItAsALink() {
+        val activity = openSheetWithApps("Maps")
+
+        type(activity, "nytimes.com")
+        val rows = adapter(activity).appFilteredList
+        assertEquals(AppModel.AddWebLink("https://nytimes.com"), rows.last())
+        val row = rowView(activity, rows.lastIndex) as android.widget.TextView
+        assertEquals("Add nytimes.com as a web link", row.text.toString())
+
+        row.performClick()
+        idle()
+        val dialog = ShadowDialog.getLatestDialog() as AlertDialog
+        assertEquals("https://nytimes.com", dialog.findViewById<EditText>(R.id.webLinkUrl)!!.text.toString())
+        dialog.findViewById<EditText>(R.id.webLinkName)!!.setText("NYT")
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        idle()
+
+        assertEquals(listOf("NYT" to "https://nytimes.com"), Prefs(app).webLinks.map { it.label to it.url })
+    }
+
+    @Test
+    fun noOfferForPlainWordsOrAnAddressAlreadyLinked() {
+        val activity = openSheetWithApps("Maps")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        viewModel.appList.value = viewModel.appList.value!! + AppModel.Link(
+            appLabel = "NYT", key = null, linkId = "nyt", url = "https://nytimes.com",
+        )
+        idle()
+
+        type(activity, "weather")
+        assertFalse(adapter(activity).appFilteredList.any { it is AppModel.AddWebLink })
+        type(activity, "nytimes.com")
+        assertEquals(listOf("NYT"), adapter(activity).appFilteredList.map { it.appLabel })
+    }
+
+    @Test
+    fun theCategoriesEndWithAnAddWebLinkRow() {
+        val activity = openSheetWithApps("Maps" to AppCategory.TRAVEL)
+
+        val rows = adapter(activity).appFilteredList.filterNot { it is AppModel.App && it.appLabel.isEmpty() }
+        assertEquals(AppModel.AddWebLink(), rows.last())
+
+        rowView(activity, rows.lastIndex).performClick()
+        idle()
+        val dialog = ShadowDialog.getLatestDialog() as AlertDialog
+        assertEquals(activity.getString(R.string.add_web_link), shadowOf(dialog).title.toString())
+        assertEquals("", dialog.findViewById<EditText>(R.id.webLinkUrl)!!.text.toString())
     }
 
     private fun fakeApp(

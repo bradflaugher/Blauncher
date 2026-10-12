@@ -100,11 +100,12 @@ class AppCategorizerTest {
                 ApplicationInfo.CATEGORY_UNDEFINED,
                 AppCategory.TRAVEL,
             ),
+            // The store you get apps from is a tool, not a game.
             CategoryExample(
                 "example.play",
                 "Play Store",
                 ApplicationInfo.CATEGORY_UNDEFINED,
-                AppCategory.GAMES,
+                AppCategory.TOOLS,
             ),
             CategoryExample(
                 "example.files",
@@ -205,6 +206,59 @@ class AppCategorizerTest {
                 "ChatGPT",
                 ApplicationInfo.CATEGORY_UNDEFINED,
             ),
+        )
+    }
+
+    @Test
+    fun commonAppsWithUnhelpfulNamesAreKnownByPackage() {
+        val examples = mapOf(
+            "com.android.chrome Chrome" to AppCategory.TOOLS,
+            "com.android.vending Play Store" to AppCategory.TOOLS,
+            "com.android.settings Settings" to AppCategory.TOOLS,
+            "com.google.android.apps.chromecast.app Google Home" to AppCategory.TOOLS,
+            "com.google.android.apps.messaging Messages" to AppCategory.COMMUNICATION,
+            "com.instagram.android Instagram" to AppCategory.COMMUNICATION,
+            "com.venmo Venmo" to AppCategory.FINANCE,
+            "com.chase.sig.android Chase" to AppCategory.FINANCE,
+            "com.amazon.mShop.android.shopping Amazon Shopping" to AppCategory.SHOPPING,
+            "com.ubercab Uber" to AppCategory.TRAVEL,
+            "com.ubercab.eats Uber Eats" to AppCategory.SHOPPING,
+            "com.zhiliaoapp.musically TikTok" to AppCategory.MEDIA,
+            "com.nytimes.crossword NYT Games" to AppCategory.GAMES,
+            "com.x8bit.bitwarden Bitwarden" to AppCategory.PRODUCTIVITY,
+            "com.fitbit.FitbitMobile Fitbit" to AppCategory.HEALTH,
+            "com.king.candycrushsaga Candy Crush Saga" to AppCategory.GAMES,
+            "com.youneedabudget.evergreen.app YNAB" to AppCategory.FINANCE,
+        )
+        examples.forEach { (app, expected) ->
+            assertEquals(app, expected, AppCategorizer.categoryFromText(app))
+        }
+    }
+
+    @Test
+    fun aKnownPackageMatchesItselfAndWhatIsUnderItOnly() {
+        // "com.chess" covers its own app, not an unrelated package that merely starts alike.
+        assertEquals(AppCategory.GAMES, AppCategorizer.categoryFromText("com.chess.puzzles Puzzles"))
+        assertEquals(AppCategory.OTHER, AppCategorizer.categoryFromText("com.chessclub.app Chessclub"))
+    }
+
+    @Test
+    fun wordsThatMisledBeforeNoLongerDo() {
+        assertEquals(AppCategory.OTHER, AppCategorizer.categoryFromText("com.example.homes Home Finder"))
+        assertEquals(AppCategory.SHOPPING, AppCategorizer.categoryFromText("com.rfi.sams.android Sam's Club"))
+    }
+
+    @Test
+    fun theDeclaredCategoryOutweighsAStrayWordInThePackage() {
+        // "call" in the package alone used to send this game to People.
+        assertEquals(
+            AppCategory.GAMES,
+            AppCategorizer.resolveCategory(null, "com.example.call.duty", "Warzone", ApplicationInfo.CATEGORY_GAME),
+        )
+        // A name that says otherwise still wins.
+        assertEquals(
+            AppCategory.FINANCE,
+            AppCategorizer.resolveCategory(null, "com.example.app", "Budget Money", ApplicationInfo.CATEGORY_PRODUCTIVITY),
         )
     }
 

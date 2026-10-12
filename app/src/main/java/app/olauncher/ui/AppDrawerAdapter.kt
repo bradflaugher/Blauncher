@@ -47,12 +47,14 @@ class AppDrawerAdapter(
     private val privateSpaceToggleListener: () -> Unit = {},
     private val privateSpaceSettingsListener: () -> Unit = {},
     private val appMenuOpenedListener: () -> Unit = {},
+    private val addWebLinkListener: (url: String?) -> Unit = {},
 ) : ListAdapter<AppModel, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
 
     companion object {
         const val VIEW_TYPE_APP = 0
         const val VIEW_TYPE_PRIVATE_HEADER = 1
         const val VIEW_TYPE_GROUP_HEADER = 2
+        const val VIEW_TYPE_ADD_WEB_LINK = 3
 
         /** The app count beside a category's name: smaller, and faded to about two-thirds. */
         private const val COUNT_ALPHA_255 = 166
@@ -75,6 +77,8 @@ class AppDrawerAdapter(
                     oldItem.linkId == newItem.linkId && oldItem.category == newItem.category
 
                 oldItem is AppModel.PrivateSpaceHeader && newItem is AppModel.PrivateSpaceHeader -> true
+
+                oldItem is AppModel.AddWebLink && newItem is AppModel.AddWebLink -> true
 
                 oldItem is AppModel.GroupHeader && newItem is AppModel.GroupHeader ->
                     oldItem.sectionKey == newItem.sectionKey
@@ -122,6 +126,7 @@ class AppDrawerAdapter(
         return when (currentList.getOrNull(position)) {
             is AppModel.PrivateSpaceHeader -> VIEW_TYPE_PRIVATE_HEADER
             is AppModel.GroupHeader -> VIEW_TYPE_GROUP_HEADER
+            is AppModel.AddWebLink -> VIEW_TYPE_ADD_WEB_LINK
             else -> VIEW_TYPE_APP
         }
     }
@@ -130,6 +135,14 @@ class AppDrawerAdapter(
         return when (viewType) {
             VIEW_TYPE_PRIVATE_HEADER -> PrivateSpaceHeaderViewHolder(
                 AdapterPrivateSpaceHeaderBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+
+            VIEW_TYPE_ADD_WEB_LINK -> AddWebLinkViewHolder(
+                AdapterGroupHeaderBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
@@ -166,6 +179,10 @@ class AppDrawerAdapter(
                         privateSpaceToggleListener,
                         privateSpaceSettingsListener,
                     )
+                }
+
+                is AddWebLinkViewHolder -> {
+                    if (appModel is AppModel.AddWebLink) holder.bind(appLabelGravity, appModel, addWebLinkListener)
                 }
 
                 is GroupHeaderViewHolder -> {
@@ -226,7 +243,7 @@ class AppDrawerAdapter(
                 key = { it.searchKey() },
                 // A web link is also found by its address: "ycomb" finds a link named HN.
                 alias = { (it as? AppModel.Link)?.let { link -> WebLink.host(link.url) } },
-            ).mapTo(mutableListOf()) { it.first }
+            ).mapTo(mutableListOf()) { it.first }.apply { addWebLinkRow(query)?.let(::add) }
         }
         val searching = query.isNotEmpty()
         submitList(appFilteredList) {
@@ -235,6 +252,17 @@ class AppDrawerAdapter(
             // A row listed in both modes is the same item to the diff and keeps its old look.
             notifyItemRangeChanged(0, itemCount)
         }
+    }
+
+    /**
+     * Under search results, an offer to add the typed text as a web link when it is a web
+     * address ("nytimes.com") that is not one already. Enter still searches the web with it.
+     */
+    private fun addWebLinkRow(text: String): AppModel.AddWebLink? {
+        if (flag != Constants.FLAG_LAUNCH_APP) return null
+        val url = WebLink.normalizeUrl(text) ?: return null
+        val saved = appsList.any { it is AppModel.Link && WebLink.sameAddress(it.url, url) }
+        return if (saved) null else AppModel.AddWebLink(url)
     }
 
     private fun AppModel.isLaunchable(): Boolean =
@@ -259,7 +287,12 @@ class AppDrawerAdapter(
                 )
             },
             header = { h -> AppModel.GroupHeader(h.group, h.key, h.appCount, h.hasNewApp, h.expanded) },
-        ).plus(padding).toMutableList()
+        ).toMutableList().apply {
+            // "Add a web link" closes the categories, above Private Space.
+            val privateSpace = indexOfFirst { it is AppModel.PrivateSpaceHeader }
+            add(if (privateSpace < 0) size else privateSpace, AppModel.AddWebLink())
+            addAll(padding)
+        }
     }
 
     private fun toggleGroup(header: AppModel.GroupHeader) {
@@ -274,6 +307,7 @@ class AppDrawerAdapter(
         is AppModel.PinnedShortcut -> "shortcut:$appPackage/$shortcutId|$user"
         is AppModel.Link -> appPackage
         is AppModel.PrivateSpaceHeader -> "private-space"
+        is AppModel.AddWebLink -> "add-web-link"
         is AppModel.GroupHeader -> "group:$sectionKey"
     }
 
@@ -335,6 +369,31 @@ class AppDrawerAdapter(
             )
             setOnClickListener { toggleListener(header) }
         }
+    }
+
+    /**
+     * "Add a web link", drawn like a category row with a + in the glyph gutter and faded, so it
+     * reads as an action rather than a category. With an address typed it names that address.
+     */
+    class AddWebLinkViewHolder(private val binding: AdapterGroupHeaderBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(appLabelGravity: Int, row: AppModel.AddWebLink, listener: (String?) -> Unit) =
+            with(binding.groupTitle) {
+                gravity = appLabelGravity
+                text = row.url?.let { context.getString(R.string.add_address_as_web_link, WebLink.shortAddress(it)) }
+                    ?: context.getString(R.string.add_web_link)
+                typeface = Typefaces.LIGHT
+                alpha = 0.65f
+                val glyphSize = (20 * resources.displayMetrics.density).toInt()
+                val glyph = AppCompatResources.getDrawable(context, R.drawable.ic_add)?.mutate()
+                glyph?.setBounds(0, 0, glyphSize, glyphSize)
+                setCompoundDrawablesRelative(glyph, null, null, null)
+                TextViewCompat.setCompoundDrawableTintList(this, textColors)
+                contentDescription = null
+                ViewCompat.setStateDescription(this, null)
+                setOnClickListener { listener(row.url) }
+            }
     }
 
     class PrivateSpaceHeaderViewHolder(private val binding: AdapterPrivateSpaceHeaderBinding) :
