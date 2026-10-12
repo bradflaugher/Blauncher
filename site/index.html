@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; script-src 'sha256-EzwwiWn8jce2OOK0XFFNG4iv+NyFUCOQhQTmfFHis/Q='">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Blauncher — a launcher that gets out of the way</title>
+  <meta name="description" content="Blauncher is a minimal, gesture-driven Android launcher: a black screen, the date, one search bar for your apps and the web, and a key to your passwords. No internet permission. Free and open source.">
+  <meta name="theme-color" content="#000000">
+  <meta name="color-scheme" content="dark">
+  <link rel="canonical" href="https://bradflaugher.github.io/Blauncher/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Blauncher">
+  <meta property="og:title" content="Blauncher — a launcher that gets out of the way">
+  <meta property="og:description" content="A black screen, the date, and almost nothing else. A minimal, private Android launcher.">
+  <meta property="og:url" content="https://bradflaugher.github.io/Blauncher/">
+  <meta property="og:image" content="https://bradflaugher.github.io/Blauncher/img/og.png">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="500">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg class="sprite" width="0" height="0" aria-hidden="true">
+    <!-- Line-art glyphs from the app's own vector drawables (app/src/main/res/drawable). -->
+    <symbol id="i-search" viewBox="0 0 24 24"><path d="M10.5,4 A6.5,6.5 0 1,0 10.5,17 A6.5,6.5 0 1,0 10.5,4 Z M15.2,15.2 L20.5,20.5"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><path d="M7.5,12.5 A4,4 0 1,0 7.5,20.5 A4,4 0 1,0 7.5,12.5 Z M10.3,13.7 L20,4 M16,8 L19,11 M13,11 L15,13"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12,4 L12,16 M6.5,10.5 L12,16 L17.5,10.5 M5,20 L19,20"/></symbol>
+    <symbol id="i-ai" viewBox="0 0 24 24"><path d="M11,3 L12.5,8.5 L18,10 L12.5,11.5 L11,17 L9.5,11.5 L4,10 L9.5,8.5 Z M19.5,2.5 L20,4.2 L21.7,4.7 L20,5.2 L19.5,7 L19,5.2 L17.3,4.7 L19,4.2 Z M6,16.5 L6.7,18.7 L9,19.4 L6.7,20.1 L6,22.3 L5.3,20.1 L3,19.4 L5.3,18.7 Z"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><path d="M4,5.5 C4,4.1 5.1,3 6.5,3 L15.5,3 C16.9,3 18,4.1 18,5.5 L18,10.5 C18,11.9 16.9,13 15.5,13 L9,13 L5,16 L5,12.5 C4.4,12.1 4,11.4 4,10.5 Z M9,17 L15,17 L19,20 L19,16.5 C19.6,16.1 20,15.4 20,14.5 L20,9.5"/></symbol>
+    <symbol id="i-focus" viewBox="0 0 24 24"><path d="M20.5,11.2 C20.9,15.9 17.3,20 12.5,20.5 C7.8,21 3.6,17.5 3.1,12.8 C2.6,8 6.1,3.8 10.9,3.3 C13.1,3.1 15.2,3.7 16.9,5 M7.5,11.8 L10.8,15 L20.5,5.3"/></symbol>
+    <symbol id="i-news" viewBox="0 0 24 24"><path d="M4.5,5.5 L19.5,5.5 C20.3,5.5 21,6.2 21,7 L21,17.5 C21,18.3 20.3,19 19.5,19 L4.5,19 C3.7,19 3,18.3 3,17.5 L3,7 C3,6.2 3.7,5.5 4.5,5.5 Z M7,9.5 L12,9.5 M7,12.5 L17,12.5 M7,15.5 L14,15.5 M14.5,8 L17,8 L17,10.5 L14.5,10.5 Z"/></symbol>
+    <symbol id="i-media" viewBox="0 0 24 24"><path d="M5.5,3.5 L18.5,3.5 C20.2,3.5 21.5,4.8 21.5,6.5 L21.5,17.5 C21.5,19.2 20.2,20.5 18.5,20.5 L5.5,20.5 C3.8,20.5 2.5,19.2 2.5,17.5 L2.5,6.5 C2.5,4.8 3.8,3.5 5.5,3.5 Z M9.5,8 L16,12 L9.5,16 Z"/></symbol>
+    <symbol id="i-sleep" viewBox="0 0 24 24"><path d="M20.5,14.5 A8.5,8.5 0 1,1 9.5,3.5 A6.8,6.8 0 0,0 20.5,14.5 Z"/></symbol>
+    <symbol id="i-tools" viewBox="0 0 24 24"><path d="M4,6 L9,6 M15,6 L20,6 M12,3 L12,9 M4,12 L14,12 M20,12 L20.1,12 M17,9 L17,15 M4,18 L7,18 M13,18 L20,18 M10,15 L10,21"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><path d="M5.5,11 L18.5,11 L18.5,20.5 L5.5,20.5 Z M8.5,11 L8.5,7.5 A3.5,3.5 0 0,1 15.5,7.5 L15.5,11 M12,14.5 L12,17"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12,3 L19,6 L19,11 C19,15.5 16,19 12,21 C8,19 5,15.5 5,11 L5,6 Z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4,5 C6.5,4 9.5,4 12,6 C14.5,4 17.5,4 20,5 L20,19 C17.5,18 14.5,18 12,20 C9.5,18 6.5,18 4,19 Z M12,6 L12,20"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="M3,5 L21,5 L21,19 L3,19 Z M7,9.5 L10,12 L7,14.5 M12,15 L17,15"/></symbol>
+  </svg>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="wrap bar">
+    <a class="brand" href="./"><img src="img/icon-192.png" alt="" width="28" height="28">Blauncher</a>
+    <nav aria-label="Site">
+      <a href="#features" class="hide-sm">Features</a>
+      <a href="#install">Install</a>
+      <a href="privacy/">Privacy</a>
+      <a href="https://github.com/bradflaugher/Blauncher">Source</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="wrap hero">
+      <div class="hero-text">
+      <time class="today" id="today" aria-hidden="true"></time>
+      <h1>Blauncher</h1>
+      <p class="lede">A minimal, gesture-driven Android launcher that gets out of the way. A black screen, the date, one search bar for your apps and the web, and a key to your passwords. No app icons, no dock, no widgets.</p>
+      <div class="actions">
+        <a class="pill" href="https://github.com/bradflaugher/Blauncher/releases/download/latest/Blauncher.apk">
+          <svg class="glyph" aria-hidden="true"><use href="#i-down"/></svg><span>Download Blauncher.apk</span>
+        </a>
+        <a class="round" href="#private" aria-label="Privacy: what Blauncher never does" title="Private by construction">
+          <svg class="glyph" aria-hidden="true"><use href="#i-key"/></svg>
+        </a>
+      </div>
+      <p class="hint">Free and open source &middot; Android 15 or newer &middot; no internet permission</p>
+      </div>
+      <div class="hero-phone phone" aria-hidden="true"><img src="img/home.webp" width="540" height="960" alt=""></div>
+    </div>
+
+    <section id="screens" aria-labelledby="screens-h">
+      <div class="wrap">
+        <p class="kicker">Screens</p>
+        <h2 id="screens-h">Almost nothing, on purpose.</h2>
+        <p class="intro">Tap the search bar for your apps. Long-press for settings. That is the whole interface, and a small tip card teaches it on first run, one gesture at a time.</p>
+        <ul class="shots">
+          <li><figure>
+            <div class="phone" data-c="focus"><img src="img/home.webp" width="540" height="960" loading="lazy" alt="Home screen: the date at the top, and at the bottom a search bar reading Search apps and the web, beside a round shortcut button wearing a key glyph"></div>
+            <figcaption><b>Home</b>The date, a search bar, a key.</figcaption>
+          </figure></li>
+          <li><figure>
+            <div class="phone" data-c="people"><img src="img/drawer.webp" width="540" height="960" loading="lazy" alt="App drawer: the search bar at the top, a one-line tip, then categories, each with its own coloured glyph and a small app count; People is open, its apps listed under it"></div>
+            <figcaption><b>Your apps</b>Categories, sorted on the device.</figcaption>
+          </figure></li>
+          <li><figure>
+            <div class="phone" data-c="ai"><img src="img/tips.webp" width="540" height="960" loading="lazy" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Tap the search bar for your apps"></div>
+            <figcaption><b>First run</b>One tip at a time, then gone.</figcaption>
+          </figure></li>
+          <li><figure>
+            <div class="phone" data-c="shopping"><img src="img/settings.webp" width="540" height="960" loading="lazy" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering"></div>
+            <figcaption><b>Settings</b>A long-press away.</figcaption>
+          </figure></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="features" aria-labelledby="features-h">
+      <div class="wrap">
+        <p class="kicker">What it does</p>
+        <h2 id="features-h">Open a category.</h2>
+        <p class="intro">This list works like the drawer: tap a category to see what is in it, and opening another closes the last.</p>
+        <div class="drawer">
+          <details name="drawer" open data-c="focus">
+            <summary><svg class="glyph" aria-hidden="true"><use href="#i-focus"/></svg>Home <span class="count">4</span></summary>
+            <ul>
+              <li><b>Almost nothing on it.</b> The date up top; along the bottom, a search bar and a shortcut button. The middle of the screen is empty on purpose.</li>
+              <li><b>The date</b> opens your calendar; hold it to pick another app, and place it left, centre or right.</li>
+              <li><b>The shortcut button</b> finds your password manager on its own (Bitwarden, 1Password, Proton Pass, KeePassDX and others) and wears a key. Point it at any app and pick from some thirty line-art glyphs.</li>
+              <li><b>Swipe</b> up, left or right for three apps of your choice (the first swipe each way asks which), and down for notifications.</li>
+            </ul>
+          </details>
+          <details name="drawer" data-c="tools">
+            <summary><svg class="glyph" aria-hidden="true"><use href="#i-search"/></svg>Search <span class="count">3</span></summary>
+            <ul>
+              <li><b>One search for apps and the web.</b> Tap the bar and it rides up to the top of the screen with the keyboard, your app categories below it.</li>
+              <li><b>One rule:</b> an app opens only when you tap it, and Enter always searches the web. Type a few letters and the matching apps come up, best match first.</li>
+              <li><b>Your engine, your browser.</b> divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity or ChatGPT, in your default browser; or let the browser pick.</li>
+            </ul>
+          </details>
+          <details name="drawer" data-c="ai">
+            <summary><svg class="glyph" aria-hidden="true"><use href="#i-ai"/></svg>Categories <span class="count">3</span></summary>
+            <ul>
+              <li><b>Your apps, as a short list.</b> AI Agents, People, Focus, News, Media, Tools and more, sorted on the device, each with a small coloured glyph and its app count.</li>
+              <li><b>Tap one</b> to list its apps; opening another closes it, so the list always fits above the keyboard.</li>
+              <li><b>Long-press an app</b> to rename it, uninstall it, or set its categories, several at once if you like.</li>
+            </ul>
+          </details>
+          <details name="drawer" data-c="sleep">
+            <summary><svg class="glyph" aria-hidden="true"><use href="#i-sleep"/></svg>Through the day <span class="count">3</span></summary>
+            <ul>
+              <li><b>An order that follows your day.</b> News in the morning, focus during work, media in the evening, sleep and meditation from about 8:30 pm.</li>
+              <li><b>It sharpens from the apps you actually open</b>, and inside each group the ones you open most come first. Learning fades after a couple of weeks.</li>
+              <li><b>Pin any groups</b> to the top (AI Agents is pinned by default), or reset the learning any time.</li>
+            </ul>
+          </details>
+          <details name="drawer" data-c="places">
+            <summary><svg class="glyph" aria-hidden="true"><use href="#i-media"/></svg>Every screen <span class="count">3</span></summary>
+            <ul>
+              <li><b>Phones, tablets, foldables and Chromebooks.</b> Phones stay in portrait; larger screens rotate freely and keep your place.</li>
+              <li><b>Keyboard and mouse:</b> the wheel, the up arrow or Enter opens the apps, a letter key starts a search with it, and right-click opens Settings.</li>
+              <li><b>TalkBack</b> gets every gesture as an action, and back is predictive everywhere but Home.</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="gestures" aria-labelledby="gestures-h">
+      <div class="wrap">
+        <p class="kicker">Gestures</p>
+        <h2 id="gestures-h">The whole interface.</h2>
+        <p class="intro">There are no visible buttons to learn. Everything is a gesture or a tap on text, and <b>Settings&nbsp;&rsaquo; Help and FAQ</b> lists every one of them on one page.</p>
+        <ul class="gestures">
+          <li class="big"><span class="g">Tap the search bar</span><span class="what">Your apps, with the keyboard up</span></li>
+          <li class="big"><span class="g">Long-press empty space</span><span class="what">Settings, the one to remember</span></li>
+          <li><span class="g">Tap the date</span><span class="what">Your calendar</span></li>
+          <li><span class="g">Tap the key</span><span class="what">Your password manager, or any app</span></li>
+          <li><span class="g">Swipe down</span><span class="what">Notifications, or search</span></li>
+          <li><span class="g">Swipe up</span><span class="what">An app you choose</span></li>
+          <li><span class="g">Swipe left</span><span class="what">An app you choose</span></li>
+          <li><span class="g">Swipe right</span><span class="what">An app you choose</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="private" aria-labelledby="private-h">
+      <div class="wrap">
+        <p class="kicker">Privacy</p>
+        <h2 id="private-h">Private by construction.</h2>
+        <p class="intro">Not a setting, not a promise: Blauncher simply cannot do these things, because it never asks Android for the permission.</p>
+        <ul class="nots">
+          <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No internet permission</b>Nothing leaves the phone. Web searches are handed to your browser.</div></li>
+          <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No list of every app</b>No <code>QUERY_ALL_PACKAGES</code>; it sees only the apps a launcher needs to show.</div></li>
+          <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No usage stats</b>Smart ordering learns only from launches made inside the launcher.</div></li>
+          <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No backups</b>What it learns stays in local preferences, excluded from backups and device transfer.</div></li>
+          <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No accounts, sync or analytics</b>No ads, no tracking, no in-app purchases.</div></li>
+          <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No accessibility service</b>And no launcher-managed wallpaper. Private Space stays behind a tap to unlock.</div></li>
+        </ul>
+        <a class="more" href="privacy/"><svg class="glyph" aria-hidden="true" data-c="money"><use href="#i-shield"/></svg>Read the privacy policy</a>
+      </div>
+    </section>
+
+    <section id="install" aria-labelledby="install-h">
+      <div class="wrap">
+        <p class="kicker">Install</p>
+        <h2 id="install-h">Three steps.</h2>
+        <ol class="steps">
+          <li><div><b>Download <a href="https://github.com/bradflaugher/Blauncher/releases/download/latest/Blauncher.apk">Blauncher.apk</a></b> from the <a href="https://github.com/bradflaugher/Blauncher/releases/tag/latest">latest release</a>. Every build comes straight from GitHub Actions on <code>main</code>.</div></li>
+          <li><div><b>Optionally verify it</b> against <code>Blauncher.apk.sha256</code> from the same release, or check its build provenance:
+            <div class="verify">sha256sum -c Blauncher.apk.sha256
+gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher</div></div></li>
+          <li><div><b>Install it, open it,</b> and tap <b>Set as default launcher</b>. To go back, pick your old launcher in Settings&nbsp;&rsaquo; Change default launcher.</div></li>
+        </ol>
+        <p class="fine">Requires Android 15 or newer. Blauncher is in closed testing on Google Play; until it is public there, the GitHub release is the way in.</p>
+      </div>
+    </section>
+
+    <section id="more" aria-labelledby="more-h">
+      <div class="wrap">
+        <p class="kicker">More</p>
+        <h2 id="more-h">Read the code, report a bug.</h2>
+        <ul class="links">
+          <li><a href="https://github.com/bradflaugher/Blauncher/blob/main/GUIDE.md" data-c="news"><b><svg class="glyph" aria-hidden="true"><use href="#i-book"/></svg>User guide</b><span>Every gesture, screen and setting.</span></a></li>
+          <li><a href="https://github.com/bradflaugher/Blauncher" data-c="tools"><b><svg class="glyph" aria-hidden="true"><use href="#i-terminal"/></svg>Source code</b><span>GPL-3.0, on GitHub.</span></a></li>
+          <li><a href="https://github.com/bradflaugher/Blauncher/issues/new" data-c="people"><b><svg class="glyph" aria-hidden="true"><use href="#i-people"/></svg>Send feedback</b><span>Open an issue for bugs and ideas.</span></a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>Blauncher &middot; GPL-3.0 &middot; began as a fork of <a href="https://github.com/tanujnotes/Olauncher">Olauncher</a> by Tanuj Notes</span>
+      <nav aria-label="Footer">
+        <a href="privacy/">Privacy</a>
+        <a href="https://github.com/bradflaugher/Blauncher/blob/main/SECURITY.md">Security</a>
+        <a href="https://github.com/bradflaugher/Blauncher/blob/main/LICENSE">License</a>
+        <a href="https://github.com/bradflaugher/Blauncher">GitHub</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    // Today's date, the way the home screen shows it ("Mon, 12 Oct").
+    (function () {
+      var d = new Date(), el = document.getElementById("today");
+      var day = d.toLocaleDateString("en-GB", { weekday: "short" });
+      var month = d.toLocaleDateString("en-GB", { month: "short" });
+      el.textContent = day + ", " + d.getDate() + " " + month;
+    })();
+  </script>
+</body>
+</html>

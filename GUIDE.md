@@ -238,4 +238,5 @@ The same answers are in **Settings → Help and FAQ**.
 
 The app requests no internet access, uses no usage-stats permission, and its
 data (including what smart ordering learns) never leaves the device — it is
-even excluded from device backups. Details in `SECURITY.md`.
+even excluded from device backups. Details in `SECURITY.md` and the
+[privacy policy](https://bradflaugher.github.io/Blauncher/privacy/).

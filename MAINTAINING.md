@@ -15,7 +15,8 @@ Dependabot opens update PRs every week, and only once a release is at least
 - **One PR per major version**, so its release notes get a read first.
 
 Merge a PR (squash) once its checks are green. The `Main` ruleset requires
-`build`, `Analyze (java-kotlin)`, `Analyze (actions)` to pass, so a red PR can't be merged by accident. Dependabot
+`build`, `Analyze (java-kotlin)`, `Analyze (actions)`, `store listing`
+and `site` to pass, so a red PR can't be merged by accident. Dependabot
 security updates skip the cooldown and can arrive any day; treat those first.
 
 ## Toolchain bumps by hand
@@ -111,6 +112,22 @@ same environment, and `.github/scripts/play_release.rb` does its status
 checks. The `release` job attests the APK's and bundle's build provenance and
 replaces the single GitHub release.
 
+## The website
+
+The site at <https://bradflaugher.github.io/Blauncher/> is plain HTML and
+CSS in `site/`, with no build step and no third-party requests (no web
+fonts, CDNs or analytics). `site/privacy/index.html` is the privacy policy
+that Play Console (App content › Privacy policy) and Settings ›
+Privacy (`Constants.URL_PRIVACY_POLICY`) link to; change it when the app's
+data handling changes, and bump its "Last updated" date. Each page's
+Content-Security-Policy `<meta>` allows only same-origin files, no
+connections and no inline styles; it lists the hash of the one inline
+script (the date on the front page), so after editing that script, paste in
+the new hash `check_site.py` prints. Preview with
+`python3 -m http.server -d site`. `.github/workflows/pages.yml` checks the
+site on every pull request (the required `site` check) and deploys it on
+every push to `main` that touches it.
+
 ## Security settings that live outside the repository
 
 These are GitHub settings, not files, so they are listed here to check or
@@ -118,10 +135,11 @@ recreate them:
 
 | Setting | Value |
 |---|---|
-| Ruleset `Main` (default branch) | No deletion or force push, linear history, changes through a squash-merged PR, required checks: `build`, `Analyze (java-kotlin)`, `Analyze (actions)`, `store listing` |
+| Ruleset `Main` (default branch) | No deletion or force push, linear history, changes through a squash-merged PR, required checks: `build`, `Analyze (java-kotlin)`, `Analyze (actions)`, `store listing`, `site` |
 | Merge buttons | Squash only, PR title as the commit title, branches deleted after merge |
 | Actions permissions | GitHub-owned actions plus `android-actions/setup-android`, `gradle/actions/*` and `reactivecircus/android-emulator-runner`; full-SHA pinning required |
 | Google Play API access | Service account `github-play-publisher@play-publishing-511400.iam.gserviceaccount.com` (Google Cloud project `play-publishing-511400`), invited in Play Console › Users and permissions with account-wide: view app information, release to production, release to testing tracks, manage store presence. Its JSON key is the `PLAY_SERVICE_ACCOUNT_JSON` secret of the `google-play` environment |
+| GitHub Pages | Source: GitHub Actions (`pages.yml`), HTTPS enforced; the `github-pages` environment deploys from `main` only |
 | Environment `google-play` | Deployable from `main` only; holds `PLAY_SERVICE_ACCOUNT_JSON`; the `Google Play` job and `play-promote.yml` run in it |
 | Default `GITHUB_TOKEN` | Read-only; jobs ask for more themselves |
 | Fork PR workflows | Approval required for every outside contributor |

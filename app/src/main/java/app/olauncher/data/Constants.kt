@@ -56,7 +56,7 @@ object Constants {
     const val MIN_ANIM_REFRESH_RATE = 30f
 
     const val URL_OLAUNCHER_GITHUB = "https://github.com/bradflaugher/Blauncher"
-    const val URL_PRIVACY_POLICY = "https://bradflaugher.com/privacy/blauncher/"
+    const val URL_PRIVACY_POLICY = "https://bradflaugher.github.io/Blauncher/privacy/"
     const val URL_FEEDBACK = "https://github.com/bradflaugher/Blauncher/issues/new"
     const val URL_PLAY_STORE = "https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher"
     /** The same listing in the Play Store app, which is where a rating can be left. */
