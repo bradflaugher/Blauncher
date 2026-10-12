@@ -111,6 +111,18 @@ same environment, and `.github/scripts/play_release.rb` does its status
 checks. The `release` job attests the APK's and bundle's build provenance and
 replaces the single GitHub release.
 
+## The website
+
+The site at <https://bradflaugher.github.io/Blauncher/> is plain HTML and
+CSS in `site/`, with no build step and no third-party requests (no web
+fonts, CDNs or analytics). `site/privacy/index.html` is the privacy policy
+that Play Console (App content › Privacy policy) and Settings ›
+Privacy (`Constants.URL_PRIVACY_POLICY`) link to; change it when the app's
+data handling changes, and bump its "Last updated" date. Preview with
+`python3 -m http.server -d site`. `.github/workflows/pages.yml` checks the
+site on pull requests that touch it and deploys it on every push to `main`
+that does.
+
 ## Security settings that live outside the repository
 
 These are GitHub settings, not files, so they are listed here to check or
@@ -122,6 +134,7 @@ recreate them:
 | Merge buttons | Squash only, PR title as the commit title, branches deleted after merge |
 | Actions permissions | GitHub-owned actions plus `android-actions/setup-android`, `gradle/actions/*` and `reactivecircus/android-emulator-runner`; full-SHA pinning required |
 | Google Play API access | Service account `github-play-publisher@play-publishing-511400.iam.gserviceaccount.com` (Google Cloud project `play-publishing-511400`), invited in Play Console › Users and permissions with account-wide: view app information, release to production, release to testing tracks, manage store presence. Its JSON key is the `PLAY_SERVICE_ACCOUNT_JSON` secret of the `google-play` environment |
+| GitHub Pages | Source: GitHub Actions (`pages.yml`), HTTPS enforced; the `github-pages` environment deploys from `main` only |
 | Environment `google-play` | Deployable from `main` only; holds `PLAY_SERVICE_ACCOUNT_JSON`; the `Google Play` job and `play-promote.yml` run in it |
 | Default `GITHUB_TOKEN` | Read-only; jobs ask for more themselves |
 | Fork PR workflows | Approval required for every outside contributor |

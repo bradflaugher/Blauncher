@@ -1,5 +1,8 @@
 # Blauncher
 
+**Website:** <https://bradflaugher.github.io/Blauncher/> ·
+[privacy policy](https://bradflaugher.github.io/Blauncher/privacy/)
+
 A minimal, gesture-driven Android launcher that gets out of the way. The
 home screen is a black screen with the date, a search bar, and a shortcut
 button (your password manager to start, any app you like after). No app
@@ -154,8 +157,8 @@ release notes) lives in `fastlane/metadata/android/en-US` in the layout
    the existing `BLAUNCHER_*` key as the app signing key and use a separate
    upload key.
 2. **App content.**
-   - Privacy policy: <https://bradflaugher.com/privacy/blauncher/> (also
-     linked from Settings).
+   - Privacy policy: <https://bradflaugher.github.io/Blauncher/privacy/>
+     (also linked from Settings).
    - Data safety: no data collected or shared. The app has no `INTERNET`
      permission, backups and device transfer are disabled, and web searches
      are handed to another app by intent.
@@ -195,6 +198,8 @@ release notes) lives in `fastlane/metadata/android/en-US` in the layout
 - [`GUIDE.md`](GUIDE.md): gestures, screens, settings
 - [`SECURITY.md`](SECURITY.md): reporting, release verification, privacy
 - [`AGENTS.md`](AGENTS.md): contributor and agent instructions, latest-only policy
+- [`site/`](site/): the website and privacy policy, published to GitHub Pages
+  (see [`MAINTAINING.md`](MAINTAINING.md#the-website))
 
 ## License
 
