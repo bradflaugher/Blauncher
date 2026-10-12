@@ -15,7 +15,8 @@ Dependabot opens update PRs every week, and only once a release is at least
 - **One PR per major version**, so its release notes get a read first.
 
 Merge a PR (squash) once its checks are green. The `Main` ruleset requires
-`build`, `Analyze (java-kotlin)`, `Analyze (actions)` to pass, so a red PR can't be merged by accident. Dependabot
+`build`, `Analyze (java-kotlin)`, `Analyze (actions)`, `store listing`
+and `site` to pass, so a red PR can't be merged by accident. Dependabot
 security updates skip the cooldown and can arrive any day; treat those first.
 
 ## Toolchain bumps by hand
@@ -120,8 +121,8 @@ that Play Console (App content › Privacy policy) and Settings ›
 Privacy (`Constants.URL_PRIVACY_POLICY`) link to; change it when the app's
 data handling changes, and bump its "Last updated" date. Preview with
 `python3 -m http.server -d site`. `.github/workflows/pages.yml` checks the
-site on pull requests that touch it and deploys it on every push to `main`
-that does.
+site on every pull request (the required `site` check) and deploys it on
+every push to `main` that touches it.
 
 ## Security settings that live outside the repository
 
@@ -130,7 +131,7 @@ recreate them:
 
 | Setting | Value |
 |---|---|
-| Ruleset `Main` (default branch) | No deletion or force push, linear history, changes through a squash-merged PR, required checks: `build`, `Analyze (java-kotlin)`, `Analyze (actions)`, `store listing` |
+| Ruleset `Main` (default branch) | No deletion or force push, linear history, changes through a squash-merged PR, required checks: `build`, `Analyze (java-kotlin)`, `Analyze (actions)`, `store listing`, `site` |
 | Merge buttons | Squash only, PR title as the commit title, branches deleted after merge |
 | Actions permissions | GitHub-owned actions plus `android-actions/setup-android`, `gradle/actions/*` and `reactivecircus/android-emulator-runner`; full-SHA pinning required |
 | Google Play API access | Service account `github-play-publisher@play-publishing-511400.iam.gserviceaccount.com` (Google Cloud project `play-publishing-511400`), invited in Play Console › Users and permissions with account-wide: view app information, release to production, release to testing tracks, manage store presence. Its JSON key is the `PLAY_SERVICE_ACCOUNT_JSON` secret of the `google-play` environment |

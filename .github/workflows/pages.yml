@@ -1,8 +1,8 @@
 name: Pages
 
 # The website and privacy policy in site/, published to GitHub Pages.
-# Pull requests that touch it only run the check; pushes to main check it
-# and deploy it.
+# Pull requests only run the check (seconds); pushes to main that touch the
+# site check it and deploy it.
 on:
   push:
     branches:
@@ -11,13 +11,10 @@ on:
       - 'site/**'
       - '.github/scripts/check_site.py'
       - '.github/workflows/pages.yml'
+  # Every pull request, so `site` can be a required check.
   pull_request:
     branches:
       - main
-    paths:
-      - 'site/**'
-      - '.github/scripts/check_site.py'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
