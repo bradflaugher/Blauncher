@@ -119,7 +119,11 @@ CSS in `site/`, with no build step and no third-party requests (no web
 fonts, CDNs or analytics). `site/privacy/index.html` is the privacy policy
 that Play Console (App content › Privacy policy) and Settings ›
 Privacy (`Constants.URL_PRIVACY_POLICY`) link to; change it when the app's
-data handling changes, and bump its "Last updated" date. Preview with
+data handling changes, and bump its "Last updated" date. Each page's
+Content-Security-Policy `<meta>` allows only same-origin files, no
+connections and no inline styles; it lists the hash of the one inline
+script (the date on the front page), so after editing that script, paste in
+the new hash `check_site.py` prints. Preview with
 `python3 -m http.server -d site`. `.github/workflows/pages.yml` checks the
 site on every pull request (the required `site` check) and deploys it on
 every push to `main` that touches it.

@@ -32,6 +32,19 @@
   --gutter: clamp(16px, 5vw, 40px);
 }
 
+/* data-c="<category>" gives an element that category's colour as --c (no
+   inline styles, so the Content-Security-Policy can forbid them). */
+[data-c="ai"] { --c: var(--ai); }
+[data-c="people"] { --c: var(--people); }
+[data-c="focus"] { --c: var(--focus); }
+[data-c="news"] { --c: var(--news); }
+[data-c="media"] { --c: var(--media); }
+[data-c="money"] { --c: var(--money); }
+[data-c="shopping"] { --c: var(--shopping); }
+[data-c="places"] { --c: var(--places); }
+[data-c="sleep"] { --c: var(--sleep); }
+[data-c="tools"] { --c: var(--tools); }
+
 *,
 *::before,
 *::after { box-sizing: border-box; }
@@ -60,6 +73,7 @@ code { font-family: var(--mono); font-size: 0.85em; background: #141414; border:
 img { max-width: 100%; display: block; }
 svg.glyph { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.9; }
 
+.sprite { position: absolute; }
 .skip { position: absolute; left: -9999px; top: 8px; background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 999px; z-index: 10; }
 .skip:focus { left: 8px; }
 
@@ -130,7 +144,7 @@ h2 { margin: 0 0 18px; font-weight: 300; font-size: clamp(32px, 5vw, 48px); line
   border-radius: clamp(18px, 2.6vw, 30px);
   border: 1px solid var(--line-strong);
   padding: 6px; background: #050505;
-  box-shadow: 0 30px 80px -40px var(--glow, rgba(79, 193, 255, 0.35));
+  box-shadow: 0 30px 80px -40px var(--glow, color-mix(in srgb, var(--c, var(--places)) 42%, transparent));
 }
 .phone img { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: clamp(13px, 2.1vw, 24px); }
 .shots figcaption { margin-top: 14px; font-size: 15px; color: var(--muted); text-align: center; }
@@ -197,7 +211,7 @@ h2 { margin: 0 0 18px; font-weight: 300; font-size: clamp(32px, 5vw, 48px); line
 @media (max-width: 760px) { .nots { grid-template-columns: 1fr; } }
 
 .more { display: inline-flex; align-items: center; gap: 10px; font-size: 17px; }
-.more .glyph { font-size: 18px; }
+.more .glyph { font-size: 18px; color: var(--c, currentColor); }
 
 /* Install. */
 .steps { counter-reset: step; list-style: none; margin: 0 0 32px; padding: 0; display: grid; gap: 14px; max-width: 760px; }

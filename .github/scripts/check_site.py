@@ -6,11 +6,17 @@ have a title; every local link, asset and anchor must exist inside the
 published site; and nothing may load from another origin, from the HTML or
 from a stylesheet (the site, like the app, makes no third-party requests).
 Links to other sites are fine; loading their scripts, styles, images or
-fonts is not.
+fonts is not. Every page also carries a Content-Security-Policy that stops
+scripts from connecting anywhere: it must list the hash of each inline
+script (the check prints the right one), and since it allows no inline
+styles, pages may not use style attributes or <style> elements. A <base>
+element is not allowed at all (it would re-point every relative URL).
 
 Usage: python3 .github/scripts/check_site.py [site-dir]
 """
 
+import base64
+import hashlib
 import re
 import sys
 from html.parser import HTMLParser
@@ -48,6 +54,8 @@ class Page(HTMLParser):
         self.problems = []
         self._stack = []
         self._in_style = False
+        self.csp = None
+        self.scripts = []  # inline script bodies
 
     def _where(self):
         return f"line {self.getpos()[0]}"
@@ -59,6 +67,14 @@ class Page(HTMLParser):
         if tag not in VOID:
             self._stack.append((tag, self._where()))
         self._in_style = tag == "style"
+        if tag == "base":
+            self.problems.append(f"{self._where()}: <base> is not allowed")
+        if tag == "style" or "style" in a:
+            self.problems.append(f"{self._where()}: inline styles are blocked by the CSP; use style.css")
+        if tag == "script" and "src" not in a:
+            self.scripts.append("")
+        if tag == "meta" and (a.get("http-equiv") or "").lower() == "content-security-policy":
+            self.csp = a.get("content") or ""
         for name, value in attrs:
             if value is None:
                 continue
@@ -105,6 +121,8 @@ class Page(HTMLParser):
             self._in_style = False
 
     def handle_data(self, data):
+        if self._stack and self._stack[-1][0] == "script" and self.scripts:
+            self.scripts[-1] += data
         if self._stack and self._stack[-1][0] == "title" and data.strip():
             self.title = True
         if self._in_style:
@@ -114,6 +132,29 @@ class Page(HTMLParser):
         super().close()
         for tag, where in self._stack:
             self.problems.append(f"<{tag}> from {where} is never closed")
+
+
+# What every page's Content-Security-Policy must say, besides script-src.
+CSP_REQUIRED = {"default-src": "'self'", "connect-src": "'none'", "object-src": "'none'",
+                "base-uri": "'none'", "form-action": "'none'", "style-src": "'self'"}
+
+
+def csp_problems(page):
+    if page.csp is None:
+        return ["missing <meta http-equiv=\"Content-Security-Policy\">"]
+    policy = {}
+    for directive in page.csp.split(";"):
+        name, *values = directive.split()
+        if name:
+            policy[name.lower()] = values
+    problems = [f"CSP needs {name} {value}" for name, value in CSP_REQUIRED.items()
+                if policy.get(name) != [value]]
+    hashes = ["'sha256-" + base64.b64encode(hashlib.sha256(body.encode()).digest()).decode() + "'"
+              for body in page.scripts]
+    script_src = hashes or ["'none'"]
+    if policy.get("script-src") != script_src:
+        problems.append("CSP script-src must be exactly " + " ".join(script_src))
+    return problems
 
 
 def resolve(site, base, path):
@@ -174,6 +215,7 @@ def main():
         errors.extend(f"{rel}: {p}" for p in parser.problems)
         if not parser.title:
             errors.append(f"{rel}: missing <title>")
+        errors.extend(f"{rel}: {p}" for p in csp_problems(parser))
     ids = {page: parser.ids for page, parser in parsed.items()}
 
     for page, parser in parsed.items():

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; script-src 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Privacy policy — Blauncher</title>
   <meta name="description" content="Privacy policy for Blauncher (com.bradflaugher.blauncher), a minimal Android launcher with no internet permission.">
@@ -20,7 +21,7 @@
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <svg class="sprite" width="0" height="0" aria-hidden="true">
     <symbol id="i-lock" viewBox="0 0 24 24"><path d="M5.5,11 L18.5,11 L18.5,20.5 L5.5,20.5 Z M8.5,11 L8.5,7.5 A3.5,3.5 0 0,1 15.5,7.5 L15.5,11 M12,14.5 L12,17"/></symbol>
     <symbol id="i-ai" viewBox="0 0 24 24"><path d="M11,3 L12.5,8.5 L18,10 L12.5,11.5 L11,17 L9.5,11.5 L4,10 L9.5,8.5 Z M19.5,2.5 L20,4.2 L21.7,4.7 L20,5.2 L19.5,7 L19,5.2 L17.3,4.7 L19,4.2 Z M6,16.5 L6.7,18.7 L9,19.4 L6.7,20.1 L6,22.3 L5.3,20.1 L3,19.4 L5.3,18.7 Z"/></symbol>
     <symbol id="i-sleep" viewBox="0 0 24 24"><path d="M20.5,14.5 A8.5,8.5 0 1,1 9.5,3.5 A6.8,6.8 0 0,0 20.5,14.5 Z"/></symbol>
@@ -49,27 +50,27 @@
 
     <p class="summary">Blauncher (package <b>com.bradflaugher.blauncher</b>) is an Android home-screen launcher. It has <b>no INTERNET permission</b> and never touches the network. There are no accounts, no sync, no analytics, no ads, and no accessibility service.</p>
 
-    <h2 style="--c: var(--ai)"><svg class="glyph" aria-hidden="true"><use href="#i-ai"/></svg>Installed apps</h2>
+    <h2 data-c="ai"><svg class="glyph" aria-hidden="true"><use href="#i-ai"/></svg>Installed apps</h2>
     <p>Blauncher does <b>not</b> request QUERY_ALL_PACKAGES. Instead it declares the kinds of apps a launcher needs, and Android makes installed apps of those kinds visible to it: apps with a launcher icon (to show and launch them in the app drawer), home-screen apps (to check whether Blauncher is the default launcher), and browsers and web-search apps (to hand off searches). Android may also make some system apps visible to every app. This information never leaves your device.</p>
 
-    <h2 style="--c: var(--sleep)"><svg class="glyph" aria-hidden="true"><use href="#i-sleep"/></svg>Smart ordering</h2>
+    <h2 data-c="sleep"><svg class="glyph" aria-hidden="true"><use href="#i-sleep"/></svg>Smart ordering</h2>
     <p>The "smart ordering" feature learns only from launches you make inside the launcher. This data is stored in local app preferences, and app data is excluded from backups.</p>
 
-    <h2 style="--c: var(--tools)"><svg class="glyph" aria-hidden="true"><use href="#i-search"/></svg>Search and web searches</h2>
+    <h2 data-c="tools"><svg class="glyph" aria-hidden="true"><use href="#i-search"/></svg>Search and web searches</h2>
     <p>What you type in the search bar is matched against your app names on the device. Text you leave in the bar without sending it is kept as a draft in the same local app preferences, which are excluded from backups and device transfer, until you send or clear it.</p>
     <p>Web searches are handed to the browser or search engine you choose via an Android intent. Blauncher itself makes no network request; that app's own privacy policy applies to your query.</p>
 
-    <h2 style="--c: var(--people)"><svg class="glyph" aria-hidden="true"><use href="#i-people"/></svg>Feedback, sharing and rating</h2>
+    <h2 data-c="people"><svg class="glyph" aria-hidden="true"><use href="#i-people"/></svg>Feedback, sharing and rating</h2>
     <p>In Settings, <b>Send feedback</b> opens the GitHub new-issue page in your browser, <b>Share Blauncher</b> hands a fixed line and the Google Play link to your device's share sheet, and <b>Rate Blauncher</b> opens Blauncher's page in the Play Store app, or in your browser. Blauncher adds nothing about your device or your apps to any of them, and it never asks you for a rating. Those apps' own privacy policies apply from there.</p>
 
-    <h2 style="--c: var(--money)"><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg>Other permissions</h2>
+    <h2 data-c="money"><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg>Other permissions</h2>
     <ul>
       <li><b>Expand status bar</b> — swipe down for notifications.</li>
       <li><b>Request delete packages</b> — uninstall shortcut; the system confirms every uninstall.</li>
       <li><b>Access hidden profiles</b> — Private Space support.</li>
     </ul>
 
-    <h2 style="--c: var(--news)"><svg class="glyph" aria-hidden="true"><use href="#i-mail"/></svg>Contact</h2>
+    <h2 data-c="news"><svg class="glyph" aria-hidden="true"><use href="#i-mail"/></svg>Contact</h2>
     <p>Questions about this policy: <a href="mailto:brad@bradflaugher.com">brad@bradflaugher.com</a></p>
   </main>
 

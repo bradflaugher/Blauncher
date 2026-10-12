@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; script-src 'sha256-EzwwiWn8jce2OOK0XFFNG4iv+NyFUCOQhQTmfFHis/Q='">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Blauncher — a launcher that gets out of the way</title>
   <meta name="description" content="Blauncher is a minimal, gesture-driven Android launcher: a black screen, the date, one search bar for your apps and the web, and a key to your passwords. No internet permission. Free and open source.">
@@ -23,7 +24,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <svg class="sprite" width="0" height="0" aria-hidden="true">
     <!-- Line-art glyphs from the app's own vector drawables (app/src/main/res/drawable). -->
     <symbol id="i-search" viewBox="0 0 24 24"><path d="M10.5,4 A6.5,6.5 0 1,0 10.5,17 A6.5,6.5 0 1,0 10.5,4 Z M15.2,15.2 L20.5,20.5"/></symbol>
     <symbol id="i-key" viewBox="0 0 24 24"><path d="M7.5,12.5 A4,4 0 1,0 7.5,20.5 A4,4 0 1,0 7.5,12.5 Z M10.3,13.7 L20,4 M16,8 L19,11 M13,11 L15,13"/></symbol>
@@ -79,19 +80,19 @@
         <p class="intro">Tap the search bar for your apps. Long-press for settings. That is the whole interface, and a small tip card teaches it on first run, one gesture at a time.</p>
         <ul class="shots">
           <li><figure>
-            <div class="phone" style="--glow: rgba(78, 201, 176, 0.4)"><img src="img/home.webp" width="540" height="960" loading="lazy" alt="Home screen: the date at the top, and at the bottom a search bar reading Search apps and the web, beside a round shortcut button wearing a key glyph"></div>
+            <div class="phone" data-c="focus"><img src="img/home.webp" width="540" height="960" loading="lazy" alt="Home screen: the date at the top, and at the bottom a search bar reading Search apps and the web, beside a round shortcut button wearing a key glyph"></div>
             <figcaption><b>Home</b>The date, a search bar, a key.</figcaption>
           </figure></li>
           <li><figure>
-            <div class="phone" style="--glow: rgba(86, 156, 214, 0.45)"><img src="img/drawer.webp" width="540" height="960" loading="lazy" alt="App drawer: the search bar at the top, a one-line tip, then categories, each with its own coloured glyph and a small app count; People is open, its apps listed under it"></div>
+            <div class="phone" data-c="people"><img src="img/drawer.webp" width="540" height="960" loading="lazy" alt="App drawer: the search bar at the top, a one-line tip, then categories, each with its own coloured glyph and a small app count; People is open, its apps listed under it"></div>
             <figcaption><b>Your apps</b>Categories, sorted on the device.</figcaption>
           </figure></li>
           <li><figure>
-            <div class="phone" style="--glow: rgba(167, 139, 250, 0.45)"><img src="img/tips.webp" width="540" height="960" loading="lazy" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Tap the search bar for your apps"></div>
+            <div class="phone" data-c="ai"><img src="img/tips.webp" width="540" height="960" loading="lazy" alt="First run: the home screen with a tip card above the search bar reading Welcome, tip 1 of 3, Tap the search bar for your apps"></div>
             <figcaption><b>First run</b>One tip at a time, then gone.</figcaption>
           </figure></li>
           <li><figure>
-            <div class="phone" style="--glow: rgba(220, 180, 95, 0.4)"><img src="img/settings.webp" width="540" height="960" loading="lazy" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering"></div>
+            <div class="phone" data-c="shopping"><img src="img/settings.webp" width="540" height="960" loading="lazy" alt="Settings: the Blauncher card with Help and FAQ, Send feedback, Share Blauncher and Rate Blauncher, then Smart ordering"></div>
             <figcaption><b>Settings</b>A long-press away.</figcaption>
           </figure></li>
         </ul>
@@ -104,7 +105,7 @@
         <h2 id="features-h">Open a category.</h2>
         <p class="intro">This list works like the drawer: tap a category to see what is in it, and opening another closes the last.</p>
         <div class="drawer">
-          <details name="drawer" open style="--c: var(--focus)">
+          <details name="drawer" open data-c="focus">
             <summary><svg class="glyph" aria-hidden="true"><use href="#i-focus"/></svg>Home <span class="count">4</span></summary>
             <ul>
               <li><b>Almost nothing on it.</b> The date up top; along the bottom, a search bar and a shortcut button. The middle of the screen is empty on purpose.</li>
@@ -113,7 +114,7 @@
               <li><b>Swipe</b> up, left or right for three apps of your choice (the first swipe each way asks which), and down for notifications.</li>
             </ul>
           </details>
-          <details name="drawer" style="--c: var(--tools)">
+          <details name="drawer" data-c="tools">
             <summary><svg class="glyph" aria-hidden="true"><use href="#i-search"/></svg>Search <span class="count">3</span></summary>
             <ul>
               <li><b>One search for apps and the web.</b> Tap the bar and it rides up to the top of the screen with the keyboard, your app categories below it.</li>
@@ -121,7 +122,7 @@
               <li><b>Your engine, your browser.</b> divid3 by default, or DuckDuckGo, Google, Bing, Brave, Kagi, Startpage, Ecosia, Perplexity or ChatGPT, in your default browser; or let the browser pick.</li>
             </ul>
           </details>
-          <details name="drawer" style="--c: var(--ai)">
+          <details name="drawer" data-c="ai">
             <summary><svg class="glyph" aria-hidden="true"><use href="#i-ai"/></svg>Categories <span class="count">3</span></summary>
             <ul>
               <li><b>Your apps, as a short list.</b> AI Agents, People, Focus, News, Media, Tools and more, sorted on the device, each with a small coloured glyph and its app count.</li>
@@ -129,7 +130,7 @@
               <li><b>Long-press an app</b> to rename it, uninstall it, or set its categories, several at once if you like.</li>
             </ul>
           </details>
-          <details name="drawer" style="--c: var(--sleep)">
+          <details name="drawer" data-c="sleep">
             <summary><svg class="glyph" aria-hidden="true"><use href="#i-sleep"/></svg>Through the day <span class="count">3</span></summary>
             <ul>
               <li><b>An order that follows your day.</b> News in the morning, focus during work, media in the evening, sleep and meditation from about 8:30 pm.</li>
@@ -137,7 +138,7 @@
               <li><b>Pin any groups</b> to the top (AI Agents is pinned by default), or reset the learning any time.</li>
             </ul>
           </details>
-          <details name="drawer" style="--c: var(--places)">
+          <details name="drawer" data-c="places">
             <summary><svg class="glyph" aria-hidden="true"><use href="#i-media"/></svg>Every screen <span class="count">3</span></summary>
             <ul>
               <li><b>Phones, tablets, foldables and Chromebooks.</b> Phones stay in portrait; larger screens rotate freely and keep your place.</li>
@@ -180,7 +181,7 @@
           <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No accounts, sync or analytics</b>No ads, no tracking, no in-app purchases.</div></li>
           <li><svg class="glyph" aria-hidden="true"><use href="#i-lock"/></svg><div><b>No accessibility service</b>And no launcher-managed wallpaper. Private Space stays behind a tap to unlock.</div></li>
         </ul>
-        <a class="more" href="privacy/"><svg class="glyph" aria-hidden="true" style="color: var(--money)"><use href="#i-shield"/></svg>Read the privacy policy</a>
+        <a class="more" href="privacy/"><svg class="glyph" aria-hidden="true" data-c="money"><use href="#i-shield"/></svg>Read the privacy policy</a>
       </div>
     </section>
 
@@ -204,9 +205,9 @@ gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher</div></div></l
         <p class="kicker">More</p>
         <h2 id="more-h">Read the code, report a bug.</h2>
         <ul class="links">
-          <li><a href="https://github.com/bradflaugher/Blauncher/blob/main/GUIDE.md" style="--c: var(--news)"><b><svg class="glyph" aria-hidden="true"><use href="#i-book"/></svg>User guide</b><span>Every gesture, screen and setting.</span></a></li>
-          <li><a href="https://github.com/bradflaugher/Blauncher" style="--c: var(--tools)"><b><svg class="glyph" aria-hidden="true"><use href="#i-terminal"/></svg>Source code</b><span>GPL-3.0, on GitHub.</span></a></li>
-          <li><a href="https://github.com/bradflaugher/Blauncher/issues/new" style="--c: var(--people)"><b><svg class="glyph" aria-hidden="true"><use href="#i-people"/></svg>Send feedback</b><span>Open an issue for bugs and ideas.</span></a></li>
+          <li><a href="https://github.com/bradflaugher/Blauncher/blob/main/GUIDE.md" data-c="news"><b><svg class="glyph" aria-hidden="true"><use href="#i-book"/></svg>User guide</b><span>Every gesture, screen and setting.</span></a></li>
+          <li><a href="https://github.com/bradflaugher/Blauncher" data-c="tools"><b><svg class="glyph" aria-hidden="true"><use href="#i-terminal"/></svg>Source code</b><span>GPL-3.0, on GitHub.</span></a></li>
+          <li><a href="https://github.com/bradflaugher/Blauncher/issues/new" data-c="people"><b><svg class="glyph" aria-hidden="true"><use href="#i-people"/></svg>Send feedback</b><span>Open an issue for bugs and ideas.</span></a></li>
         </ul>
       </div>
     </section>
