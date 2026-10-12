@@ -310,6 +310,38 @@ class HomeSearchTest {
         assertTrue(rowTitle(activity, 1).contentDescription.contains(activity.getString(R.string.work_profile)))
     }
 
+    @Test
+    fun aWebLinkIsFoundByNameOrAddress() {
+        val activity = openSheetWithApps("Maps")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        viewModel.appList.value = viewModel.appList.value!! + AppModel.Link(
+            appLabel = "HN",
+            key = null,
+            linkId = "hn",
+            url = "https://news.ycombinator.com",
+            category = AppCategory.NEWS,
+        )
+        idle()
+
+        type(activity, "ycomb")
+        assertEquals(listOf("HN"), adapter(activity).appFilteredList.map { it.appLabel })
+        type(activity, "hn")
+        assertEquals(listOf("HN"), adapter(activity).appFilteredList.map { it.appLabel })
+    }
+
+    @Test
+    fun aWebLinkIsListedUnderItsGroup() {
+        val activity = openSheetWithApps("Maps" to AppCategory.TRAVEL)
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        viewModel.appList.value = viewModel.appList.value!! + AppModel.Link(
+            appLabel = "HN", key = null, linkId = "hn", url = "https://news.ycombinator.com",
+            category = AppCategory.NEWS,
+        )
+        idle()
+
+        assertTrue("News 1" in headerSummaries(activity))
+    }
+
     private fun fakeApp(
         label: String,
         user: UserHandle = Process.myUserHandle(),

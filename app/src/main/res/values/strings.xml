@@ -190,4 +190,20 @@
     <string name="pin_shortcut_pinned">Shortcut pinned successfully</string>
     <string name="pin_shortcut_failed">Failed to pin shortcut</string>
     <string name="pin_invalid_shortcut">Invalid shortcut info</string>
+    <!-- Web links: websites listed in the drawer like apps, opened in the browser. -->
+    <string name="web_links">Web links</string>
+    <string name="web_links_summary">Websites listed with your apps. Search finds them by name or address, and a tap opens them in your browser.</string>
+    <string name="add_web_link">Add a web link</string>
+    <string name="edit_web_link">Edit web link</string>
+    <string name="edit_web_link_named">Edit web link, %1$s</string>
+    <string name="web_link_address_hint">Address, like example.com</string>
+    <string name="web_link_name_hint">Name (optional)</string>
+    <string name="web_link_groups_summary">Tick the groups it belongs in. With none ticked it goes under Other.</string>
+    <string name="web_link_invalid">Enter a web address, like example.com</string>
+    <string name="web_link_added">Added %1$s</string>
+    <string name="web_link_removed">Removed %1$s</string>
+    <string name="remove">Remove</string>
+    <string name="edit">Edit</string>
+    <string name="faq_web_links_q">Can I add websites?</string>
+    <string name="faq_web_links_a">Yes. Settings → Web links → Add a web link. It is listed and searched like an app and opens in your browser. Long-press it to rename, regroup, edit or remove it.</string>
 </resources>

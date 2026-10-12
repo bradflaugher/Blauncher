@@ -54,6 +54,10 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   Tap one to list its apps; opening another closes it, so the list always
   fits above the keyboard. Long-press an app to change its categories,
   including several at once.
+- **Websites, right beside your apps.** Add a web link in Settings with an
+  address, an optional name and its categories. It is listed, searched (by
+  name or address) and ordered just like an app, with no icon, and a tap
+  opens it in your browser.
 - **An order that follows your day.** Groups shift with the time of day, news
   in the morning, focus during work, media in the evening, sleep and
   meditation from about 8:30 pm, then sharpen from

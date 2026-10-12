@@ -53,7 +53,8 @@ class AppDrawerList(
         prefs.appLabelAlignment,
         appClickListener = { appModel -> if (isActive()) onLaunch(appModel) },
         appInfoListener = {
-            if (isActive()) {
+            if (it is AppModel.Link) editWebLink(it)
+            else if (isActive()) {
                 openAppInfo(context, it.user, it.appPackage)
                 onLeave()
             }
@@ -64,6 +65,12 @@ class AppDrawerList(
                 // Package-qualified: two apps may pin shortcuts with the same id.
                 is AppModel.PinnedShortcut -> appModel.identityKey
                 is AppModel.App -> appModel.appPackage
+                is AppModel.Link -> {
+                    // A blank name goes back to showing the site's address.
+                    prefs.webLink(appModel.linkId)?.let { prefs.saveWebLink(it.copy(label = renameLabel)) }
+                    viewModel.getAppList()
+                    return@AppDrawerAdapter
+                }
                 else -> return@AppDrawerAdapter
             }
             prefs.setAppRenameLabel(identifier, renameLabel)
@@ -132,6 +139,10 @@ class AppDrawerList(
     private fun uninstall(appModel: AppModel) {
         when (appModel) {
             is AppModel.PrivateSpaceHeader, is AppModel.GroupHeader -> {}
+            is AppModel.Link -> {
+                prefs.removeWebLink(appModel.linkId)
+                context.showToast(context.getString(R.string.web_link_removed, appModel.appLabel))
+            }
             is AppModel.PinnedShortcut ->
                 context.deletePinnedShortcut(
                     packageName = appModel.appPackage,
@@ -159,6 +170,8 @@ class AppDrawerList(
      */
     private fun showCategoryChooser(appModel: AppModel) {
         if (appModel.appPackage.isBlank()) return
+        // A web link has no automatic group; its own sheet edits its groups with the rest.
+        if (appModel is AppModel.Link) return editWebLink(appModel)
         beforeDialog()
         val categories = AppCategory.entries
         val manual = prefs.getAppCategoryOverrides(appModel.appPackage)
@@ -200,6 +213,12 @@ class AppDrawerList(
             }
             .setNegativeButton(R.string.close, null)
             .show()
+    }
+
+    private fun editWebLink(appModel: AppModel.Link) {
+        val link = prefs.webLink(appModel.linkId) ?: return
+        beforeDialog()
+        WebLinkEditor.show(context, prefs, link) { viewModel.getAppList() }
     }
 
     /** Every group this app (or pinned shortcut) is currently listed under in the drawer. */

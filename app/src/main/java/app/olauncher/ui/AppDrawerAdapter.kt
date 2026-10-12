@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import app.olauncher.R
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
+import app.olauncher.data.WebLink
 import app.olauncher.databinding.AdapterAppDrawerBinding
 import app.olauncher.databinding.AdapterGroupHeaderBinding
 import app.olauncher.databinding.AdapterPrivateSpaceHeaderBinding
@@ -69,6 +70,9 @@ class AppDrawerAdapter(
                         oldItem.appPackage == newItem.appPackage &&
                         oldItem.user == newItem.user &&
                         oldItem.category == newItem.category
+
+                oldItem is AppModel.Link && newItem is AppModel.Link ->
+                    oldItem.linkId == newItem.linkId && oldItem.category == newItem.category
 
                 oldItem is AppModel.PrivateSpaceHeader && newItem is AppModel.PrivateSpaceHeader -> true
 
@@ -220,6 +224,8 @@ class AppDrawerAdapter(
                 query,
                 label = { it.appLabel },
                 key = { it.searchKey() },
+                // A web link is also found by its address: "ycomb" finds a link named HN.
+                alias = { (it as? AppModel.Link)?.let { link -> WebLink.host(link.url) } },
             ).mapTo(mutableListOf()) { it.first }
         }
         val searching = query.isNotEmpty()
@@ -232,7 +238,7 @@ class AppDrawerAdapter(
     }
 
     private fun AppModel.isLaunchable(): Boolean =
-        this is AppModel.App || this is AppModel.PinnedShortcut
+        this is AppModel.App || this is AppModel.PinnedShortcut || this is AppModel.Link
 
     /**
      * The rows shown with an empty search: one header per category, the open one's apps under
@@ -266,6 +272,7 @@ class AppDrawerAdapter(
     private fun AppModel.searchKey(): String = when (this) {
         is AppModel.App -> "app:$appPackage|$user"
         is AppModel.PinnedShortcut -> "shortcut:$appPackage/$shortcutId|$user"
+        is AppModel.Link -> appPackage
         is AppModel.PrivateSpaceHeader -> "private-space"
         is AppModel.GroupHeader -> "group:$sectionKey"
     }
@@ -373,6 +380,10 @@ class AppDrawerAdapter(
             appMenuLayout.visibility = View.GONE
             renameLayout.visibility = View.GONE
             appTitle.visibility = View.VISIBLE
+            // A web link is removed rather than uninstalled, and edited rather than inspected.
+            val isLink = appModel is AppModel.Link
+            appDelete.setText(if (isLink) R.string.remove else R.string.delete)
+            appInfo.setText(if (isLink) R.string.edit else R.string.info)
 
             // Show indicators in title based on app type and state
             appTitle.text = buildString {
@@ -429,7 +440,7 @@ class AppDrawerAdapter(
 
             appTitle.setOnLongClickListener {
                 if (appModel.appPackage.isNotEmpty()) {
-                    val canDelete = appModel is AppModel.PinnedShortcut ||
+                    val canDelete = appModel is AppModel.PinnedShortcut || appModel is AppModel.Link ||
                         !root.context.isSystemApp(appModel.appPackage, appModel.user)
                     appDelete.alpha = if (canDelete) 1.0f else 0.5f
                     // Stays enabled: tapping it still explains why and opens App info.
@@ -449,7 +460,8 @@ class AppDrawerAdapter(
             // Configure rename behavior
             fun openRenameEditor() {
                 if (appModel.appPackage.isNotEmpty()) {
-                    etAppRename.hint = getAppName(etAppRename.context, appModel.appPackage, appModel.user)
+                    etAppRename.hint = if (appModel is AppModel.Link) WebLink.defaultLabel(appModel.url)
+                    else getAppName(etAppRename.context, appModel.appPackage, appModel.user)
                     etAppRename.setText(appModel.appLabel)
                     etAppRename.setSelectAllOnFocus(true)
                     renameLayout.visibility = View.VISIBLE
@@ -503,10 +515,10 @@ class AppDrawerAdapter(
                         true
                     }
                 }
-                addAction(R.string.delete) { appDeleteListener(appModel) }
+                addAction(if (isLink) R.string.remove else R.string.delete) { appDeleteListener(appModel) }
                 addAction(R.string.rename) { openRenameEditor() }
                 addAction(R.string.category) { appCategoryListener(appModel) }
-                addAction(R.string.info) { appInfoListener(appModel) }
+                addAction(if (isLink) R.string.edit else R.string.info) { appInfoListener(appModel) }
             }
         }
 

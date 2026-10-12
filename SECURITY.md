@@ -51,6 +51,13 @@ gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher
   `ACTION_WEB_SEARCH` intent. Either way the launcher itself makes no
   network request; from the hand-off on, the text is the browser's and the
   chosen engine's data, subject to their privacy terms.
+- Web links (websites the user adds to the drawer) are stored, with their
+  names and groups, in the same local preferences, excluded from backups.
+  Only `http` and `https` addresses are accepted, so a link can never carry
+  a `javascript:`, `file:` or `intent:` URI. A tap opens the address with an
+  `ACTION_VIEW` intent in the `BROWSABLE` category, aimed at the default
+  browser when there is one; the launcher never fetches the page, its
+  title or its icon.
 - **Send feedback**, **Share Blauncher** and **Rate Blauncher** in Settings
   are plain intents: an `ACTION_VIEW` of the GitHub new-issue page in the
   browser, the system share sheet (`ACTION_SEND`) with a fixed line and the

@@ -39,4 +39,18 @@ class AppSearchTest {
         assertEquals(listOf("Maps" to "travel"), results.map { it.first })
     }
 
+
+    @Test
+    fun anAliasFindsAnItemAndTheBetterMatchCounts() {
+        val links = listOf("HN" to "news.ycombinator.com", "Maps" to "maps.example.com", "Hacker" to "hacker.io")
+        fun find(query: String) = AppSearch.search(
+            links, query, label = { it.first }, key = { it.first }, alias = { it.second },
+        ).map { it.first.first to it.second }
+
+        // The address splits at its dots, so "ycomb" starts one of its words.
+        assertEquals(listOf("HN" to Match.WORD_PREFIX), find("ycomb"))
+        // "Hacker" starts with "hack" by name; HN's address only contains it.
+        assertEquals(listOf("Hacker" to Match.PREFIX), find("hack"))
+        assertEquals(listOf("Maps" to Match.EXACT), find("maps"))
+    }
 }

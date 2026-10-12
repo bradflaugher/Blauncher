@@ -19,6 +19,7 @@ sealed class AppModel : Comparable<AppModel> {
         get() = when (this) {
             is App -> identityKeyFor(appPackage, user.toString(), null)
             is PinnedShortcut -> identityKeyFor(appPackage, user.toString(), shortcutId)
+            is Link -> appPackage
             is PrivateSpaceHeader, is GroupHeader -> ""
         }
 
@@ -53,6 +54,28 @@ sealed class AppModel : Comparable<AppModel> {
         override val user: UserHandle,
         override val category: AppCategory = AppCategory.OTHER,
     ) : AppModel()
+
+    /**
+     * A website the user added (see [WebLink]), listed like an app and opened in the browser.
+     * Its [appPackage] is a stand-in, `weblink:<id>`, so the drawer's per-app plumbing (search,
+     * smart order, the long-press menu) treats it as one more row; it is never a real package.
+     */
+    data class Link(
+        override val appLabel: String,
+        override val key: CollationKey?,
+        val linkId: String,
+        val url: String,
+        override val category: AppCategory = AppCategory.OTHER,
+        override val user: UserHandle = android.os.Process.myUserHandle(),
+    ) : AppModel() {
+        override val appPackage: String = packageFor(linkId)
+        override val isNew: Boolean = false
+
+        companion object {
+            const val PACKAGE_PREFIX = "weblink:"
+            fun packageFor(linkId: String) = PACKAGE_PREFIX + linkId
+        }
+    }
 
     data class PrivateSpaceHeader(
         val isLocked: Boolean = true,

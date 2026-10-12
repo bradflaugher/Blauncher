@@ -39,17 +39,23 @@ object AppSearch {
 
     /**
      * The items whose [label] matches [query], best match first, keeping only the first item
-     * per [key] so an app listed under several groups is one result.
+     * per [key] so an app listed under several groups is one result. An item's [alias] (a web
+     * link's address, say) matches too, and the better of the two matches counts.
      */
     fun <T> search(
         items: List<T>,
         query: CharSequence,
         label: (T) -> String,
         key: (T) -> String,
+        alias: (T) -> String? = { null },
     ): List<Pair<T, Match>> {
         val seen = HashSet<String>()
         return items
-            .mapNotNull { item -> match(label(item), query)?.let { item to it } }
+            .mapNotNull { item ->
+                val byLabel = match(label(item), query)
+                val byAlias = alias(item)?.let { match(it, query) }
+                listOfNotNull(byLabel, byAlias).minByOrNull { it.ordinal }?.let { item to it }
+            }
             .filter { (item, _) -> seen.add(key(item)) }
             .sortedBy { (_, match) -> match.ordinal }
     }
