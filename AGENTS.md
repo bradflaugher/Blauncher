@@ -76,5 +76,8 @@ and navigation graph.
   `BLAUNCHER_VERSION_NAME`; release signing uses the four `BLAUNCHER_*`
   signing variables and is all-or-nothing (see `README.md`).
 - Every push to `main` publishes the signed APK to the single `latest`
-  GitHub release with a SHA-256 checksum. Keep `main` green.
+  GitHub release with a SHA-256 checksum, uploads the bundle to Google
+  Play's Closed testing - Alpha track and syncs the store listing (text,
+  icon, graphics, screenshots) from `fastlane/metadata/android`. Production
+  is the manual `play-promote.yml`. Keep `main` green.
 - License is GPL-3.0; keep the Olauncher attribution intact.

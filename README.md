@@ -130,9 +130,14 @@ replaces the `latest` release with `Blauncher.apk`, `Blauncher.apk.sha256`,
 Play crash reports). Pull requests run the same checks and build unsigned
 artifacts without publishing. The version code is the workflow run number,
 so it only goes up; renaming or recreating the workflow would reset it, and
-Play rejects any upload whose version code is not higher than the last. CodeQL scans Kotlin and the workflows on every push and weekly.
+Play rejects any upload whose version code is not higher than the last.
+The same run uploads `Blauncher.aab` to Google Play's Closed testing -
+Alpha track and syncs the store listing below to Play; **Actions › Promote
+to production** moves a tested build to production (see `MAINTAINING.md`).
+CodeQL scans Kotlin and the workflows on every push and weekly.
 
-Secrets: `BLAUNCHER_KEYSTORE_BASE64`, `BLAUNCHER_STORE_PASSWORD`,
+Secrets: `PLAY_SERVICE_ACCOUNT_JSON` (in the `google-play` environment),
+`BLAUNCHER_KEYSTORE_BASE64`, `BLAUNCHER_STORE_PASSWORD`,
 `BLAUNCHER_KEY_ALIAS`, `BLAUNCHER_KEY_PASSWORD`.
 
 ## Google Play
@@ -141,9 +146,9 @@ The store listing (title, descriptions, icon, feature graphic, screenshots,
 release notes) lives in `fastlane/metadata/android/en-US` in the layout
 `fastlane supply` reads.
 
-1. **Upload.** Take `Blauncher.aab` from the `latest` release and upload it
-   to a testing track, with `mapping.txt` as its deobfuscation file (or
-   `fastlane supply --aab Blauncher.aab --track internal`). Use Play App
+1. **Upload.** CI uploads every signed `main` build to Closed testing -
+   Alpha with `mapping.txt` and `changelogs/default.txt`, and syncs this
+   listing (`PLAY_SERVICE_ACCOUNT_JSON`, see `MAINTAINING.md`). Use Play App
    Signing; to keep Play and sideloaded installs updating each other, enrol
    the existing `BLAUNCHER_*` key as the app signing key and use a separate
    upload key.
