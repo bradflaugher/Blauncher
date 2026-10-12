@@ -79,7 +79,7 @@ object AppCategorizer {
             "com.americanexpress.android.acctsvcs.us", "com.discoverfinancial.mobile",
             "com.robinhood.android", "com.coinbase.android", "com.fidelity.android",
             "com.vanguard", "com.schwab.mobile", "com.google.android.apps.walletnfcrel",
-            "com.samsung.android.spay", "com.creditkarma.mobile", "com.ynab.evergreen.app",
+            "com.samsung.android.spay", "com.creditkarma.mobile", "com.youneedabudget.evergreen.app",
         )
         put(
             AppCategory.SHOPPING,
@@ -87,7 +87,7 @@ object AppCategorizer {
             "com.target.ui", "com.etsy.android", "com.costco.app.android", "com.instacart.client",
             "com.ubercab.eats", "com.dd.doordash", "com.grubhub.android", "com.starbucks.mobilecard",
             "com.mcdonalds.app", "com.alibaba.aliexpresshd", "com.einnovation.temu", "com.zzkko",
-            "com.bestbuy.android", "com.shopify.arrive",
+            "com.bestbuy.android", "com.shopify.arrive", "com.rfi.sams.android",
         )
         put(
             AppCategory.TRAVEL,
@@ -145,7 +145,7 @@ object AppCategorizer {
         AppCategory.FINANCE to setOf(
             "account", "bank", "banking", "budget", "card", "cash", "coinbase", "credit",
             "crypto", "finance", "insurance", "invest", "money", "mortgage", "pay", "paypal",
-            "payroll", "retirement", "robinhood", "stock", "tax", "trading", "venmo", "wallet",
+            "payroll", "retirement", "robinhood", "stock", "tax", "trading", "venmo", "wallet", "ynab",
             "zelle"
         ),
         AppCategory.HEALTH to setOf(

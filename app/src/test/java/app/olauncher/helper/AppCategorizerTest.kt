@@ -228,6 +228,7 @@ class AppCategorizerTest {
             "com.x8bit.bitwarden Bitwarden" to AppCategory.PRODUCTIVITY,
             "com.fitbit.FitbitMobile Fitbit" to AppCategory.HEALTH,
             "com.king.candycrushsaga Candy Crush Saga" to AppCategory.GAMES,
+            "com.youneedabudget.evergreen.app YNAB" to AppCategory.FINANCE,
         )
         examples.forEach { (app, expected) ->
             assertEquals(app, expected, AppCategorizer.categoryFromText(app))
@@ -244,7 +245,7 @@ class AppCategorizerTest {
     @Test
     fun wordsThatMisledBeforeNoLongerDo() {
         assertEquals(AppCategory.OTHER, AppCategorizer.categoryFromText("com.example.homes Home Finder"))
-        assertEquals(AppCategory.SHOPPING, AppCategorizer.categoryFromText("com.samsclub.app Sam's Club Shopping"))
+        assertEquals(AppCategory.SHOPPING, AppCategorizer.categoryFromText("com.rfi.sams.android Sam's Club"))
     }
 
     @Test
