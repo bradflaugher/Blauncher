@@ -177,9 +177,10 @@ release notes) lives in `fastlane/metadata/android/en-US` in the layout
    - `capture.sh <serial> tools/screenshots/raw/<device>/<name>.png` saves
      the current screen as RGB.
    - `caption.py` (`uv run --with pillow tools/screenshots/caption.py`)
-     adds the headline and subline from `captions.tsv` in Roboto Light on
-     black, and writes every listed shot into `images/`. Pull the font once
-     with `adb pull /system/fonts/Roboto-Regular.ttf tools/screenshots/Roboto.ttf`.
+     adds the app name, a bold headline and a subline from `captions.tsv`,
+     centred over a soft glow in one of the drawer's category colours, and
+     writes every listed shot into `images/`. Fetch the Roboto variable font
+     once (the curl line is at the top of `caption.py`).
    - The README images in `docs/screenshots` are the raw captures, without
      captions.
 
