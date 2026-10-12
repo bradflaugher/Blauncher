@@ -41,11 +41,19 @@ data class WebLink(
             // A host needs a dot ("example.com") unless it is a local name like "localhost".
             if (host.isBlank() || host.startsWith('.') || host.endsWith('.')) return null
             if (!host.contains('.') && host != "localhost") return null
-            return candidate
+            // Intent filters match schemes case-sensitively, and browsers register lower case.
+            return scheme + candidate.substring(scheme.length)
         }
 
         /** The address a link reads as without a name: its host, less a leading "www.". */
         fun defaultLabel(url: String): String = host(url).ifBlank { url }
+
+        /**
+         * The whole address as Settings shows it: without "https://", "www." or a trailing
+         * slash, but with its path and query, so two links on one site can be told apart.
+         */
+        fun shortAddress(url: String): String =
+            url.replace(Regex("^https?://(www\\.)?", RegexOption.IGNORE_CASE), "").removeSuffix("/")
 
         /** [url]'s host in lower case, without "www.", or "" when it has none. */
         fun host(url: String): String =

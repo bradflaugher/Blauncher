@@ -24,7 +24,7 @@ class WebLinkTest {
         assertEquals("https://example.com/a?b=c", WebLink.normalizeUrl("example.com/a?b=c"))
         assertEquals("https://localhost:8080", WebLink.normalizeUrl("localhost:8080"))
         assertEquals("http://example.com", WebLink.normalizeUrl("http://example.com"))
-        assertEquals("HTTPS://Example.com", WebLink.normalizeUrl("HTTPS://Example.com"))
+        assertEquals("https://Example.com", WebLink.normalizeUrl("HTTPS://Example.com"))
     }
 
     @Test
@@ -36,6 +36,12 @@ class WebLinkTest {
         assertNull(WebLink.normalizeUrl("file:///sdcard/a.html"))
         assertNull(WebLink.normalizeUrl("intent://example.com#Intent;end"))
         assertNull(WebLink.normalizeUrl("https://"))
+    }
+
+    @Test
+    fun theShortAddressKeepsThePathSoLinksOnOneSiteDiffer() {
+        assertEquals("example.com/a?b=c", WebLink.shortAddress("https://www.example.com/a?b=c"))
+        assertEquals("example.com", WebLink.shortAddress("http://example.com/"))
     }
 
     @Test

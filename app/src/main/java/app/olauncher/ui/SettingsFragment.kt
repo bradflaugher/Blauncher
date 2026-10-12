@@ -512,8 +512,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     /**
-     * One row per web link: its name, then its address faded, so two links with one name can
-     * be told apart. A tap edits it (address, name, groups) or removes it.
+     * One row per web link: its name, then its whole address faded (path included), so two
+     * links with one name, or on one site, can be told apart. A tap edits it (address, name, groups) or removes it.
      */
     private fun populateWebLinks() = with(binding.webLinkSettings) {
         webLinkList.removeAllViews()
@@ -521,11 +521,11 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         val faded = requireContext().getColorFromAttr(R.attr.primaryColorTrans50)
         prefs.webLinks.forEach { link ->
             val name = link.displayLabel
-            val host = WebLink.host(link.url)
+            val address = WebLink.shortAddress(link.url)
             val text = SpannableStringBuilder(name)
-            if (host.isNotEmpty() && !host.equals(name, ignoreCase = true)) {
+            if (!address.equals(name, ignoreCase = true)) {
                 val start = text.length
-                text.append("  ").append(host)
+                text.append("  ").append(address)
                 text.setSpan(ForegroundColorSpan(faded), start, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 text.setSpan(RelativeSizeSpan(0.85f), start, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
