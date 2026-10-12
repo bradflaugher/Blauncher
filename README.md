@@ -133,7 +133,8 @@ so it only goes up; renaming or recreating the workflow would reset it, and
 Play rejects any upload whose version code is not higher than the last.
 The same run uploads `Blauncher.aab` to Google Play's Closed testing -
 Alpha track and syncs the store listing below to Play; **Actions › Promote
-to production** moves a tested build to production (see `MAINTAINING.md`).
+to production** moves a tested build to production (see
+[MAINTAINING.md › Releasing](MAINTAINING.md#releasing)).
 CodeQL scans Kotlin and the workflows on every push and weekly.
 
 Secrets: `PLAY_SERVICE_ACCOUNT_JSON` (in the `google-play` environment),
