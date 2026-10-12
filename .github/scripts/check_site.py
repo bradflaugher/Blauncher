@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Check the static site in site/ before it is published to GitHub Pages.
 
-Every page must parse, every local link and asset must exist, and nothing
-may load from another origin (the site, like the app, makes no third-party
-requests). Links to other sites are fine; loading their scripts, styles,
-images or fonts is not.
+Every page must be well formed (elements closed and properly nested) and
+have a title; every local link, asset and anchor must exist inside the
+published site; and nothing may load from another origin, from the HTML or
+from a stylesheet (the site, like the app, makes no third-party requests).
+Links to other sites are fine; loading their scripts, styles, images or
+fonts is not.
 
 Usage: python3 .github/scripts/check_site.py [site-dir]
 """
 
+import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
@@ -19,111 +22,168 @@ BASE_PATH = urlsplit(SITE_URL).path  # /Blauncher/
 
 # Attributes that make the browser fetch something when the page loads.
 LOADS = {("img", "src"), ("script", "src"), ("source", "src"), ("source", "srcset"),
-         ("img", "srcset"), ("iframe", "src"), ("video", "src"), ("audio", "src")}
+         ("img", "srcset"), ("iframe", "src"), ("video", "src"), ("audio", "src"),
+         ("embed", "src"), ("object", "data"), ("video", "poster"), ("image", "href")}
 LOADING_RELS = {"stylesheet", "icon", "apple-touch-icon", "preload", "modulepreload",
                 "manifest", "prefetch"}
+# Elements with no end tag. Every other element must be closed explicitly:
+# the site is hand-written, so an optional end tag left out is a mistake.
+VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
+        "source", "track", "wbr"}
+# url(...) and @import in CSS, inline or in a stylesheet.
+CSS_URL = re.compile(r"""url\(\s*(['"]?)(.*?)\1\s*\)|@import\s+(['"])(.*?)\3""", re.I)
+
+
+def css_urls(css):
+    for m in CSS_URL.finditer(css):
+        yield m.group(2) if m.group(2) is not None else m.group(4)
 
 
 class Page(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.refs = []  # (tag, attr, value, loads)
+        self.refs = []  # (what, value, loads)
         self.ids = set()
         self.title = False
-        self._in_title = False
+        self.problems = []
+        self._stack = []
+        self._in_style = False
+
+    def _where(self):
+        return f"line {self.getpos()[0]}"
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         if "id" in a:
             self.ids.add(a["id"])
-        if tag == "title":
-            self._in_title = True
+        if tag not in VOID:
+            self._stack.append((tag, self._where()))
+        self._in_style = tag == "style"
         for name, value in attrs:
             if value is None:
                 continue
             if (tag, name) in LOADS:
                 for part in value.split(","):
-                    self.refs.append((tag, name, part.strip().split(" ")[0], True))
+                    self.refs.append((f"<{tag} {name}>", part.strip().split(" ")[0], True))
             elif tag == "link" and name == "href":
                 rels = set((a.get("rel") or "").lower().split())
-                self.refs.append((tag, name, value, bool(rels & LOADING_RELS)))
+                self.refs.append((f"<{tag} {name}>", value, bool(rels & LOADING_RELS)))
             elif name == "href":
-                self.refs.append((tag, name, value, False))
+                self.refs.append((f"<{tag} {name}>", value, False))
+            elif name == "style":
+                self.refs.extend((f"<{tag} style>", u, True) for u in css_urls(value))
             elif tag == "meta" and name == "content" and a.get("property") == "og:image":
-                self.refs.append((tag, "og:image", value, False))
+                self.refs.append(("og:image", value, False))
+
+    def handle_startendtag(self, tag, attrs):
+        # <x/>: an element that is opened and closed at once.
+        self.handle_starttag(tag, attrs)
+        if tag not in VOID:
+            self._stack.pop()
 
     def handle_endtag(self, tag):
-        if tag == "title":
-            self._in_title = False
+        if tag in VOID:
+            self.problems.append(f"{self._where()}: </{tag}> closes a void element")
+            return
+        if not self._stack or self._stack[-1][0] != tag:
+            open_tag = f"<{self._stack[-1][0]}> from {self._stack[-1][1]}" if self._stack else "nothing"
+            self.problems.append(f"{self._where()}: </{tag}> does not match {open_tag}")
+            # Recover at the matching element, if there is one, so one slip
+            # is reported once.
+            for i in range(len(self._stack) - 1, -1, -1):
+                if self._stack[i][0] == tag:
+                    del self._stack[i:]
+                    break
+            return
+        self._stack.pop()
+        if tag == "style":
+            self._in_style = False
 
     def handle_data(self, data):
-        if self._in_title and data.strip():
+        if self._stack and self._stack[-1][0] == "title" and data.strip():
             self.title = True
+        if self._in_style:
+            self.refs.extend(("<style>", u, True) for u in css_urls(data))
+
+    def close(self):
+        super().close()
+        for tag, where in self._stack:
+            self.problems.append(f"<{tag}> from {where} is never closed")
 
 
-def resolve(site, page, path):
-    """Map a same-site URL path to a file under site/, or None."""
-    if path.startswith(BASE_PATH):
+def resolve(site, base, path):
+    """Map a same-site URL path to a file in site/; None if it leaves the site.
+
+    `base` is the directory the reference is relative to."""
+    if path.startswith("/"):
+        if not path.startswith(BASE_PATH):
+            return None  # outside this project's Pages path
         target = site / path[len(BASE_PATH):]
-    elif path.startswith("/"):
-        return None  # outside this project's Pages path
     else:
-        target = page.parent / path
+        target = base / path
     target = Path(unquote(str(target))).resolve()
-    if target.is_dir() or str(path).endswith("/"):
+    if target != site and site not in target.parents:
+        return None  # ../ climbed out of the published directory
+    if target.is_dir() or path.endswith("/"):
         target = target / "index.html"
     return target
+
+
+def check_refs(site, source, base, refs, ids, errors):
+    rel = source.relative_to(site)
+    for what, value, loads in refs:
+        if not value or value.startswith(("mailto:", "tel:", "data:")):
+            continue
+        url = urlsplit(value)
+        if (url.scheme or url.netloc) and not value.startswith(SITE_URL):
+            if loads:
+                errors.append(f"{rel}: {what} loads from another origin: {value}")
+            continue
+        if not url.path:
+            # A bare fragment names an element on this page (CSS has none).
+            if url.fragment and source.suffix == ".html" and url.fragment not in ids.get(source, set()):
+                errors.append(f"{rel}: #{url.fragment} does not exist on this page")
+            continue
+        target = resolve(site, base, url.path)
+        if target is None:
+            errors.append(f"{rel}: {value} points outside {BASE_PATH}")
+        elif not target.is_file():
+            errors.append(f"{rel}: {value} is missing")
+        elif url.fragment and target.suffix == ".html" and url.fragment not in ids.get(target, set()):
+            errors.append(f"{rel}: {value} names a missing anchor")
 
 
 def main():
     site = Path(sys.argv[1] if len(sys.argv) > 1 else "site").resolve()
     errors = []
-    pages = sorted(site.rglob("*.html"))
     if not (site / "index.html").is_file() or not (site / "privacy" / "index.html").is_file():
         errors.append("site/index.html and site/privacy/index.html must both exist")
-    ids = {}
+
     parsed = {}
-    for page in pages:
+    for page in sorted(site.rglob("*.html")):
         parser = Page()
         parser.feed(page.read_text(encoding="utf-8"))
         parser.close()
         parsed[page] = parser
-        ids[page] = parser.ids
+        rel = page.relative_to(site)
+        errors.extend(f"{rel}: {p}" for p in parser.problems)
         if not parser.title:
-            errors.append(f"{page.relative_to(site)}: missing <title>")
+            errors.append(f"{rel}: missing <title>")
+    ids = {page: parser.ids for page, parser in parsed.items()}
 
     for page, parser in parsed.items():
-        rel = page.relative_to(site)
-        for tag, attr, value, loads in parser.refs:
-            if not value or value.startswith(("mailto:", "tel:", "data:")):
-                continue
-            url = urlsplit(value)
-            external = bool(url.scheme or url.netloc)
-            if external and not value.startswith(SITE_URL):
-                if loads:
-                    errors.append(f"{rel}: <{tag} {attr}> loads from another origin: {value}")
-                continue
-            path = url.path  # for an absolute link to this site, /Blauncher/...
-            if not path:
-                # A bare fragment: it must name an element on this page.
-                if url.fragment and url.fragment not in parser.ids:
-                    errors.append(f"{rel}: #{url.fragment} does not exist on this page")
-                continue
-            target = resolve(site, page, path)
-            if target is None:
-                errors.append(f"{rel}: {value} points outside {BASE_PATH}")
-                continue
-            if not target.is_file():
-                errors.append(f"{rel}: {value} is missing")
-                continue
-            if url.fragment and target.suffix == ".html" and url.fragment not in ids.get(target, set()):
-                errors.append(f"{rel}: {value} names a missing anchor")
+        check_refs(site, page, page.parent, parser.refs, ids, errors)
+    # Stylesheets: url() and @import resolve against the stylesheet itself.
+    stylesheets = sorted(site.rglob("*.css"))
+    for sheet in stylesheets:
+        refs = [("url()", u, True) for u in css_urls(sheet.read_text(encoding="utf-8"))]
+        check_refs(site, sheet, sheet.parent, refs, ids, errors)
 
     for error in errors:
         print(f"::error::{error}")
     if errors:
         return 1
-    print(f"site OK: {len(pages)} pages checked")
+    print(f"site OK: {len(parsed)} pages and {len(stylesheets)} stylesheets checked")
     return 0
 
 

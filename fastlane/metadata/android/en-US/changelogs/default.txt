@@ -1,5 +1,1 @@
-- One search bar for everything: type to find an app, or press Go to search the web.
-- Home and your apps are one screen: tap the search bar to open your apps, swipe down or press Back to close them.
-- Your apps open on their categories. Tap one to see its apps, the ones you use most first.
-- The key button is now a shortcut you can point at any app, with 33 icons to choose from.
-- Swipe up, left or right to open an app you pick in Settings > Gestures.
+- Settings > Privacy now opens the privacy policy on Blauncher's own website, bradflaugher.github.io/Blauncher, which also has the screenshots, the gestures and the install steps.
