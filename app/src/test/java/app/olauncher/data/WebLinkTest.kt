@@ -5,6 +5,7 @@ import android.content.Intent
 import app.olauncher.helper.openWebLink
 import app.olauncher.helper.webLinkModels
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -99,5 +100,11 @@ class WebLinkTest {
         assertEquals(Intent.ACTION_VIEW, opened.action)
         assertEquals("https://news.ycombinator.com", opened.dataString)
         assertTrue(opened.hasCategory(Intent.CATEGORY_BROWSABLE))
+    }
+
+    @Test
+    fun onlyTheSchemeAndHostIgnoreCase() {
+        assertTrue(WebLink.sameAddress("https://Example.com/News", "HTTPS://example.COM/News"))
+        assertFalse(WebLink.sameAddress("https://example.com/News", "https://example.com/news"))
     }
 }

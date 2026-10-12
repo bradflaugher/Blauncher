@@ -261,7 +261,7 @@ class AppDrawerAdapter(
     private fun addWebLinkRow(text: String): AppModel.AddWebLink? {
         if (flag != Constants.FLAG_LAUNCH_APP) return null
         val url = WebLink.normalizeUrl(text) ?: return null
-        val saved = appsList.any { it is AppModel.Link && it.url.equals(url, ignoreCase = true) }
+        val saved = appsList.any { it is AppModel.Link && WebLink.sameAddress(it.url, url) }
         return if (saved) null else AppModel.AddWebLink(url)
     }
 

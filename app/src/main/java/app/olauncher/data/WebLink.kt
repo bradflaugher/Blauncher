@@ -55,6 +55,21 @@ data class WebLink(
         fun shortAddress(url: String): String =
             url.replace(Regex("^https?://(www\\.)?", RegexOption.IGNORE_CASE), "").removeSuffix("/")
 
+        /**
+         * Whether two addresses name the same page: the scheme and host ignore case, as they do
+         * on the web, while the path, query and fragment keep it ("/News" is not "/news").
+         */
+        fun sameAddress(a: String, b: String): Boolean = canonical(a) == canonical(b)
+
+        private fun canonical(url: String): String {
+            val uri = Uri.parse(url)
+            return uri.buildUpon()
+                .scheme(uri.scheme?.lowercase())
+                .encodedAuthority(uri.encodedAuthority?.lowercase())
+                .build()
+                .toString()
+        }
+
         /** [url]'s host in lower case, without "www.", or "" when it has none. */
         fun host(url: String): String =
             Uri.parse(url).host.orEmpty().lowercase().removePrefix("www.")
