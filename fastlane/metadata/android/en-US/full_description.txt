@@ -11,14 +11,14 @@ HOME SCREEN
 YOUR APPS
 • Home and the app drawer are one surface: tap the search bar and it rides to the top with your categories below it. Swipe down or go back to close.
 • An app opens only when you tap it, so Enter always searches the web.
-• With nothing typed, your apps are a short list of categories sorted on the device, such as AI Agents, People, Focus, News, Media, and Tools, each with a colored glyph. Tap one to list its apps.
+• With nothing typed, your apps are a short list of categories sorted on the device, such as Agents, People, Focus, News, Media, and Tools, each with a colored glyph. Tap one to list its apps.
 • Long-press an app to rename it or set its categories (more than one, if you like).
 • A Private Space, when the device has one, sits at the bottom of the drawer behind a tap to unlock.
 
 THROUGH THE DAY
 • Groups shift with the time of day: news in the morning, focus apps during work hours, media in the evening, sleep and meditation apps at night, then sharpen from the apps you actually open. Inside each group, the apps you open most come first.
 • Learning stays on this device. It uses only launches made inside the launcher, never the system usage-stats API, and fades after a couple of weeks.
-• Pin any groups to the top. AI Agents is pinned by default. Reset the learning whenever you want.
+• Pin any groups to the top. Agents is pinned by default. Reset the learning whenever you want.
 
 EASY TO LEARN, ANYWHERE
 • On first run a small card teaches the gestures one at a time (the search bar, long-press, the date and the shortcut) and goes away once you have used them.

@@ -16,7 +16,7 @@ enum class AppCategory(
     @ColorInt val color: Int,
     @ColorInt val lightColor: Int,
 ) {
-    AI_AGENTS("AI Agents", R.drawable.ic_category_ai, 0xFFA78BFA.toInt(), 0xFF7E55F8.toInt()),
+    AI_AGENTS("Agents", R.drawable.ic_category_ai, 0xFFA78BFA.toInt(), 0xFF7E55F8.toInt()),
     COMMUNICATION("People", R.drawable.ic_category_people, 0xFF569CD6.toInt(), 0xFF2D79B8.toInt()),
     PRODUCTIVITY("Focus", R.drawable.ic_category_focus, 0xFF4EC9B0.toInt(), 0xFF28826F.toInt()),
     NEWS("News", R.drawable.ic_category_news, 0xFFE8A87C.toInt(), 0xFFB55D20.toInt()),

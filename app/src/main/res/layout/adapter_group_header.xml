@@ -15,4 +15,4 @@
     android:paddingHorizontal="24dp"
     android:paddingVertical="@dimen/app_padding_vertical"
     tools:drawableStart="@drawable/ic_category_ai"
-    tools:text="AI Agents  6" />
+    tools:text="Agents  6" />

@@ -34,13 +34,13 @@ class GroupSectionsTest {
 
     @Test
     fun everyCategoryStartsAsOneClosedRowInListOrder() {
-        assertEquals(listOf("[AI Agents 2]", "[Media 2 ✦]", "[Places 1]"), build(rows))
+        assertEquals(listOf("[Agents 2]", "[Media 2 ✦]", "[Places 1]"), build(rows))
     }
 
     @Test
     fun theOpenCategoryListsItsAppsUnderItsHeader() {
         assertEquals(
-            listOf("[AI Agents 2]", "[Media 2 ✦ open]", "Spotify", "YouTube", "[Places 1]"),
+            listOf("[Agents 2]", "[Media 2 ✦ open]", "Spotify", "YouTube", "[Places 1]"),
             build(rows, expanded = GroupSections.key(0, AppCategory.MEDIA)),
         )
     }
@@ -49,18 +49,18 @@ class GroupSectionsTest {
     fun privateSpaceKeepsItsPlaceAndGroupsItsOwnApps() {
         val withPrivate = rows + Row("Private space", null, section = true) + Row("Signal", AppCategory.COMMUNICATION)
         assertEquals(
-            listOf("[AI Agents 2]", "[Media 2 ✦]", "[Places 1]", "Private space", "[People 1 open]", "Signal"),
+            listOf("[Agents 2]", "[Media 2 ✦]", "[Places 1]", "Private space", "[People 1 open]", "Signal"),
             build(withPrivate, expanded = GroupSections.key(1, AppCategory.COMMUNICATION)),
         )
         // The same key in the main section opens nothing in Private Space.
         assertEquals(
-            listOf("[AI Agents 2]", "[Media 2 ✦]", "[Places 1]", "Private space", "[People 1]"),
+            listOf("[Agents 2]", "[Media 2 ✦]", "[Places 1]", "Private space", "[People 1]"),
             build(withPrivate, expanded = GroupSections.key(0, AppCategory.COMMUNICATION)),
         )
     }
 
     @Test
     fun rowsWithoutACategoryFollowTheHeaders() {
-        assertEquals(listOf("[AI Agents 2]", "padding"), build(rows.take(2) + Row("padding", null)))
+        assertEquals(listOf("[Agents 2]", "padding"), build(rows.take(2) + Row("padding", null)))
     }
 }

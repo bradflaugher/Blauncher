@@ -38,7 +38,7 @@ SUBLINE = (176, 176, 182)  # 9.9:1 on black
 BADGE = (150, 150, 156)
 EDGE = (64, 64, 64)
 # The drawer's own category colours (AppCategory.kt), one per shot in turn:
-# People, Focus, Media, Shopping, Sleep, AI Agents.
+# People, Focus, Media, Shopping, Sleep, Agents.
 ACCENTS = [(0x56, 0x9C, 0xD6), (0x4E, 0xC9, 0xB0), (0xC5, 0x86, 0xC0),
            (0xDC, 0xB4, 0x5F), (0x8C, 0x9E, 0xFF), (0xA7, 0x8B, 0xFA)]
 
