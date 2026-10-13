@@ -49,7 +49,7 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   searches the web. Swipe down from the bar or the top of the list, or go
   back, and it all settles back to the quiet home screen.
 - **Search, or pick a category.** With nothing typed, your apps come up as a
-  short list of categories sorted on-device (AI Agents, People, Focus, News,
+  short list of categories sorted on-device (Agents, People, Focus, News,
   Media, Tools, and more), each with a small colored glyph and its app count.
   Tap one to list its apps; opening another closes it, so the list always
   fits above the keyboard. Long-press an app to change its categories,
@@ -63,7 +63,7 @@ feedback** (a new GitHub issue), **Share Blauncher** and **Rate Blauncher**
   in the morning, focus during work, media in the evening, sleep and
   meditation from about 8:30 pm, then sharpen from
   the apps you actually open. Inside each group, the apps you open most come
-  first. Pin any groups to the top; AI Agents is pinned by
+  first. Pin any groups to the top; Agents is pinned by
   default. Reset the learning any time in Settings.
 - **Private by construction.** No internet permission, no usage-stats access,
   no accounts, sync, analytics, accessibility service, or launcher-managed

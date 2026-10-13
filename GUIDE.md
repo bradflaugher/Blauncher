@@ -127,7 +127,7 @@ Settings → Gestures.
 ## Your apps
 
 Tap the search bar on the home screen. With the keyboard up there is room
-for a short list, so your apps come up as **categories** (AI Agents, People,
+for a short list, so your apps come up as **categories** (Agents, People,
 Focus, News, Media, and so on): one row each, with its small colored glyph
 (a deeper shade of the same color in the light theme, so it stays legible),
 its name and how many apps it holds.
@@ -210,7 +210,7 @@ way; if you know an app's name, searching is quicker than scrolling anyway.
 In **Settings → Smart ordering**:
 
 - **Pinned groups** — pin any number of groups to always stay on top, in the
-  order you tap them (numbered as you pick). AI Agents is pinned by default.
+  order you tap them (numbered as you pick). Agents is pinned by default.
 - **Right now** — a read-only peek at which groups the launcher would
   surface first at this moment.
 - **App groups → Refresh** — clears all manual group choices and

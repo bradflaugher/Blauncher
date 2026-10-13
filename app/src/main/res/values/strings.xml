@@ -78,7 +78,7 @@
     <string name="groups">Groups</string>
     <string name="groups_automatic_summary">Chosen automatically. Tick groups to choose them yourself.</string>
     <string name="groups_manual_summary">Chosen by you. Automatic lets the launcher decide again.</string>
-    <!-- A category's row in the drawer: what TalkBack reads, "AI Agents, 6 apps". -->
+    <!-- A category's row in the drawer: what TalkBack reads, "Agents, 6 apps". -->
     <plurals name="group_header_description">
         <item quantity="one">%1$s, %2$d app</item>
         <item quantity="other">%1$s, %2$d apps</item>
