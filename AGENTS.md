@@ -5,6 +5,9 @@ fork of Olauncher. Read `README.md` for the feature overview, `GUIDE.md` for
 how the UI behaves, and `SECURITY.md` for the privacy/security design notes.
 Keep all three in sync with any behavior you change.
 
+Do not add a `CLAUDE.md` or `CLAUDE.local.md` here (or above the checkout):
+Claude Code then loads those instead and skips this file.
+
 ## Latest-only platform policy (non-negotiable)
 
 This project builds with **only the latest public stable version of
