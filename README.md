@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <b>Free on <a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher">Google Play</a></b> · no ads · no internet permission · Android 15+<br>
+  <b>Free on <a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher">Google Play</a></b> · no ads · no internet permission<br>
   <a href="https://bradflaugher.github.io/Blauncher/">Website</a> ·
   <a href="https://bradflaugher.github.io/Blauncher/privacy/">Privacy policy</a> ·
   <a href="https://github.com/bradflaugher/Blauncher/releases/tag/latest">Latest APK</a>

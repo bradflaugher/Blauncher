@@ -215,7 +215,7 @@ def version(css):
 def local_sheet(site, page, href):
     """The file a same-site stylesheet href names, or None."""
     url = urlsplit(href)
-    if url.scheme or url.netloc or not url.path:
+    if (url.scheme or url.netloc) and not href.startswith(SITE_URL) or not url.path:
         return None
     target = resolve(site, page.parent, url.path)
     return target if target is not None and target.is_file() else None
@@ -230,9 +230,9 @@ def fix_versions(site):
         for href in parser.styles:
             target = local_sheet(site, page, href)
             if target is not None:
-                path = urlsplit(href).path
+                stamped = urlsplit(href)._replace(query=f"v={version(target)}").geturl()
                 new = re.sub(r'(href=["\'])' + re.escape(href) + r'(["\'])',
-                             lambda m: f"{m.group(1)}{path}?v={version(target)}{m.group(2)}", new)
+                             lambda m: f"{m.group(1)}{stamped}{m.group(2)}", new)
         if new != html:
             page.write_text(new, encoding="utf-8")
 

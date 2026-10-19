@@ -7,11 +7,14 @@ full tour, and [Questions](#questions) answers the usual ones.
 
 ## Install and set up
 
-1. Download `Blauncher.apk` from the
+1. Install Blauncher from [Google Play](https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher),
+   which keeps it up to date. Prefer to sideload? Download `Blauncher.apk`
+   from the
    [latest release](https://github.com/bradflaugher/Blauncher/releases/tag/latest)
-   (optionally verify it against `Blauncher.apk.sha256` — see `SECURITY.md`).
-2. Install it (you may need to allow installs from your browser or file
-   manager), then open it and tap **Set as default launcher**.
+   (optionally verify it against `Blauncher.apk.sha256` — see `SECURITY.md`)
+   and install it (you may need to allow installs from your browser or file
+   manager).
+2. Open it and tap **Set as default launcher**.
 3. Requires Android 15 (API 35) or newer.
 
 ## First-run tips
