@@ -126,7 +126,15 @@ svg.glyph { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColo
 }
 .round:hover { border-color: var(--fg); color: var(--fg); }
 .round .glyph { font-size: 24px; }
-.hint { margin: 14px 0 0 26px; font-size: 14px; color: var(--muted); }
+/* The official Google Play badge, untouched. Google's guidelines forbid
+   recoloring it and keep a clear space of a quarter of its height (15px)
+   around it, so it gets no shadow, and its margin plus the 14px .actions
+   gap (and the hint's 15px) hold neighbors at 15px. */
+.play { flex: none; display: inline-flex; margin: 0 1px 0 0; transition: transform 0.15s; }
+.play img { display: block; width: auto; height: 60px; }
+.play:hover { transform: translateY(-1px); }
+.intro + .actions { margin: 0 0 32px; }
+.hint { margin: 15px 0 0 4px; font-size: 14px; color: var(--muted); }
 
 /* Section scaffolding. */
 section { padding: clamp(56px, 9vw, 104px) 0; border-top: 1px solid var(--line); }
@@ -259,6 +267,6 @@ footer a:hover { color: var(--fg); }
   .bar nav a.hide-sm { display: none; }
   .pill { height: 56px; padding: 0 20px; font-size: 17px; }
   .round { width: 56px; height: 56px; }
-  .hint { margin-left: 4px; }
+  .play img { height: 56px; }
   .steps li { gap: 14px; padding: 18px 16px; }
 }

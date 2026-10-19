@@ -1,7 +1,15 @@
 # Blauncher
 
-**Website:** <https://bradflaugher.github.io/Blauncher/> ·
-[privacy policy](https://bradflaugher.github.io/Blauncher/privacy/)
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher"><img src="docs/google-play-badge.png" alt="Get it on Google Play" height="64"></a>
+</p>
+
+<p align="center">
+  <b>Free on <a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher">Google Play</a></b> · no ads · no internet permission · Android 15+<br>
+  <a href="https://bradflaugher.github.io/Blauncher/">Website</a> ·
+  <a href="https://bradflaugher.github.io/Blauncher/privacy/">Privacy policy</a> ·
+  <a href="https://github.com/bradflaugher/Blauncher/releases/tag/latest">Latest APK</a>
+</p>
 
 A minimal, gesture-driven Android launcher that gets out of the way. The
 home screen is a black screen with the date, a search bar, and a shortcut
@@ -88,13 +96,16 @@ Full policy in [`AGENTS.md`](AGENTS.md).
 
 ## Install
 
-1. Download `Blauncher.apk` from the
-   [latest release](https://github.com/bradflaugher/Blauncher/releases/tag/latest).
-   Optionally verify it against `Blauncher.apk.sha256`
-   (see [`SECURITY.md`](SECURITY.md)).
-2. Install it, open it, and tap **Set as default launcher**.
+<a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher"><img src="docs/google-play-badge.png" alt="Get it on Google Play" height="56"></a>
 
-Requires Android 15 or newer.
+Blauncher is free on [Google Play](https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher),
+which keeps it up to date. Install it, open it, and tap **Set as default
+launcher**. Requires Android 15 or newer.
+
+Prefer to sideload? Download `Blauncher.apk` from the
+[latest release](https://github.com/bradflaugher/Blauncher/releases/tag/latest),
+optionally verify it against `Blauncher.apk.sha256`
+(see [`SECURITY.md`](SECURITY.md)), then install it the same way.
 
 ## Build
 

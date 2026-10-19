@@ -123,7 +123,11 @@ data handling changes, and bump its "Last updated" date. Each page's
 Content-Security-Policy `<meta>` allows only same-origin files, no
 connections and no inline styles; it lists the hash of the one inline
 script (the date on the front page), so after editing that script, paste in
-the new hash `check_site.py` prints. Preview with
+the new hash `check_site.py` prints. Each page links `style.css?v=…`, the
+stylesheet's content hash, so no browser pairs a new page with a stale
+cached stylesheet; after editing `site/style.css`, run
+`python3 .github/scripts/check_site.py site --fix` to stamp the new hash
+(the check fails until you do). Preview with
 `python3 -m http.server -d site`. `.github/workflows/pages.yml` checks the
 site on every pull request (the required `site` check) and deploys it on
 every push to `main` that touches it.

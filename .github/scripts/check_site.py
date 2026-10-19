@@ -12,7 +12,12 @@ script (the check prints the right one), and since it allows no inline
 styles, pages may not use style attributes or <style> elements. A <base>
 element is not allowed at all (it would re-point every relative URL).
 
-Usage: python3 .github/scripts/check_site.py [site-dir]
+Each stylesheet link carries the stylesheet's content hash (`style.css?v=…`),
+so a page never pairs with a stale cached copy: Pages lets browsers cache
+for ten minutes, and a new page on an old stylesheet renders broken. Run
+with --fix to write the current hashes into the pages after a CSS change.
+
+Usage: python3 .github/scripts/check_site.py [site-dir] [--fix]
 """
 
 import base64
@@ -56,6 +61,7 @@ class Page(HTMLParser):
         self._in_style = False
         self.csp = None
         self.scripts = []  # inline script bodies
+        self.styles = []  # stylesheet hrefs
 
     def _where(self):
         return f"line {self.getpos()[0]}"
@@ -84,6 +90,8 @@ class Page(HTMLParser):
             elif tag == "link" and name == "href":
                 rels = set((a.get("rel") or "").lower().split())
                 self.refs.append((f"<{tag} {name}>", value, bool(rels & LOADING_RELS)))
+                if "stylesheet" in rels:
+                    self.styles.append(value)
             elif name == "href":
                 self.refs.append((f"<{tag} {name}>", value, False))
             elif name == "style":
@@ -199,8 +207,41 @@ def check_refs(site, source, base, refs, ids, errors):
             errors.append(f"{rel}: {value} names a missing anchor")
 
 
+def version(css):
+    # LF-normalized, so a CRLF checkout stamps the hash CI computes.
+    return hashlib.sha256(css.read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:10]
+
+
+def local_sheet(site, page, href):
+    """The file a same-site stylesheet href names, or None."""
+    url = urlsplit(href)
+    if url.scheme or url.netloc or not url.path:
+        return None
+    target = resolve(site, page.parent, url.path)
+    return target if target is not None and target.is_file() else None
+
+
+def fix_versions(site):
+    """Rewrites each local stylesheet href to carry its file's current hash."""
+    for page in site.rglob("*.html"):
+        html = new = page.read_text(encoding="utf-8")
+        parser = Page()
+        parser.feed(html)
+        for href in parser.styles:
+            target = local_sheet(site, page, href)
+            if target is not None:
+                path = urlsplit(href).path
+                new = re.sub(r'(href=["\'])' + re.escape(href) + r'(["\'])',
+                             lambda m: f"{m.group(1)}{path}?v={version(target)}{m.group(2)}", new)
+        if new != html:
+            page.write_text(new, encoding="utf-8")
+
+
 def main():
-    site = Path(sys.argv[1] if len(sys.argv) > 1 else "site").resolve()
+    args = [a for a in sys.argv[1:] if a != "--fix"]
+    site = Path(args[0] if args else "site").resolve()
+    if "--fix" in sys.argv[1:]:
+        fix_versions(site)
     errors = []
     if not (site / "index.html").is_file() or not (site / "privacy" / "index.html").is_file():
         errors.append("site/index.html and site/privacy/index.html must both exist")
@@ -216,6 +257,11 @@ def main():
         if not parser.title:
             errors.append(f"{rel}: missing <title>")
         errors.extend(f"{rel}: {p}" for p in csp_problems(parser))
+        for href in parser.styles:
+            target = local_sheet(site, page, href)
+            if target is not None and urlsplit(href).query != f"v={version(target)}":
+                errors.append(f"{rel}: {href} should end ?v={version(target)} "
+                              "(run python3 .github/scripts/check_site.py site --fix)")
     ids = {page: parser.ids for page, parser in parsed.items()}
 
     for page, parser in parsed.items():
