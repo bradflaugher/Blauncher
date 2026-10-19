@@ -21,7 +21,7 @@
   <meta property="og:image:width" content="1024">
   <meta property="og:image:height" content="500">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=ecf68560f3">
 </head>
 <body>
   <svg class="sprite" width="0" height="0" aria-hidden="true">
@@ -61,14 +61,12 @@
       <h1>Blauncher</h1>
       <p class="lede">A minimal, gesture-driven Android launcher that gets out of the way. A black screen, the date, one search bar for your apps and the web, and a key to your passwords. No app icons, no dock, no widgets.</p>
       <div class="actions">
-        <a class="pill" href="https://github.com/bradflaugher/Blauncher/releases/download/latest/Blauncher.apk">
-          <svg class="glyph" aria-hidden="true"><use href="#i-down"/></svg><span>Download Blauncher.apk</span>
-        </a>
+        <a class="play" href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher"><img src="img/google-play-badge.png" width="564" height="168" alt="Get it on Google Play"></a>
         <a class="round" href="#private" aria-label="Privacy: what Blauncher never does" title="Private by construction">
           <svg class="glyph" aria-hidden="true"><use href="#i-key"/></svg>
         </a>
       </div>
-      <p class="hint">Free and open source &middot; Android 15 or newer &middot; no internet permission</p>
+      <p class="hint">Free and open source &middot; no ads &middot; Android 15 or newer &middot; no internet permission</p>
       </div>
       <div class="hero-phone phone" aria-hidden="true"><img src="img/home.webp" width="540" height="960" alt=""></div>
     </div>
@@ -188,15 +186,19 @@
     <section id="install" aria-labelledby="install-h">
       <div class="wrap">
         <p class="kicker">Install</p>
-        <h2 id="install-h">Three steps.</h2>
+        <h2 id="install-h">Now on Google Play.</h2>
+        <p class="intro">Blauncher is free on Google Play: no ads, no in-app purchases, no internet permission. Install it there and Play keeps it up to date.</p>
+        <div class="actions">
+          <a class="play" href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher"><img src="img/google-play-badge.png" width="564" height="168" alt="Get it on Google Play"></a>
+        </div>
         <ol class="steps">
-          <li><div><b>Download <a href="https://github.com/bradflaugher/Blauncher/releases/download/latest/Blauncher.apk">Blauncher.apk</a></b> from the <a href="https://github.com/bradflaugher/Blauncher/releases/tag/latest">latest release</a>. Every build comes straight from GitHub Actions on <code>main</code>.</div></li>
-          <li><div><b>Optionally verify it</b> against <code>Blauncher.apk.sha256</code> from the same release, or check its build provenance:
+          <li><div><b>Install it</b> from the <a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher">Google Play listing</a>. Prefer no store? Download <a href="https://github.com/bradflaugher/Blauncher/releases/download/latest/Blauncher.apk">Blauncher.apk</a> from the <a href="https://github.com/bradflaugher/Blauncher/releases/tag/latest">latest release</a> instead; every build comes straight from GitHub Actions on <code>main</code>.</div></li>
+          <li><div><b>If you sideloaded, optionally verify it</b> against <code>Blauncher.apk.sha256</code> from the same release, or check its build provenance:
             <div class="verify">sha256sum -c Blauncher.apk.sha256
 gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher</div></div></li>
-          <li><div><b>Install it, open it,</b> and tap <b>Set as default launcher</b>. To go back, pick your old launcher in Settings&nbsp;&rsaquo; Change default launcher.</div></li>
+          <li><div><b>Open it</b> and tap <b>Set as default launcher</b>. To go back, pick your old launcher in Settings&nbsp;&rsaquo; Change default launcher.</div></li>
         </ol>
-        <p class="fine">Requires Android 15 or newer. Blauncher is in closed testing on Google Play; until it is public there, the GitHub release is the way in.</p>
+        <p class="fine">Requires Android 15 or newer, on phones, tablets, foldables and Chromebooks.</p>
       </div>
     </section>
 
@@ -217,6 +219,7 @@ gh attestation verify Blauncher.apk --repo bradflaugher/Blauncher</div></div></l
     <div class="wrap">
       <span>Blauncher &middot; GPL-3.0 &middot; began as a fork of <a href="https://github.com/tanujnotes/Olauncher">Olauncher</a> by Tanuj Notes</span>
       <nav aria-label="Footer">
+        <a href="https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher">Google Play</a>
         <a href="privacy/">Privacy</a>
         <a href="https://github.com/bradflaugher/Blauncher/blob/main/SECURITY.md">Security</a>
         <a href="https://github.com/bradflaugher/Blauncher/blob/main/LICENSE">License</a>

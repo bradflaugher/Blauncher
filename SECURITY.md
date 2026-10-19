@@ -1,6 +1,7 @@
 # Security
 
-Blauncher is a personal hard fork of Olauncher, distributed as a signed APK
+Blauncher is a personal hard fork of Olauncher, distributed on
+[Google Play](https://play.google.com/store/apps/details?id=com.bradflaugher.blauncher) and as a signed APK
 from this repository's GitHub Releases. The Google Play build is the
 `Blauncher.aab` from the same CI run.
 
