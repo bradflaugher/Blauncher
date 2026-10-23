@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -45,7 +46,13 @@ jobs:
             printf '%s event: no push diff, so everything counts as changed.\n' "$EVENT"
             exit 0
           fi
-          files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$AFTER" --jq '.files[].filename')"
+          # Both sides of a rename count: moving a file out of app/ changes the app.
+          if ! files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$AFTER" \
+              --jq '.files[] | .filename, (.previous_filename // empty)')"; then
+            printf 'app=true\nlisting=true\n' >> "$GITHUB_OUTPUT"
+            printf 'Could not compare %s...%s, so everything counts as changed.\n' "$BEFORE" "$AFTER"
+            exit 0
+          fi
           printf '%s\n' "$files"
           app=false
           listing=false
@@ -96,7 +103,7 @@ jobs:
           validate-wrappers: true
 
       - name: Restore signing keystore
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           BLAUNCHER_KEYSTORE_BASE64: ${{ secrets.BLAUNCHER_KEYSTORE_BASE64 }}
           BLAUNCHER_STORE_PASSWORD: ${{ secrets.BLAUNCHER_STORE_PASSWORD }}
@@ -131,15 +138,15 @@ jobs:
       # clean unsigned build instead of failing as partially configured.
       - name: Lint, test, and build release APK and bundle
         env:
-          BLAUNCHER_STORE_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_STORE_PASSWORD || '' }}
-          BLAUNCHER_KEY_ALIAS: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_ALIAS || '' }}
-          BLAUNCHER_KEY_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_PASSWORD || '' }}
+          BLAUNCHER_STORE_PASSWORD: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.BLAUNCHER_STORE_PASSWORD || '' }}
+          BLAUNCHER_KEY_ALIAS: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.BLAUNCHER_KEY_ALIAS || '' }}
+          BLAUNCHER_KEY_PASSWORD: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.BLAUNCHER_KEY_PASSWORD || '' }}
         run: ./gradlew lint test assembleRelease bundleRelease
 
       # The APK is for sideloading; the bundle (.aab) is what Google Play takes,
       # and the R8 mapping deobfuscates Play crash reports.
       - name: Name signed APK, bundle and mapping
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p dist
           mv app/build/outputs/apk/release/app-release.apk dist/Blauncher.apk
@@ -150,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: blauncher-release-${{ github.run_number }}
-          path: ${{ github.event_name == 'push' && 'dist/' || 'app/build/outputs/apk/release/*.apk' }}
+          path: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && 'dist/' || 'app/build/outputs/apk/release/*.apk' }}
           if-no-files-found: error
 
   # Play rejects an edit whose listing breaks its limits, so pull requests
@@ -200,7 +207,7 @@ jobs:
   # production is play-promote.yml, run by hand.
   play:
     name: Google Play
-    if: github.event_name == 'push' && (needs.changes.outputs.app == 'true' || needs.changes.outputs.listing == 'true')
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (needs.changes.outputs.app == 'true' || needs.changes.outputs.listing == 'true')
     needs: [changes, build, store-listing]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -264,7 +271,7 @@ jobs:
 
   release:
     name: release
-    if: github.event_name == 'push' && needs.changes.outputs.app == 'true'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.changes.outputs.app == 'true'
     needs: [changes, build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
