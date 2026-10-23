@@ -27,13 +27,16 @@ everything** and never carries code just for older devices:
 - The toolchain tracks the latest stable releases too: Android Gradle Plugin
   and all dependencies in `gradle/libs.versions.toml`, Gradle in
   `gradle/wrapper/gradle-wrapper.properties` (keep the distribution
-  checksum-pinned), and the JDK in `app/build.gradle`. Dependabot keeps
-  these current — do not hold versions back for compatibility reasons.
+  checksum-pinned), and the JDK in `app/build.gradle`. Dependabot moves
+  them to the latest stable release in one combined PR per quarter (see
+  `MAINTAINING.md`); "latest" means never holding a version back, not chasing
+  every release the week it lands. Do not hold versions back for compatibility
+  reasons.
 - If a change only works by targeting an older API level or downgrading a
   dependency, that change is wrong for this project.
 
 Do not copy version numbers into docs. Pins live in Gradle and are updated
-by Dependabot. `MAINTAINING.md` covers the weekly update routine and the
+by Dependabot. `MAINTAINING.md` covers the quarterly update routine and the
 repository's security settings.
 
 ## Security and privacy invariants
