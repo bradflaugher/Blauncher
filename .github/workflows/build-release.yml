@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,6 +19,57 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # What this push publishes. Only a change to what ships reaches Google
+  # Play or the GitHub release: the app or its Gradle build means a new
+  # build, a store-listing change alone means a listing sync. CI, docs and
+  # tooling changes still build and test here but publish nothing. Running
+  # the workflow by hand publishes everything.
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+      listing: ${{ steps.diff.outputs.listing }}
+
+    steps:
+      - name: Work out what changed
+        id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [ "$EVENT" != push ] || [ -z "$BEFORE" ] || [ "$BEFORE" = 0000000000000000000000000000000000000000 ]; then
+            printf 'app=true\nlisting=true\n' >> "$GITHUB_OUTPUT"
+            printf '%s event: no push diff, so everything counts as changed.\n' "$EVENT"
+            exit 0
+          fi
+          # Both sides of a rename count: moving a file out of app/ changes the app.
+          if ! files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$AFTER" \
+              --jq '.files[] | .filename, (.previous_filename // empty)')"; then
+            printf 'app=true\nlisting=true\n' >> "$GITHUB_OUTPUT"
+            printf 'Could not compare %s...%s, so everything counts as changed.\n' "$BEFORE" "$AFTER"
+            exit 0
+          fi
+          printf '%s\n' "$files"
+          app=false
+          listing=false
+          # The compare API lists at most 300 files; past that, assume both.
+          if [ "$(printf '%s\n' "$files" | wc -l)" -ge 300 ]; then
+            app=true
+            listing=true
+          fi
+          while IFS= read -r f; do
+            case "$f" in
+              fastlane/metadata/*) listing=true ;;
+              app/* | gradle/* | *.gradle | *.gradle.kts | gradle.properties | gradlew | gradlew.bat) app=true ;;
+            esac
+          done <<< "$files"
+          printf 'app=%s\nlisting=%s\n' "$app" "$listing" >> "$GITHUB_OUTPUT"
+          printf 'App changed: %s. Listing changed: %s.\n' "$app" "$listing"
+
   build:
     name: build
     runs-on: ubuntu-latest
@@ -51,7 +103,7 @@ jobs:
           validate-wrappers: true
 
       - name: Restore signing keystore
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           BLAUNCHER_KEYSTORE_BASE64: ${{ secrets.BLAUNCHER_KEYSTORE_BASE64 }}
           BLAUNCHER_STORE_PASSWORD: ${{ secrets.BLAUNCHER_STORE_PASSWORD }}
@@ -86,15 +138,15 @@ jobs:
       # clean unsigned build instead of failing as partially configured.
       - name: Lint, test, and build release APK and bundle
         env:
-          BLAUNCHER_STORE_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_STORE_PASSWORD || '' }}
-          BLAUNCHER_KEY_ALIAS: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_ALIAS || '' }}
-          BLAUNCHER_KEY_PASSWORD: ${{ github.event_name == 'push' && secrets.BLAUNCHER_KEY_PASSWORD || '' }}
+          BLAUNCHER_STORE_PASSWORD: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.BLAUNCHER_STORE_PASSWORD || '' }}
+          BLAUNCHER_KEY_ALIAS: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.BLAUNCHER_KEY_ALIAS || '' }}
+          BLAUNCHER_KEY_PASSWORD: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.BLAUNCHER_KEY_PASSWORD || '' }}
         run: ./gradlew lint test assembleRelease bundleRelease
 
       # The APK is for sideloading; the bundle (.aab) is what Google Play takes,
       # and the R8 mapping deobfuscates Play crash reports.
       - name: Name signed APK, bundle and mapping
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p dist
           mv app/build/outputs/apk/release/app-release.apk dist/Blauncher.apk
@@ -105,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: blauncher-release-${{ github.run_number }}
-          path: ${{ github.event_name == 'push' && 'dist/' || 'app/build/outputs/apk/release/*.apk' }}
+          path: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && 'dist/' || 'app/build/outputs/apk/release/*.apk' }}
           if-no-files-found: error
 
   # Play rejects an edit whose listing breaks its limits, so pull requests
@@ -147,15 +199,16 @@ jobs:
       - name: Check that fastlane runs
         run: bundle exec fastlane supply --help > /dev/null
 
-  # Every signed main build goes to Google Play's Closed testing - Alpha
-  # track, with changelogs/default.txt as its release notes, and the store
-  # listing is synced from fastlane/metadata/android: text, icon, feature
-  # graphic and screenshots (images Play already has are skipped by
-  # checksum). Promotion to production is play-promote.yml, run by hand.
+  # A signed main build that changes the app goes to Google Play's Closed
+  # testing - Alpha track, with changelogs/default.txt as its release notes.
+  # The store listing is synced from fastlane/metadata/android (text, icon,
+  # feature graphic and screenshots; images Play already has are skipped by
+  # checksum) whenever the app or the listing changed. Promotion to
+  # production is play-promote.yml, run by hand.
   play:
     name: Google Play
-    if: github.event_name == 'push'
-    needs: [build, store-listing]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (needs.changes.outputs.app == 'true' || needs.changes.outputs.listing == 'true')
+    needs: [changes, build, store-listing]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # PLAY_SERVICE_ACCOUNT_JSON is an environment secret, and only main can
@@ -193,6 +246,7 @@ jobs:
       - name: Upload to Closed testing - Alpha
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          APP_CHANGED: ${{ needs.changes.outputs.app }}
         run: |
           if [ -z "${PLAY_SERVICE_ACCOUNT_JSON:-}" ]; then
             printf 'No PLAY_SERVICE_ACCOUNT_JSON secret in the google-play environment\n' >&2
@@ -200,7 +254,12 @@ jobs:
           fi
           key="$RUNNER_TEMP/play-service-account.json"
           printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > "$key"
-          bundle exec fastlane supply \
+          # Listing-only change: sync the store listing, ship no new build.
+          skip=()
+          if [ "$APP_CHANGED" != true ]; then
+            skip=(--skip_upload_aab true --skip_upload_changelogs true)
+          fi
+          bundle exec fastlane supply "${skip[@]}" \
             --package_name com.bradflaugher.blauncher \
             --json_key "$key" \
             --aab release/Blauncher.aab \
@@ -212,8 +271,8 @@ jobs:
 
   release:
     name: release
-    if: github.event_name == 'push'
-    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.changes.outputs.app == 'true'
+    needs: [changes, build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
