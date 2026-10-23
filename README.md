@@ -143,8 +143,8 @@ export BLAUNCHER_KEY_PASSWORD=key-password
 
 ### CI
 
-Every push to `main` runs lint and tests, builds a signed release, and
-replaces the `latest` release with `Blauncher.apk`, `Blauncher.apk.sha256`,
+Every push to `main` runs lint and tests and builds a signed release; one
+that changes the app also replaces the `latest` release with `Blauncher.apk`, `Blauncher.apk.sha256`,
 `Blauncher.aab` (for Google Play), and `mapping.txt` (R8 deobfuscation for
 Play crash reports). Pull requests run the same checks and build unsigned
 artifacts without publishing. The version code is the workflow run number,
@@ -166,8 +166,8 @@ The store listing (title, descriptions, icon, feature graphic, screenshots,
 release notes) lives in `fastlane/metadata/android/en-US` in the layout
 `fastlane supply` reads.
 
-1. **Upload.** CI uploads every signed `main` build to Closed testing -
-   Alpha with `mapping.txt` and `changelogs/default.txt`, and syncs this
+1. **Upload.** CI uploads every signed `main` build that changes the app to
+   Closed testing - Alpha with `mapping.txt` and `changelogs/default.txt`, and syncs this
    listing (`PLAY_SERVICE_ACCOUNT_JSON`, see `MAINTAINING.md`). Use Play App
    Signing; to keep Play and sideloaded installs updating each other, enrol
    the existing `BLAUNCHER_*` key as the app signing key and use a separate

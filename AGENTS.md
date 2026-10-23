@@ -81,7 +81,7 @@ and navigation graph.
 - Release versioning comes from `BLAUNCHER_VERSION_CODE` /
   `BLAUNCHER_VERSION_NAME`; release signing uses the four `BLAUNCHER_*`
   signing variables and is all-or-nothing (see `README.md`).
-- Every push to `main` publishes the signed APK to the single `latest`
+- Every push to `main` that changes the app publishes the signed APK to the single `latest`
   GitHub release with a SHA-256 checksum, uploads the bundle to Google
   Play's Closed testing - Alpha track and syncs the store listing (text,
   icon, graphics, screenshots) from `fastlane/metadata/android`. Production
